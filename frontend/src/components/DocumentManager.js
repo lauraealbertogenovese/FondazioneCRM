@@ -32,13 +32,12 @@ import {
   Image as ImageIcon,
   Download as DownloadIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
   MoreVert as MoreVertIcon,
   Add as AddIcon,
   DragIndicator as DragIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { documentService, patientService } from '../services/api';
+import { documentService, patientService, clinicalService } from '../services/api';
 
 const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButton = true }) => {
   const theme = useTheme();
@@ -92,10 +91,18 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       setLoading(true);
       setError(null);
       
+      // Debug log
+      console.log('DocumentManager fetchDocuments:', { patientId, clinicalRecordId, groupId });
+      
       // Fetch real documents data
       let documentsResponse;
       
-      if (patientId) {
+      if (clinicalRecordId) {
+        // Get clinical record documents
+        console.log('Fetching clinical record documents for recordId:', clinicalRecordId);
+        const clinicalResponse = await clinicalService.getClinicalRecordDocuments(clinicalRecordId);
+        documentsResponse = clinicalResponse;
+      } else if (patientId) {
         // Get patient documents
         const patientResponse = await patientService.getPatientDocuments(patientId);
         documentsResponse = patientResponse;
@@ -135,12 +142,19 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       // Prepare form data for upload
       const formData = new FormData();
       formData.append('file', newDocument.file);
-      formData.append('category', newDocument.category);
+      formData.append('document_type', newDocument.category);
       formData.append('description', newDocument.description);
 
+      // Debug log
+      console.log('DocumentManager handleFileUpload:', { patientId, clinicalRecordId, groupId });
+      
       // Real API upload
       let response;
-      if (patientId) {
+      if (clinicalRecordId) {
+        console.log('Uploading to clinical record:', clinicalRecordId);
+        response = await clinicalService.uploadClinicalDocument(clinicalRecordId, formData);
+      } else if (patientId) {
+        console.log('Uploading to patient:', patientId);
         response = await documentService.uploadDocument(patientId, formData);
       } else {
         // For non-patient specific documents, you might need a different endpoint
@@ -174,7 +188,11 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
   const handleDeleteDocument = async (documentId) => {
     try {
       // Delete via API
-      await documentService.deleteDocument(documentId);
+      if (clinicalRecordId) {
+        await clinicalService.deleteClinicalDocument(documentId);
+      } else {
+        await documentService.deleteDocument(documentId);
+      }
       
       // Refresh documents list
       await fetchDocuments();
@@ -187,15 +205,20 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
     }
   };
 
-  const handleDownloadDocument = async (document) => {
+  const handleDownloadDocument = async (documentToDownload) => {
     try {
       // Download via API
-      const blob = await documentService.downloadDocument(document.id);
+      let blob;
+      if (clinicalRecordId) {
+        blob = await clinicalService.downloadClinicalDocument(documentToDownload.id);
+      } else {
+        blob = await documentService.downloadDocument(documentToDownload.id);
+      }
       
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = document.name;
+      link.download = documentToDownload.original_filename || documentToDownload.name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -341,8 +364,8 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       ) : (
         <Grid container spacing={2}>
           {documents.map((document) => {
-            const category = documentCategories[document.category] || documentCategories.other;
-            const FileIcon = getFileIcon(document.mime_type, document.category);
+            const category = documentCategories[document.document_type || document.category] || documentCategories.other;
+            const FileIcon = getFileIcon(document.mime_type, document.document_type || document.category);
             
             return (
               <Grid item xs={12} sm={6} md={4} key={document.id}>
@@ -364,14 +387,14 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
                         <FileIcon 
                           sx={{ 
                             fontSize: 32, 
-                            color: theme.palette[category.color].main 
+                            color: category?.color ? theme.palette[category.color]?.main : theme.palette.primary.main
                           }} 
                         />
                         <Box>
                           <Chip 
-                            label={category.label}
+                            label={category?.label || 'Documento'}
                             size="small"
-                            color={category.color}
+                            color={category?.color || 'default'}
                             variant="outlined"
                           />
                         </Box>
@@ -402,7 +425,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
                     )}
 
                     <Typography variant="caption" color="text.secondary">
-                      {formatFileSize(document.size)} • {new Date(document.uploaded_at).toLocaleDateString('it-IT')}
+                      {formatFileSize(document.file_size || document.size)} • {new Date(document.created_at || document.uploaded_at).toLocaleDateString('it-IT')}
                     </Typography>
                     
                   </CardContent>
@@ -531,13 +554,6 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
         }}>
           <DownloadIcon sx={{ mr: 1 }} fontSize="small" />
           Scarica
-        </MenuItem>
-        <MenuItem onClick={() => {
-          window.open(selectedDocument.url, '_blank');
-          handleMenuClose();
-        }}>
-          <ViewIcon sx={{ mr: 1 }} fontSize="small" />
-          Visualizza
         </MenuItem>
         {hasPermission('documents.delete') && (
           <MenuItem 

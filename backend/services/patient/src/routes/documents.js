@@ -32,14 +32,14 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024 // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Allow only DOC, DOCX, and PDF files
-    const allowedTypes = ['.doc', '.docx', '.pdf'];
+    // Allow DOC, DOCX, PDF, TXT, JPG, PNG, GIF files
+    const allowedTypes = ['.doc', '.docx', '.pdf', '.txt', '.jpg', '.jpeg', '.png', '.gif'];
     const ext = path.extname(file.originalname).toLowerCase();
     
     if (allowedTypes.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Only DOC, DOCX, and PDF files are allowed'));
+      cb(new Error('Only DOC, DOCX, PDF, TXT, JPG, PNG, GIF files are allowed'));
     }
   }
 });
@@ -48,11 +48,22 @@ const upload = multer({
 router.post('/patients/:patientId/documents', 
   AuthMiddleware.verifyToken, 
   AuthMiddleware.requirePermission('patients.write'),
-  upload.single('document'),
+  upload.single('file'),
   async (req, res) => {
     try {
       const { patientId } = req.params;
       const { document_type, description } = req.body;
+      
+      console.log('Upload document request:', {
+        patientId,
+        document_type,
+        description,
+        file: req.file ? {
+          originalname: req.file.originalname,
+          mimetype: req.file.mimetype,
+          size: req.file.size
+        } : 'No file'
+      });
       
       if (!Number.isInteger(Number(patientId)) || Number(patientId) < 1) {
         return res.status(400).json({
@@ -114,6 +125,44 @@ router.post('/patients/:patientId/documents',
         }
       }
       
+      res.status(500).json({
+        error: 'Internal server error'
+      });
+    }
+  }
+);
+
+// GET /patients/:patientId/documents - Get all documents for a patient
+router.get('/patients/:patientId/documents', 
+  AuthMiddleware.verifyToken, 
+  AuthMiddleware.requirePermission('patients.read'),
+  async (req, res) => {
+    try {
+      const { patientId } = req.params;
+      
+      if (!Number.isInteger(Number(patientId)) || Number(patientId) < 1) {
+        return res.status(400).json({
+          error: 'Invalid patient ID'
+        });
+      }
+
+      // Check if patient exists
+      const patient = await Patient.findById(patientId);
+      if (!patient) {
+        return res.status(404).json({
+          error: 'Patient not found'
+        });
+      }
+
+      // Get all documents for this patient
+      const documents = await PatientDocument.findByPatientId(patientId);
+
+      res.json({
+        success: true,
+        data: documents.map(doc => doc.toJSON())
+      });
+    } catch (error) {
+      console.error('Error fetching patient documents:', error);
       res.status(500).json({
         error: 'Internal server error'
       });

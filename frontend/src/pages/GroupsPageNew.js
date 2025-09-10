@@ -118,57 +118,7 @@ const GroupsPageNew = () => {
     }
   };
 
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      active: { label: 'Attivo', color: 'success' },
-      inactive: { label: 'Sospeso', color: 'warning' },
-      archived: { label: 'Archiviato', color: 'default' },
-      completed: { label: 'Completato', color: 'info' },
-    };
-    const config = statusConfig[status] || statusConfig.active;
-    
-    return (
-      <Chip
-        label={config.label}
-        color={config.color}
-        size="small"
-        variant="outlined"
-        sx={{ fontSize: '0.75rem', height: 20 }}
-      />
-    );
-  };
 
-  const getTypeChip = (groupType) => {
-    const typeConfig = {
-      support: { label: 'Gruppo di Supporto', color: 'primary' },
-      therapy: { label: 'Terapia di Gruppo', color: 'secondary' },
-      activity: { label: 'Attività Terapeutica', color: 'info' },
-      education: { label: 'Educativo', color: 'warning' },
-      detox: { label: 'Disintossicazione', color: 'error' },
-      reintegration: { label: 'Reinserimento', color: 'success' },
-    };
-    const config = typeConfig[groupType] || { label: groupType, color: 'default' };
-    
-    return (
-      <Chip
-        label={config.label}
-        color={config.color}
-        size="small"
-        variant="outlined"
-        sx={{ fontSize: '0.75rem', height: 20 }}
-      />
-    );
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('it-IT');
-  };
-
-  const truncateText = (text, maxLength = 40) => {
-    if (!text) return '-';
-    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
-  };
 
   const filteredGroups = groups.filter(group =>
     searchTerm === '' || 
@@ -287,22 +237,16 @@ const GroupsPageNew = () => {
             <TableHead>
               <TableRow sx={{ backgroundColor: alpha(theme.palette.grey[50], 0.5) }}>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Gruppo
+                  Nome Gruppo
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Tipo
+                  Conduttori
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Partecipanti
+                  Numero di Partecipanti
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                   Frequenza
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Stato
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Facilitatore
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: 600, fontSize: '0.875rem', width: 60 }}>
                   
@@ -326,26 +270,23 @@ const GroupsPageNew = () => {
                     <TableCell>
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <PsychologyIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
-                            {group.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                            {truncateText(group.description, 30)}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                          {group.name}
+                        </Typography>
                       </Stack>
                     </TableCell>
                     
                     <TableCell>
-                      {getTypeChip(group.group_type)}
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                        {group.created_by_username || '-'}
+                      </Typography>
                     </TableCell>
                     
                     <TableCell>
                       <Stack direction="row" alignItems="center" spacing={0.5}>
                         <PeopleIcon sx={{ fontSize: 14, color: 'text.disabled' }} />
                         <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
-                          {group.member_count || 0}/{group.max_members || 0}
+                          {group.member_count || 0}
                         </Typography>
                       </Stack>
                     </TableCell>
@@ -357,16 +298,6 @@ const GroupsPageNew = () => {
                           {group.meeting_frequency || '-'}
                         </Typography>
                       </Stack>
-                    </TableCell>
-                    
-                    <TableCell>
-                      {getStatusChip(group.status)}
-                    </TableCell>
-                    
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                        {group.created_by_username || '-'}
-                      </Typography>
                     </TableCell>
                     
                     <TableCell align="center">

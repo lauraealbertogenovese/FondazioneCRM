@@ -82,13 +82,15 @@ const patientServiceProxy = createProxyMiddleware({
       console.log(`[Patient Proxy] WARNING: No authorization header found`);
     }
     
-    // Handle request body for PUT/POST requests
-    if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
+    // Handle request body for PUT/POST requests (only for JSON, not multipart)
+    if ((req.method === 'POST' || req.method === 'PUT') && req.body && req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
       const bodyData = JSON.stringify(req.body);
       console.log(`[Patient Proxy] Body data length: ${bodyData.length}`);
       proxyReq.setHeader('Content-Type', 'application/json');
       proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
       proxyReq.write(bodyData);
+    } else if (req.method === 'POST' || req.method === 'PUT') {
+      console.log(`[Patient Proxy] Forwarding ${req.headers['content-type'] || 'unknown'} body as-is`);
     }
   },
   onProxyRes: (proxyRes, req, res) => {
@@ -119,13 +121,16 @@ const clinicalServiceProxy = createProxyMiddleware({
       console.log(`[Clinical Proxy] WARNING: No authorization header found`);
     }
     
-    // Handle request body for PUT/POST requests
-    if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
+    // Handle request body for PUT/POST requests (only for JSON, not multipart)
+    if ((req.method === 'POST' || req.method === 'PUT') && req.body && req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
       const bodyData = JSON.stringify(req.body);
       console.log(`[Clinical Proxy] Body data length: ${bodyData.length}`);
       proxyReq.setHeader('Content-Type', 'application/json');
       proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
       proxyReq.write(bodyData);
+    } else if (req.method === 'POST' || req.method === 'PUT') {
+      // For other content types (like multipart/form-data), let the original request body flow through
+      console.log(`[Clinical Proxy] Forwarding ${req.headers['content-type'] || 'unknown'} body as-is`);
     }
   },
   onProxyRes: (proxyRes, req, res) => {

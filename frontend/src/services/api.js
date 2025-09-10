@@ -229,6 +229,33 @@ export const clinicalService = {
     return response.data;
   },
 
+  // Clinical Documents
+  getClinicalRecordDocuments: async (recordId) => {
+    const response = await clinicalApi.get(`/clinical/clinical-records/${recordId}/documents`);
+    return response.data;
+  },
+
+  uploadClinicalDocument: async (recordId, formData) => {
+    const response = await clinicalApi.post(`/clinical/clinical-records/${recordId}/documents`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  deleteClinicalDocument: async (documentId) => {
+    const response = await clinicalApi.delete(`/clinical/documents/${documentId}`);
+    return response.data;
+  },
+
+  downloadClinicalDocument: async (documentId) => {
+    const response = await clinicalApi.get(`/clinical/documents/${documentId}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
   getPatientRecordsCount: async (patientId) => {
     const response = await clinicalApi.get(`/clinical/records/patient/${patientId}/count`);
     return response.data;

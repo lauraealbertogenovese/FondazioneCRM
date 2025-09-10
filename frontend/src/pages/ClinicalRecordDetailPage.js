@@ -18,7 +18,6 @@ import {
   Edit as EditIcon,
   Person as PersonIcon,
   Assignment as AssignmentIcon,
-  CalendarToday as CalendarIcon,
   LocalHospital as MedicalIcon,
   Notes as NotesIcon,
 } from '@mui/icons-material';
@@ -304,26 +303,6 @@ const ClinicalRecordDetailPage = () => {
           clinicalRecordId={record.id}
           showUpload={hasPermission('documents.write')}
         />
-
-        {/* Cronologia Attività */}
-        <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-            <CalendarIcon color="action" />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Cronologia Attività
-            </Typography>
-          </Stack>
-          
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <CalendarIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 0.5 }}>
-              Cronologia Visite
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Le visite e gli appuntamenti collegati a questa cartella clinica appariranno qui
-            </Typography>
-          </Box>
-        </Paper>
       </Stack>
     </Container>
   );

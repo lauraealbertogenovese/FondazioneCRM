@@ -7,6 +7,7 @@ require('dotenv').config();
 // Import routes
 const clinicalRoutes = require('./routes/clinical');
 const visitRoutes = require('./routes/visits');
+const documentRoutes = require('./routes/documents');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -16,7 +17,7 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -60,6 +61,7 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/clinical', clinicalRoutes);
 app.use('/clinical', visitRoutes);
+app.use('/clinical', documentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -399,6 +399,14 @@ const GroupFormPage = () => {
               variant="outlined"
               onClick={handleCancel}
               disabled={saving}
+              sx={{
+                color: 'text.primary',
+                borderColor: 'divider',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                  borderColor: 'primary.main',
+                }
+              }}
             >
               Annulla
             </Button>
@@ -407,6 +415,18 @@ const GroupFormPage = () => {
               variant="contained"
               startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
               disabled={saving}
+              sx={{
+                backgroundColor: 'primary.main',
+                color: 'white',
+                fontWeight: 600,
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                },
+                '&:disabled': {
+                  backgroundColor: 'action.disabledBackground',
+                  color: 'action.disabled',
+                }
+              }}
             >
               {saving ? 'Salvataggio...' : (isEdit ? 'Aggiorna Gruppo' : 'Crea Gruppo')}
             </Button>
