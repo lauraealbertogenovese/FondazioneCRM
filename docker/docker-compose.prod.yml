@@ -1,0 +1,143 @@
+version: '3.8'
+
+services:
+  # Database PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: fondazione-crm-postgres-prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fondazione_crm}
+      POSTGRES_USER: ${POSTGRES_USER:-crm_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ../backend/api-gateway
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-api-gateway-prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - PATIENT_SERVICE_URL=http://patient-service:3002
+      - CLINICAL_SERVICE_URL=http://clinical-service:3003
+      - GROUP_SERVICE_URL=http://group-service:3004
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+      - auth-service
+      - patient-service
+      - clinical-service
+      - group-service
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ../backend/services/auth
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-auth-service-prod
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Patient Service
+  patient-service:
+    build:
+      context: ../backend/services/patient
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-patient-service-prod
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Clinical Service
+  clinical-service:
+    build:
+      context: ../backend/services/clinical
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-clinical-service-prod
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Group Service
+  group-service:
+    build:
+      context: ../backend/services/group
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-group-service-prod
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Frontend React
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-frontend-prod
+    ports:
+      - "80:80"
+    environment:
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3000}
+    depends_on:
+      - api-gateway
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  crm-network:
+    driver: bridge
