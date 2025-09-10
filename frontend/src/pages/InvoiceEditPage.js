@@ -319,23 +319,10 @@ const InvoiceEditPage = () => {
                     onChange={handleInputChange('payment_method')}
                   >
                     <MenuItem value="contanti">Contanti</MenuItem>
-                    <MenuItem value="bonifico">Bonifico</MenuItem>
-                    <MenuItem value="pos">POS</MenuItem>
+                    <MenuItem value="tracciabile">Modalità Tracciabile</MenuItem>
                   </TextField>
                 </Grid>
 
-                {/* Due Days */}
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Giorni Scadenza"
-                    type="number"
-                    value={formData.due_days}
-                    onChange={handleInputChange('due_days')}
-                    inputProps={{ min: 1, max: 365 }}
-                    helperText="Numero di giorni dalla data emissione"
-                  />
-                </Grid>
 
                 <Grid item xs={12}>
                   <Divider sx={{ my: 2 }} />

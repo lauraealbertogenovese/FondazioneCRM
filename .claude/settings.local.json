@@ -37,7 +37,9 @@
       "Bash(set PORT=8080)",
       "Bash(winpty docker exec -it fondazione-crm-postgres psql -U crm_user -d fondazione_crm -c \"\\d auth.users\")",
       "Bash(docker container prune:*)",
-      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT id, nome, cognome, is_active FROM patient.patients ORDER BY id;\")"
+      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT id, nome, cognome, is_active FROM patient.patients ORDER BY id;\")",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)"
     ],
     "deny": [],
     "ask": []

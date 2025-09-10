@@ -147,6 +147,8 @@ const clinicalServiceProxy = createProxyMiddleware({
 const groupServiceProxy = createProxyMiddleware({
   target: process.env.GROUP_SERVICE_URL || 'http://group-service:3004',
   changeOrigin: true,
+  timeout: 30000,
+  proxyTimeout: 30000,
   pathRewrite: {
     '^/groups': '/groups'
   },
@@ -155,6 +157,15 @@ const groupServiceProxy = createProxyMiddleware({
     // Passa tutti gli headers di autenticazione
     if (req.headers.authorization) {
       proxyReq.setHeader('Authorization', req.headers.authorization);
+    }
+    
+    // Handle request body for PUT/POST requests
+    if ((req.method === 'POST' || req.method === 'PUT') && req.body) {
+      const bodyData = JSON.stringify(req.body);
+      console.log(`[Group Proxy] Body data length: ${bodyData.length}`);
+      proxyReq.setHeader('Content-Type', 'application/json');
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+      proxyReq.write(bodyData);
     }
   },
   onError: (err, req, res) => {

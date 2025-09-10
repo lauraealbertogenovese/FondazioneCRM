@@ -15,7 +15,10 @@ import {
   FormControlLabel,
   Switch,
   InputAdornment,
-  MenuItem
+  MenuItem,
+  Radio,
+  RadioGroup,
+  useTheme
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -30,13 +33,18 @@ const UserFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
+  const theme = useTheme();
   const isEdit = Boolean(id);
   
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [roles, setRoles] = useState([]);
+  // Ruoli limitati a Clinico e Amministrazione
+  const availableRoles = [
+    { id: 'clinico', name: 'clinico', display_name: 'Clinico' },
+    { id: 'amministrazione', name: 'amministrazione', display_name: 'Amministrazione' }
+  ];
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -47,27 +55,18 @@ const UserFormPage = () => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
-    role_id: '',
+    role_id: 'clinico',
     is_active: true
   });
 
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    loadRoles();
     if (isEdit) {
       loadUser();
     }
   }, [id, isEdit]);
 
-  const loadRoles = async () => {
-    try {
-      const response = await authService.getRoles();
-      setRoles(response.roles || []);
-    } catch (error) {
-      console.error('Errore nel caricamento dei ruoli:', error);
-    }
-  };
 
   const loadUser = async () => {
     setLoading(true);
@@ -80,7 +79,7 @@ const UserFormPage = () => {
         confirmPassword: '',
         first_name: response.user.first_name || '',
         last_name: response.user.last_name || '',
-        role_id: response.user.role_id || '',
+        role_id: response.user.role_name || response.user.role_id || 'clinico',
         is_active: response.user.is_active !== false
       });
     } catch (error) {
@@ -169,7 +168,7 @@ const UserFormPage = () => {
         email: formData.email.trim().toLowerCase(),
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
-        role_id: parseInt(formData.role_id),
+        role_id: formData.role_id,
         is_active: formData.is_active
       };
 
@@ -405,22 +404,27 @@ const UserFormPage = () => {
                     <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
                       Ruolo *
                     </Typography>
-                    <TextField
-                      select
+                    <RadioGroup
                       name="role_id"
                       value={formData.role_id}
                       onChange={handleChange}
-                      fullWidth
-                      size="small"
-                      error={!!errors.role_id}
-                      helperText={errors.role_id}
+                      row
                     >
-                      {roles.map(role => (
-                        <MenuItem key={role.id} value={role.id}>
-                          {role.display_name || role.name}
-                        </MenuItem>
+                      {availableRoles.map(role => (
+                        <FormControlLabel
+                          key={role.id}
+                          value={role.id}
+                          control={<Radio size="small" />}
+                          label={role.display_name}
+                          sx={{ mr: 3 }}
+                        />
                       ))}
-                    </TextField>
+                    </RadioGroup>
+                    {errors.role_id && (
+                      <Typography variant="caption" color="error" sx={{ ml: 1, mt: 0.5, display: 'block' }}>
+                        {errors.role_id}
+                      </Typography>
+                    )}
                   </Box>
 
                   <Box sx={{ mt: { xs: 0, md: 3 } }}>
@@ -457,6 +461,17 @@ const UserFormPage = () => {
                 variant="contained"
                 startIcon={submitLoading ? <CircularProgress size={20} /> : <SaveIcon />}
                 disabled={submitLoading}
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'grey.400',
+                    color: 'white',
+                  }
+                }}
               >
                 {submitLoading ? 'Salvataggio...' : isEdit ? 'Aggiorna' : 'Crea'}
               </Button>
@@ -467,8 +482,9 @@ const UserFormPage = () => {
         {/* Help Text */}
         <Box sx={{ mt: 2, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            <strong>Suggerimento:</strong> Scegli un ruolo appropriato per l'utente. Gli amministratori hanno accesso completo, 
-            mentre i medici possono gestire solo i pazienti assegnati.
+            <strong>Suggerimento:</strong> Scegli il ruolo appropriato per l'utente. Gli utenti con ruolo 
+            "Amministrazione" hanno accesso completo al sistema, mentre i "Clinici" possono gestire 
+            pazienti e cartelle cliniche.
           </Typography>
         </Box>
     </Container>

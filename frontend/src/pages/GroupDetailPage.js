@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -51,7 +51,7 @@ import {
   Email as EmailIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { groupService, patientService } from '../services/api';
+import { groupService, patientService, userService } from '../services/api';
 
 const GroupDetailPage = () => {
   const { id } = useParams();
@@ -66,10 +66,12 @@ const GroupDetailPage = () => {
   
   // Dialog states
   const [addMemberDialog, setAddMemberDialog] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState('');
-  const [memberType, setMemberType] = useState('patient');
-  const [memberRole, setMemberRole] = useState('');
+  const [selectedPatients, setSelectedPatients] = useState([]);
+  const [selectedOperator, setSelectedOperator] = useState('');
   const [memberNotes, setMemberNotes] = useState('');
+  
+  // Data states
+  const [operators, setOperators] = useState([]);
   
   // Menu states
   const [anchorEl, setAnchorEl] = useState(null);
@@ -82,13 +84,16 @@ const GroupDetailPage = () => {
     if (id) {
       fetchGroupDetail();
       fetchAvailablePatients();
+      fetchAvailableOperators();
     }
   }, [id]);
 
   // Calculate available patients (patients not already in the group)
-  const availablePatients = patients.filter(patient => 
-    !members.some(member => member.patient_id === patient.id && member.is_active)
-  );
+  const availablePatients = useMemo(() => {
+    return patients.filter(patient => 
+      !members.some(member => member.patient_id === patient.id && member.is_active)
+    );
+  }, [patients, members]);
 
   // Update filtered patients when available patients change
   useEffect(() => {
@@ -116,36 +121,57 @@ const GroupDetailPage = () => {
   const fetchAvailablePatients = async () => {
     try {
       const response = await patientService.getPatients();
-      setPatients(response.data || []);
+      console.log('Patients response:', response); // Debug
+      setPatients(response.patients || response.data || []);
     } catch (error) {
       console.error('Error fetching patients:', error);
     }
   };
 
+  const fetchAvailableOperators = async () => {
+    try {
+      const response = await userService.getUsers();
+      console.log('Conductors response:', response); // Debug
+      setOperators(response.users || response.data || []);
+    } catch (error) {
+      console.error('Error fetching conductors:', error);
+    }
+  };
+
   const handleAddMember = async () => {
     try {
-      const memberData = {
-        patient_id: selectedPatient,
-        member_type: memberType,
-        role: memberRole,
-        notes: memberNotes
-      };
-
-      await groupService.addGroupMember(id, memberData);
+      // Aggiungi tutti i pazienti selezionati
+      for (const patientId of selectedPatients) {
+        const memberData = {
+          patient_id: parseInt(patientId, 10),
+          member_type: 'patient',
+          notes: memberNotes
+        };
+        await groupService.addGroupMember(parseInt(id, 10), memberData);
+      }
+      
+      // Se è stato selezionato un conduttore, aggiungilo separatamente
+      if (selectedOperator) {
+        const conductorData = {
+          user_id: parseInt(selectedOperator, 10),
+          member_type: 'psychologist', // Usa psychologist invece di conductor
+          notes: memberNotes
+        };
+        await groupService.addGroupMember(parseInt(id, 10), conductorData);
+      }
       
       // Refresh data
       fetchGroupDetail();
       
       // Reset form
       setAddMemberDialog(false);
-      setSelectedPatient('');
-      setMemberType('patient');
-      setMemberRole('');
+      setSelectedPatients([]);
+      setSelectedOperator('');
       setMemberNotes('');
       
     } catch (error) {
       console.error('Error adding member:', error);
-      setError(error.response?.data?.message || 'Errore nell\'aggiunta del membro');
+      setError(error.response?.data?.message || 'Errore nell\'aggiunta dei membri');
     }
   };
 
@@ -193,9 +219,7 @@ const GroupDetailPage = () => {
   const getMemberTypeLabel = (type) => {
     switch (type) {
       case 'patient': return 'Paziente';
-      case 'psychologist': return 'Psicologo';
-      case 'referente': return 'Referente';
-      case 'observer': return 'Osservatore';
+      case 'psychologist': return 'Conduttore';
       default: return type;
     }
   };
@@ -204,8 +228,6 @@ const GroupDetailPage = () => {
     switch (type) {
       case 'patient': return 'primary';
       case 'psychologist': return 'secondary';
-      case 'referente': return 'success';
-      case 'observer': return 'default';
       default: return 'default';
     }
   };
@@ -475,77 +497,83 @@ const GroupDetailPage = () => {
           </TableContainer>
         </Paper>
 
-        {/* Statistiche Gruppo */}
-        <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-            Statistiche Attività
-          </Typography>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr 1fr' }, gap: 3 }}>
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Membri Totali
-              </Typography>
-              <Typography variant="h5" color="primary.main" sx={{ fontWeight: 700 }}>
-                {group?.member_statistics?.total_members || 0}
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Membri Attivi
-              </Typography>
-              <Typography variant="h5" color="success.main" sx={{ fontWeight: 700 }}>
-                {group?.member_statistics?.active_members || 0}
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Pazienti
-              </Typography>
-              <Typography variant="h5" color="info.main" sx={{ fontWeight: 700 }}>
-                {group?.member_statistics?.active_patients || 0}
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Psicologi
-              </Typography>
-              <Typography variant="h5" color="secondary.main" sx={{ fontWeight: 700 }}>
-                {group?.member_statistics?.active_psychologists || 0}
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Referenti
-              </Typography>
-              <Typography variant="h5" color="warning.main" sx={{ fontWeight: 700 }}>
-                {group?.member_statistics?.active_referenti || 0}
-              </Typography>
-            </Box>
-          </Box>
-        </Paper>
       </Stack>
     </Container>
 
     {/* Add Member Dialog */}
     <Dialog open={addMemberDialog} onClose={() => setAddMemberDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Aggiungi Membro al Gruppo</DialogTitle>
+        <DialogTitle>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <PersonAddIcon color="primary" />
+            <Box>
+              <Typography variant="h6" component="div">
+                Gestisci Membri del Gruppo
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Visualizza i membri attuali e aggiungi nuovi membri al gruppo "{group?.name}"
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+          {/* Sezione Membri Attuali */}
+          {members.filter(member => member.is_active).length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+                Membri Attuali ({members.filter(member => member.is_active).length})
+              </Typography>
+              <Box sx={{ maxHeight: 200, overflowY: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
+                {members.filter(member => member.is_active).map((member) => (
+                  <Box key={member.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1, px: 1 }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        backgroundColor: member.member_type === 'patient' ? 'primary.main' : 'secondary.main',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 600,
+                        fontSize: '0.75rem'
+                      }}
+                    >
+                      {member.nome?.charAt(0)}{member.cognome?.charAt(0)}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" fontWeight={500}>
+                        {member.nome} {member.cognome}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={getMemberTypeLabel(member.member_type)}
+                      size="small"
+                      color={getMemberTypeColor(member.member_type)}
+                      variant="outlined"
+                    />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* Sezione Aggiungi Nuovi Membri */}
+          <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+            Aggiungi Nuovi Membri
+          </Typography>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               <Autocomplete
                 fullWidth
+                multiple
                 options={filteredPatients}
                 getOptionLabel={(option) => 
-                  option ? `${option.nome} ${option.cognome} - ${option.codice_fiscale}` : ''
+                  option ? `${option.nome} ${option.cognome}` : ''
                 }
-                value={availablePatients.find(p => p.id === selectedPatient) || null}
+                value={availablePatients.filter(p => selectedPatients.includes(p.id))}
                 onChange={(event, newValue) => {
-                  setSelectedPatient(newValue ? newValue.id : '');
+                  setSelectedPatients(newValue.map(patient => patient.id));
                 }}
                 onInputChange={(event, newInputValue) => {
                   // Filtra i pazienti in base al testo di ricerca
@@ -563,64 +591,125 @@ const GroupDetailPage = () => {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Paziente"
-                    placeholder="Cerca paziente per nome, cognome o codice fiscale..."
-                    size="small"
+                    label="Seleziona Pazienti *"
+                    placeholder="Cerca e seleziona uno o più pazienti..."
+                    helperText="Scegli i pazienti da aggiungere al gruppo di supporto"
+                    required
                   />
                 )}
-                renderOption={(props, option) => (
-                  <Box component="li" {...props}>
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>
-                        {option.nome} {option.cognome}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        CF: {option.codice_fiscale} • ID: {option.id}
-                      </Typography>
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <Box component="li" key={key} {...otherProps} sx={{ py: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            backgroundColor: 'primary.main',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 600,
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {option.nome?.charAt(0)}{option.cognome?.charAt(0)}
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body1" fontWeight={500}>
+                            {option.nome} {option.cognome}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            CF: {option.codice_fiscale}
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-                noOptionsText="Nessun paziente disponibile"
+                  );
+                }}
+                noOptionsText="Nessun paziente disponibile per questo gruppo"
                 isOptionEqualToValue={(option, value) => option?.id === value?.id}
                 filterOptions={(options) => options} // Disabilita il filtro interno di MUI
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Tipo Membro</InputLabel>
-                <Select
-                  value={memberType}
-                  onChange={(e) => setMemberType(e.target.value)}
-                  label="Tipo Membro"
-                >
-                  <MenuItem value="patient">Paziente</MenuItem>
-                  <MenuItem value="psychologist">Psicologo</MenuItem>
-                  <MenuItem value="referente">Referente</MenuItem>
-                  <MenuItem value="observer">Osservatore</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
+            <Grid item xs={12}>
+              <Autocomplete
                 fullWidth
-                label="Ruolo (opzionale)"
-                value={memberRole}
-                onChange={(e) => setMemberRole(e.target.value)}
+                options={operators}
+                getOptionLabel={(option) => {
+                  if (!option) return '';
+                  const firstName = option.firstname || option.first_name || option.nome || '';
+                  const lastName = option.lastname || option.last_name || option.cognome || '';
+                  const role = option.role || option.ruolo || option.job_title || 'Conduttore';
+                  return `${firstName} ${lastName} - ${role}`.trim();
+                }}
+                value={operators.find(op => op.id === selectedOperator) || null}
+                onChange={(event, newValue) => {
+                  setSelectedOperator(newValue ? newValue.id : '');
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Aggiungi Conduttore (opzionale)"
+                    placeholder="Cerca conduttore da assegnare al gruppo..."
+                    helperText="Opzionalmente puoi aggiungere un conduttore che guiderà questo gruppo"
+                  />
+                )}
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <Box component="li" key={key} {...otherProps} sx={{ py: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            backgroundColor: 'secondary.main',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 600,
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {(option.firstname || option.first_name || option.nome || '')?.charAt(0)}{(option.lastname || option.last_name || option.cognome || '')?.charAt(0)}
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body1" fontWeight={500}>
+                            {option.firstname || option.first_name || option.nome || ''} {option.lastname || option.last_name || option.cognome || ''}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {option.role || option.ruolo || option.job_title || 'Conduttore'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  );
+                }}
+                noOptionsText="Nessun conduttore disponibile"
+                isOptionEqualToValue={(option, value) => option?.id === value?.id}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Note (opzionale)"
+                label="Note aggiuntive (opzionale)"
+                placeholder="Informazioni aggiuntive sui membri o sul loro coinvolgimento nel gruppo..."
                 multiline
                 rows={3}
                 value={memberNotes}
                 onChange={(e) => setMemberNotes(e.target.value)}
+                helperText="Eventuali informazioni utili per la gestione dei membri nel gruppo"
               />
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
           <Button 
             onClick={() => setAddMemberDialog(false)}
             variant="outlined"
@@ -640,7 +729,8 @@ const GroupDetailPage = () => {
             onClick={handleAddMember} 
             variant="contained"
             color="primary"
-            disabled={!selectedPatient}
+            disabled={selectedPatients.length === 0}
+            startIcon={<PersonAddIcon />}
             sx={{
               backgroundColor: '#3b82f6',
               '&:hover': {
@@ -652,7 +742,10 @@ const GroupDetailPage = () => {
               }
             }}
           >
-            Aggiungi
+            {selectedPatients.length > 0 
+              ? `Aggiungi ${selectedPatients.length} ${selectedPatients.length === 1 ? 'Paziente' : 'Pazienti'} al Gruppo`
+              : 'Seleziona almeno un Paziente'
+            }
           </Button>
         </DialogActions>
       </Dialog>

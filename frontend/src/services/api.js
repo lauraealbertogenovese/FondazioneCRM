@@ -5,11 +5,12 @@ import { createAuthInterceptor } from '../utils/authInterceptor';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 const PATIENT_SERVICE_URL = process.env.REACT_APP_PATIENT_SERVICE_URL || 'http://localhost:3000';
 const CLINICAL_SERVICE_URL = process.env.REACT_APP_CLINICAL_SERVICE_URL || 'http://localhost:3000';
+const GROUP_SERVICE_URL = process.env.REACT_APP_GROUP_SERVICE_URL || 'http://localhost:3000';
 
 // Istanza axios per Auth Service (API Gateway)
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Aumentato a 30 secondi
   headers: {
     'Content-Type': 'application/json',
   },
@@ -18,7 +19,7 @@ const api = axios.create({
 // Istanza axios per Patient Service
 const patientApi = axios.create({
   baseURL: PATIENT_SERVICE_URL,
-  timeout: 10000,
+  timeout: 30000, // Aumentato a 30 secondi
   headers: {
     'Content-Type': 'application/json',
   },
@@ -27,7 +28,16 @@ const patientApi = axios.create({
 // Istanza axios per Clinical Service
 const clinicalApi = axios.create({
   baseURL: CLINICAL_SERVICE_URL,
-  timeout: 10000,
+  timeout: 30000, // Aumentato a 30 secondi
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Istanza axios per Group Service
+const groupApi = axios.create({
+  baseURL: GROUP_SERVICE_URL,
+  timeout: 30000, // Aumentato a 30 secondi
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,6 +47,7 @@ const clinicalApi = axios.create({
 createAuthInterceptor(api, API_BASE_URL);
 createAuthInterceptor(patientApi, API_BASE_URL);
 createAuthInterceptor(clinicalApi, API_BASE_URL);
+createAuthInterceptor(groupApi, API_BASE_URL);
 
 // Interceptors are now handled by the centralized createAuthInterceptor utility
 
@@ -319,18 +330,6 @@ export const clinicalService = {
     return response.data;
   },
 };
-
-// Istanza axios per Group Service
-const groupApi = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Apply centralized authentication interceptor to group service
-createAuthInterceptor(groupApi, API_BASE_URL);
 
 // Istanza axios per Billing Service
 const billingApi = axios.create({

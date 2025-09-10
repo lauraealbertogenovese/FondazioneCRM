@@ -130,7 +130,7 @@ const UsersPageNew = () => {
       psychologist: { label: 'Psicologo', color: 'secondary' },
       social_worker: { label: 'Assistente Sociale', color: 'info' },
       counselor: { label: 'Counselor', color: 'warning' },
-      operator: { label: 'Operatore', color: 'success' },
+      operator: { label: 'Utente', color: 'success' },
       volunteer: { label: 'Volontario', color: 'default' },
       viewer: { label: 'Osservatore', color: 'default' },
     };
@@ -195,7 +195,7 @@ const UsersPageNew = () => {
       }}>
         <Box sx={{ p: 2, backgroundColor: alpha(theme.palette.grey[50], 0.5) }}>
           <Stack direction="row" spacing={2}>
-            {['Operatore', 'Contatti', 'Ruolo', 'Stato', 'Ultimo Accesso'].map((header) => (
+            {['Utente', 'Contatti', 'Ruolo', 'Stato', 'Ultimo Accesso'].map((header) => (
               <Skeleton key={header} variant="text" width={100} height={20} />
             ))}
           </Stack>
@@ -298,7 +298,7 @@ const UsersPageNew = () => {
                 }}
                 onClick={() => navigate('/users/new')}
               >
-                Nuovo Operatore
+                Nuovo Utente
               </Button>
             )}
           </Stack>
@@ -324,7 +324,7 @@ const UsersPageNew = () => {
             <TableHead>
               <TableRow sx={{ backgroundColor: alpha(theme.palette.grey[50], 0.5) }}>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Operatore
+                  Utente
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                   Contatti
@@ -487,7 +487,7 @@ const UsersPageNew = () => {
               size="small"
               onClick={() => navigate('/users/new')}
             >
-              Registra Primo Operatore
+              Registra Primo Utente
             </Button>
           )}
         </Box>
@@ -516,7 +516,7 @@ const UsersPageNew = () => {
         {hasPermission('users.delete') && selectedUser?.id !== user?.id && (
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
             <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Disattiva Operatore
+            Disattiva Utente
           </MenuItem>
         )}
       </Menu>

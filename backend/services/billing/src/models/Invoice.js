@@ -25,13 +25,21 @@ class Invoice {
   static async generateInvoiceNumber() {
     const year = moment().format('YYYY');
     const result = await query(
-      `SELECT MAX(CAST(RIGHT(invoice_number, 3) AS INTEGER)) as max_num 
+      `SELECT invoice_number 
        FROM billing.invoices 
-       WHERE invoice_number LIKE $1`,
+       WHERE invoice_number LIKE $1
+       ORDER BY invoice_number DESC
+       LIMIT 1`,
       [`INV-${year}-%`]
     );
     
-    const nextNum = (result.rows[0].max_num || 0) + 1;
+    let nextNum = 1;
+    if (result.rows.length > 0) {
+      const lastNumber = result.rows[0].invoice_number;
+      const numberPart = lastNumber.split('-')[2];
+      nextNum = parseInt(numberPart, 10) + 1;
+    }
+    
     return `INV-${year}-${nextNum.toString().padStart(3, '0')}`;
   }
 

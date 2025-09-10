@@ -11,13 +11,14 @@ class GroupMember {
     const query = `
       SELECT 
         gm.*,
-        p.nome,
-        p.cognome,
-        p.email,
-        p.telefono,
+        COALESCE(p.nome, staff.firstname, staff.first_name) as nome,
+        COALESCE(p.cognome, staff.lastname, staff.last_name) as cognome,
+        COALESCE(p.email, staff.email) as email,
+        COALESCE(p.telefono, staff.phone) as telefono,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
+      LEFT JOIN auth.users staff ON gm.user_id = staff.id
       LEFT JOIN auth.users u ON gm.created_by = u.id
       WHERE gm.group_id = $1
       ORDER BY gm.joined_date DESC

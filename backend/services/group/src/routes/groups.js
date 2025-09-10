@@ -141,11 +141,14 @@ router.post('/', validateGroup, async (req, res) => {
 // PUT /groups/:id - Aggiorna gruppo
 router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
   try {
+    console.log(`[PUT /groups/${req.params.id}] Request received:`, req.body);
     const { id } = req.params;
 
     const updateData = req.body;
+    console.log(`[PUT /groups/${id}] About to update with data:`, updateData);
 
     const updatedGroup = await Group.update(id, updateData);
+    console.log(`[PUT /groups/${id}] Update completed:`, updatedGroup);
     
     if (!updatedGroup) {
       return res.status(404).json({
@@ -190,6 +193,87 @@ router.delete('/:id', validateId, async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting group:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// POST /groups/:id/members - Add member to group
+router.post('/:id/members', validateId, async (req, res) => {
+  try {
+    console.log(`[POST /groups/${req.params.id}/members] Request received:`, req.body);
+    const { id } = req.params;
+    const { patient_id, user_id, member_type, notes } = req.body;
+
+    // Validate required fields
+    if (!member_type) {
+      return res.status(400).json({
+        success: false,
+        error: 'member_type is required'
+      });
+    }
+
+    if (member_type === 'patient' && !patient_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'patient_id is required for patient members'
+      });
+    }
+
+    if (member_type === 'psychologist' && !user_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'user_id is required for psychologist members'
+      });
+    }
+
+    // Check if group exists
+    const group = await Group.findById(id);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        error: 'Group not found'
+      });
+    }
+
+    // Add member to group using GroupMember model
+    const memberData = {
+      group_id: parseInt(id, 10),
+      patient_id: patient_id ? parseInt(patient_id, 10) : null,
+      user_id: user_id ? parseInt(user_id, 10) : null,
+      member_type,
+      notes,
+      created_by: 1 // TODO: Get from JWT token
+    };
+
+    console.log(`[POST /groups/${id}/members] Adding member:`, memberData);
+    
+    let newMember;
+    
+    if (member_type === 'patient') {
+      newMember = await GroupMember.addMember(memberData);
+    } else if (member_type === 'psychologist') {
+      // For psychologists/conductors, we need to modify the data structure
+      const psychologistData = {
+        ...memberData,
+        patient_id: null // Psychologists don't have patient_id
+      };
+      newMember = await GroupMember.addMember(psychologistData);
+    }
+    
+    console.log(`[POST /groups/${id}/members] Member added successfully:`, newMember);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Member added successfully',
+      data: newMember
+    });
+    
+  } catch (error) {
+    console.error(`[POST /groups/${req.params.id}/members] Error:`, error);
     res.status(500).json({
       success: false,
       error: 'Internal server error',

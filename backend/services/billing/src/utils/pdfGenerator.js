@@ -270,7 +270,7 @@ const generateInvoiceHTML = (invoice, companySettings) => {
 const getPaymentMethodText = (method) => {
   const methods = {
     'contanti': 'Contanti',
-    'tracciabile': 'Pagamento Tracciabile'
+    'tracciabile': 'Modalità Tracciabile'
   };
   return methods[method] || method;
 };

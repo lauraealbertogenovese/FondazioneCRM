@@ -240,12 +240,12 @@ const BillingPageNew = () => {
                 borderRadius: 2,
                 px: 3,
                 py: 1,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
+                backgroundColor: theme.palette.primary.main,
+                boxShadow: 2,
                 '&:hover': {
-                  background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
+                  backgroundColor: theme.palette.primary.dark,
                   transform: 'translateY(-1px)',
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  boxShadow: 4,
                 }
               }}
               onClick={() => navigate('/billing/new')}
@@ -337,9 +337,7 @@ const BillingPageNew = () => {
                 <TableCell>Paziente</TableCell>
                 <TableCell>Descrizione</TableCell>
                 <TableCell align="right">Importo</TableCell>
-                <TableCell>Stato</TableCell>
                 <TableCell>Data Emissione</TableCell>
-                <TableCell>Data Scadenza</TableCell>
                 <TableCell>Data Pagamento</TableCell>
                 <TableCell align="center">Azioni</TableCell>
               </TableRow>
@@ -370,17 +368,11 @@ const BillingPageNew = () => {
                     <TableCell>
                       <Box sx={{ height: 20, backgroundColor: 'grey.200', borderRadius: 1 }} />
                     </TableCell>
-                    <TableCell>
-                      <Box sx={{ height: 20, backgroundColor: 'grey.200', borderRadius: 1 }} />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ height: 20, backgroundColor: 'grey.200', borderRadius: 1 }} />
-                    </TableCell>
                   </TableRow>
                 ))
               ) : paginatedBillings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                     <Typography color="text.secondary">
                       {searchTerm ? 'Nessuna fattura trovata' : 'Nessuna fattura presente'}
                     </Typography>
@@ -413,24 +405,8 @@ const BillingPageNew = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        icon={getStatusIcon(billing.status)}
-                        label={getStatusLabel(billing.status)}
-                        color={getStatusColor(billing.status)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
                       <Typography variant="body2">
                         {formatDate(billing.issue_date)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography 
-                        variant="body2" 
-                        color={billing.status === 'overdue' ? 'error' : 'text.secondary'}
-                      >
-                        {formatDate(billing.due_date)}
                       </Typography>
                     </TableCell>
                     <TableCell>
