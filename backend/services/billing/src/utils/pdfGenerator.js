@@ -161,29 +161,6 @@ const generateInvoiceHTML = (invoice, companySettings) => {
           margin-top: 30px;
         }
         
-        .status-badge {
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-size: 12px;
-          font-weight: bold;
-          text-transform: uppercase;
-        }
-        
-        .status-pending {
-          background: #fff3cd;
-          color: #856404;
-        }
-        
-        .status-paid {
-          background: #d4edda;
-          color: #155724;
-        }
-        
-        .status-overdue {
-          background: #f8d7da;
-          color: #721c24;
-        }
         
         .footer {
           margin-top: 50px;
@@ -207,13 +184,9 @@ const generateInvoiceHTML = (invoice, companySettings) => {
       <div class="invoice-info">
         <div>
           <div class="invoice-number">FATTURA ${invoice.invoice_number}</div>
-          <div class="status-badge status-${invoice.status}">
-            ${getStatusText(invoice.status)}
-          </div>
         </div>
         <div class="invoice-dates">
           <div><strong>Data Emissione:</strong> ${formatDate(invoice.issue_date)}</div>
-          <div><strong>Data Scadenza:</strong> ${formatDate(invoice.due_date)}</div>
           ${invoice.payment_date ? `<div><strong>Data Pagamento:</strong> ${formatDate(invoice.payment_date)}</div>` : ''}
         </div>
       </div>
@@ -275,16 +248,6 @@ const getPaymentMethodText = (method) => {
   return methods[method] || method;
 };
 
-// Get status display text
-const getStatusText = (status) => {
-  const statuses = {
-    'pending': 'In Attesa',
-    'paid': 'Pagato',
-    'overdue': 'Scaduto',
-    'cancelled': 'Annullato'
-  };
-  return statuses[status] || status;
-};
 
 module.exports = {
   generateInvoicePDF

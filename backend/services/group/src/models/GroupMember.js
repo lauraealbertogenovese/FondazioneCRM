@@ -11,10 +11,10 @@ class GroupMember {
     const query = `
       SELECT 
         gm.*,
-        COALESCE(p.nome, staff.firstname, staff.first_name) as nome,
-        COALESCE(p.cognome, staff.lastname, staff.last_name) as cognome,
+        COALESCE(p.nome, staff.first_name) as nome,
+        COALESCE(p.cognome, staff.last_name) as cognome,
         COALESCE(p.email, staff.email) as email,
-        COALESCE(p.telefono, staff.phone) as telefono,
+        COALESCE(p.telefono, '') as telefono,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
@@ -32,13 +32,14 @@ class GroupMember {
     const query = `
       SELECT 
         gm.*,
-        p.nome,
-        p.cognome,
-        p.email,
-        p.telefono,
+        COALESCE(p.nome, staff.first_name) as nome,
+        COALESCE(p.cognome, staff.last_name) as cognome,
+        COALESCE(p.email, staff.email) as email,
+        COALESCE(p.telefono, '') as telefono,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
+      LEFT JOIN auth.users staff ON gm.user_id = staff.id
       LEFT JOIN auth.users u ON gm.created_by = u.id
       WHERE gm.group_id = $1 AND gm.is_active = true
       ORDER BY gm.joined_date DESC
@@ -184,6 +185,20 @@ class GroupMember {
     `;
     
     const result = await pool.query(query, [groupId]);
+    return result.rows[0];
+  }
+
+  static async removeMember(memberId) {
+    const query = `
+      UPDATE "group".group_members 
+      SET is_active = false, 
+          left_date = CURRENT_DATE,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+    
+    const result = await pool.query(query, [memberId]);
     return result.rows[0];
   }
 }

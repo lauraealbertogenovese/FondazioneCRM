@@ -282,4 +282,95 @@ router.post('/:id/members', validateId, async (req, res) => {
   }
 });
 
+// DELETE /groups/:id/members/:memberId - Remove member from group
+router.delete('/:id/members/:memberId', validateId, async (req, res) => {
+  try {
+    console.log(`[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Request received`);
+    const { id, memberId } = req.params;
+
+    // Validate memberId is a number
+    const memberIdNum = parseInt(memberId, 10);
+    if (isNaN(memberIdNum) || memberIdNum <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid member ID'
+      });
+    }
+
+    // Check if group exists
+    const group = await Group.findById(id);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        error: 'Group not found'
+      });
+    }
+
+    // Check if member exists in this group
+    const members = await GroupMember.findActiveMembers(id);
+    const memberToRemove = members.find(m => m.id === memberIdNum);
+    
+    if (!memberToRemove) {
+      return res.status(404).json({
+        success: false,
+        error: 'Member not found in this group'
+      });
+    }
+
+    // Remove member by setting is_active to false
+    await GroupMember.removeMember(memberIdNum);
+
+    console.log(`[DELETE /groups/${id}/members/${memberId}] Member removed successfully`);
+    
+    res.json({
+      success: true,
+      message: 'Member removed successfully'
+    });
+    
+  } catch (error) {
+    console.error(`[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Error:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// DELETE /groups/:id - Delete group permanently
+router.delete('/:id', validateId, async (req, res) => {
+  try {
+    console.log(`[DELETE /groups/${req.params.id}] Request received`);
+    const { id } = req.params;
+
+    // Check if group exists
+    const group = await Group.findById(id);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        error: 'Group not found'
+      });
+    }
+
+    // Delete the group (CASCADE will handle related records)
+    const deletedGroup = await Group.delete(id);
+
+    console.log(`[DELETE /groups/${id}] Group deleted successfully:`, deletedGroup.name);
+    
+    res.json({
+      success: true,
+      message: 'Group deleted successfully',
+      data: deletedGroup
+    });
+    
+  } catch (error) {
+    console.error(`[DELETE /groups/${req.params.id}] Error:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

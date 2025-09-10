@@ -109,6 +109,11 @@ const GroupsPageNew = () => {
 
   const confirmDelete = async () => {
     try {
+      if (!selectedGroup || !selectedGroup.id) {
+        console.error('No group selected for deletion');
+        return;
+      }
+      
       await groupService.deleteGroup(selectedGroup.id);
       await fetchGroups();
       setDeleteDialogOpen(false);
@@ -399,7 +404,7 @@ const GroupsPageNew = () => {
         {hasPermission('groups.delete') && (
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
             <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Archivia Gruppo
+            Elimina Gruppo
           </MenuItem>
         )}
       </Menu>
@@ -411,11 +416,11 @@ const GroupsPageNew = () => {
         maxWidth="xs"
         sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
       >
-        <DialogTitle sx={{ pb: 1 }}>Archivia gruppo</DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>Elimina gruppo</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Sei sicuro di voler archiviare il gruppo "{selectedGroup?.name}"?
-            I membri del gruppo verranno notificati e il gruppo non sarà più attivo.
+            Sei sicuro di voler eliminare definitivamente il gruppo "{selectedGroup?.name}"?
+            Questa azione non può essere annullata e tutti i dati del gruppo verranno rimossi.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -439,22 +444,22 @@ const GroupsPageNew = () => {
           </Button>
           <Button 
             onClick={confirmDelete} 
-            color="warning" 
+            color="error" 
             variant="contained" 
             size="small"
             sx={{
-              backgroundColor: '#f59e0b',
+              backgroundColor: '#dc2626',
               color: '#ffffff',
               fontWeight: 600,
               px: 2,
               py: 0.5,
               '&:hover': {
-                backgroundColor: '#d97706',
+                backgroundColor: '#b91c1c',
                 color: '#ffffff',
               }
             }}
           >
-            Archivia
+            Elimina
           </Button>
         </DialogActions>
       </Dialog>

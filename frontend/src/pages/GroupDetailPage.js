@@ -77,8 +77,7 @@ const GroupDetailPage = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
 
-  // Filtered patients state
-  const [filteredPatients, setFilteredPatients] = useState([]);
+  // Filtered patients state - rimosso, ora usa filterOptions direttamente
 
   useEffect(() => {
     if (id) {
@@ -95,10 +94,7 @@ const GroupDetailPage = () => {
     );
   }, [patients, members]);
 
-  // Update filtered patients when available patients change
-  useEffect(() => {
-    setFilteredPatients(availablePatients);
-  }, [availablePatients]);
+  // Filtro dei pazienti ora gestito direttamente da filterOptions in Autocomplete
 
   const fetchGroupDetail = async () => {
     try {
@@ -567,7 +563,7 @@ const GroupDetailPage = () => {
               <Autocomplete
                 fullWidth
                 multiple
-                options={filteredPatients}
+                options={availablePatients}
                 getOptionLabel={(option) => 
                   option ? `${option.nome} ${option.cognome}` : ''
                 }
@@ -575,10 +571,9 @@ const GroupDetailPage = () => {
                 onChange={(event, newValue) => {
                   setSelectedPatients(newValue.map(patient => patient.id));
                 }}
-                onInputChange={(event, newInputValue) => {
-                  // Filtra i pazienti in base al testo di ricerca
-                  const filtered = availablePatients.filter(patient => {
-                    const searchTerm = newInputValue.toLowerCase();
+                filterOptions={(options, { inputValue }) => {
+                  const searchTerm = inputValue.toLowerCase();
+                  return options.filter(patient => {
                     return (
                       patient.nome?.toLowerCase().includes(searchTerm) ||
                       patient.cognome?.toLowerCase().includes(searchTerm) ||
@@ -586,7 +581,6 @@ const GroupDetailPage = () => {
                       `${patient.nome} ${patient.cognome}`.toLowerCase().includes(searchTerm)
                     );
                   });
-                  setFilteredPatients(filtered);
                 }}
                 renderInput={(params) => (
                   <TextField
@@ -632,7 +626,6 @@ const GroupDetailPage = () => {
                 }}
                 noOptionsText="Nessun paziente disponibile per questo gruppo"
                 isOptionEqualToValue={(option, value) => option?.id === value?.id}
-                filterOptions={(options) => options} // Disabilita il filtro interno di MUI
               />
             </Grid>
             <Grid item xs={12}>

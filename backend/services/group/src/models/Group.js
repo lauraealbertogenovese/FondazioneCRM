@@ -186,6 +186,17 @@ class Group {
     const result = await pool.query(query);
     return result.rows[0];
   }
+
+  static async delete(id) {
+    const query = `
+      DELETE FROM "group".groups 
+      WHERE id = $1
+      RETURNING *
+    `;
+    
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  }
 }
 
 module.exports = Group;
