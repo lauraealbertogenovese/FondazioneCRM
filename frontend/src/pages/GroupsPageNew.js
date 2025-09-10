@@ -104,7 +104,7 @@ const GroupsPageNew = () => {
 
   const handleDelete = () => {
     setDeleteDialogOpen(true);
-    handleMenuClose();
+    setAnchorEl(null); // Chiude solo il menu, mantiene selectedGroup
   };
 
   const confirmDelete = async () => {
@@ -120,7 +120,14 @@ const GroupsPageNew = () => {
       setSelectedGroup(null);
     } catch (error) {
       console.error('Error deleting group:', error);
+      setDeleteDialogOpen(false);
+      setSelectedGroup(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setSelectedGroup(null);
   };
 
 
@@ -412,7 +419,7 @@ const GroupsPageNew = () => {
       {/* Delete Dialog */}
       <Dialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={handleCancelDelete}
         maxWidth="xs"
         sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
       >
@@ -425,7 +432,7 @@ const GroupsPageNew = () => {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button 
-            onClick={() => setDeleteDialogOpen(false)} 
+            onClick={handleCancelDelete} 
             size="small"
             sx={{
               borderColor: '#6b7280',

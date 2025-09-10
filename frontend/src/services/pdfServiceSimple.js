@@ -162,10 +162,8 @@ const getPaymentMethodLabel = (method) => {
   switch (method) {
     case 'contanti':
       return 'Contanti';
-    case 'bonifico':
-      return 'Bonifico Bancario';
-    case 'pos':
-      return 'POS';
+    case 'tracciabile':
+      return 'Modalità Tracciabile';
     default:
       return method.toUpperCase();
   }

@@ -72,6 +72,7 @@ class GroupMember {
     const {
       group_id,
       patient_id,
+      user_id,
       member_type = 'patient',
       role,
       notes,
@@ -109,12 +110,12 @@ class GroupMember {
 
     const query = `
       INSERT INTO "group".group_members 
-      (group_id, patient_id, member_type, role, notes, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      (group_id, patient_id, user_id, member_type, role, notes, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
 
-    const values = [group_id, patient_id, member_type, role, notes, created_by];
+    const values = [group_id, patient_id, user_id, member_type, role, notes, created_by];
     const result = await pool.query(query, values);
     
     return result.rows[0];
