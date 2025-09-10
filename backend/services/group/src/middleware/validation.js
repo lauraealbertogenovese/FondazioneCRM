@@ -101,6 +101,63 @@ const groupUpdateSchema = groupSchema.fork(
   (schema) => schema.optional()
 );
 
+// Schema per la creazione di gruppi con conduttori e membri
+const groupCreateSchema = Joi.object({
+  name: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .required()
+    .messages({
+      'string.base': 'Il nome deve essere una stringa',
+      'string.empty': 'Il nome del gruppo è obbligatorio',
+      'string.min': 'Il nome deve avere almeno 2 caratteri',
+      'string.max': 'Il nome non può superare 100 caratteri',
+      'any.required': 'Il nome del gruppo è obbligatorio'
+    }),
+
+  description: Joi.string()
+    .trim()
+    .max(1000)
+    .allow('')
+    .optional()
+    .messages({
+      'string.base': 'La descrizione deve essere una stringa',
+      'string.max': 'La descrizione non può superare 1000 caratteri'
+    }),
+
+  meeting_frequency: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .required()
+    .messages({
+      'string.base': 'La frequenza degli incontri deve essere una stringa',
+      'string.empty': 'La frequenza degli incontri è obbligatoria',
+      'string.min': 'La frequenza deve avere almeno 2 caratteri',
+      'string.max': 'La frequenza degli incontri non può superare 100 caratteri',
+      'any.required': 'La frequenza degli incontri è obbligatoria'
+    }),
+
+  conductors: Joi.array()
+    .items(Joi.number().integer().positive())
+    .min(1)
+    .required()
+    .messages({
+      'array.base': 'I conduttori devono essere un array',
+      'array.min': 'Almeno un conduttore è obbligatorio',
+      'any.required': 'Almeno un conduttore è obbligatorio'
+    }),
+
+  members: Joi.array()
+    .items(Joi.number().integer().positive())
+    .optional()
+    .default([])
+    .messages({
+      'array.base': 'I membri devono essere un array'
+    })
+});
+
 // Schema per la validazione dei membri
 const memberSchema = Joi.object({
   patient_id: Joi.number()
@@ -200,6 +257,28 @@ const groupFiltersSchema = Joi.object({
 // Middleware di validazione
 const validateGroup = (req, res, next) => {
   const { error, value } = groupSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+    convert: true
+  });
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      error: 'Dati non validi',
+      details: error.details.map(detail => ({
+        field: detail.context.key,
+        message: detail.message
+      }))
+    });
+  }
+
+  req.body = value;
+  next();
+};
+
+const validateGroupCreate = (req, res, next) => {
+  const { error, value } = groupCreateSchema.validate(req.body, {
     abortEarly: false,
     stripUnknown: true,
     convert: true
@@ -356,6 +435,7 @@ const validatePatientId = (req, res, next) => {
 
 module.exports = {
   validateGroup,
+  validateGroupCreate,
   validateGroupUpdate,
   validateMember,
   validateMemberUpdate,
@@ -365,6 +445,7 @@ module.exports = {
   validatePatientId,
   // Export schemas for testing
   groupSchema,
+  groupCreateSchema,
   groupUpdateSchema,
   memberSchema,
   memberUpdateSchema,

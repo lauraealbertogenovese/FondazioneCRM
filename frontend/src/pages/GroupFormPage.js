@@ -15,14 +15,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Divider
+  Divider,
+  Autocomplete,
+  Chip
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { groupService } from '../services/api';
+import { groupService, userService, patientService } from '../services/api';
 
 const GroupFormPage = () => {
   const { id } = useParams();
@@ -39,18 +41,22 @@ const GroupFormPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    group_type: 'support',
-    max_members: 10,
-    status: 'active',
-    start_date: '',
-    end_date: '',
-    meeting_frequency: '',
-    meeting_location: ''
+    meeting_frequency: ''
   });
 
   const [formErrors, setFormErrors] = useState({});
+  
+  // Multi-select states
+  const [selectedConductors, setSelectedConductors] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  
+  // Options
+  const [conductors, setConductors] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   useEffect(() => {
+    fetchOptions();
     if (isEdit && id) {
       fetchGroup();
     }
@@ -62,6 +68,26 @@ const GroupFormPage = () => {
     }
   }, [hasPermission, navigate]);
 
+  const fetchOptions = async () => {
+    try {
+      setLoadingOptions(true);
+      
+      // Fetch conductors (users)
+      const usersResponse = await userService.getUsers();
+      setConductors(usersResponse.users || []);
+      
+      // Fetch patients
+      const patientsResponse = await patientService.getPatients();
+      setPatients(patientsResponse.patients || []);
+      
+    } catch (error) {
+      console.error('Error fetching options:', error);
+      setError('Errore nel caricamento delle opzioni');
+    } finally {
+      setLoadingOptions(false);
+    }
+  };
+
   const fetchGroup = async () => {
     try {
       setLoading(true);
@@ -71,14 +97,22 @@ const GroupFormPage = () => {
         setFormData({
           name: group.name || '',
           description: group.description || '',
-          group_type: group.group_type || 'support',
-          max_members: group.max_members || 10,
-          status: group.status || 'active',
-          start_date: group.start_date ? group.start_date.split('T')[0] : '',
-          end_date: group.end_date ? group.end_date.split('T')[0] : '',
-          meeting_frequency: group.meeting_frequency || '',
-          meeting_location: group.meeting_location || ''
+          meeting_frequency: group.meeting_frequency || ''
         });
+        
+        // Load existing members and conductors
+        if (group.members) {
+          const existingConductors = group.members
+            .filter(member => member.member_type === 'psychologist')
+            .map(member => ({ id: member.user_id, first_name: member.nome, last_name: member.cognome }));
+          
+          const existingMembers = group.members
+            .filter(member => member.member_type === 'patient')
+            .map(member => ({ id: member.patient_id, nome: member.nome, cognome: member.cognome }));
+            
+          setSelectedConductors(existingConductors);
+          setSelectedMembers(existingMembers);
+        }
       } else {
         setError('Gruppo non trovato');
       }
@@ -112,18 +146,12 @@ const GroupFormPage = () => {
       errors.name = 'Il nome del gruppo è obbligatorio';
     }
     
-    if (!formData.group_type) {
-      errors.group_type = 'Il tipo di gruppo è obbligatorio';
+    if (!formData.meeting_frequency.trim()) {
+      errors.meeting_frequency = 'La frequenza degli incontri è obbligatoria';
     }
     
-    if (!formData.max_members || formData.max_members < 1) {
-      errors.max_members = 'Il numero massimo di membri deve essere almeno 1';
-    }
-    
-    if (formData.start_date && formData.end_date) {
-      if (new Date(formData.start_date) >= new Date(formData.end_date)) {
-        errors.end_date = 'La data di fine deve essere successiva alla data di inizio';
-      }
+    if (selectedConductors.length === 0) {
+      errors.conductors = 'Almeno un conduttore è obbligatorio';
     }
     
     setFormErrors(errors);
@@ -143,9 +171,8 @@ const GroupFormPage = () => {
       
       const submitData = {
         ...formData,
-        max_members: parseInt(formData.max_members),
-        start_date: formData.start_date || null,
-        end_date: formData.end_date || null
+        conductors: selectedConductors.map(c => c.id),
+        members: selectedMembers.map(m => m.id)
       };
       
       let response;
@@ -231,10 +258,11 @@ const GroupFormPage = () => {
           {/* Basic Information */}
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              Informazioni di Base
+              Informazioni del Gruppo
             </Typography>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <Box sx={{ flex: 2 }}>
+            
+            <Stack spacing={2}>
+              <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
                   Nome Gruppo *
                 </Typography>
@@ -249,146 +277,130 @@ const GroupFormPage = () => {
                 />
               </Box>
               
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Tipo Gruppo *
-                </Typography>
-                <TextField
-                  select
-                  fullWidth
-                  value={formData.group_type}
-                  onChange={(e) => handleInputChange('group_type', e.target.value)}
-                  error={Boolean(formErrors.group_type)}
-                  helperText={formErrors.group_type}
-                  size="small"
-                >
-                  <MenuItem value="support">Supporto</MenuItem>
-                  <MenuItem value="therapy">Terapia</MenuItem>
-                  <MenuItem value="activity">Attività</MenuItem>
-                  <MenuItem value="education">Educativo</MenuItem>
-                  <MenuItem value="rehabilitation">Riabilitazione</MenuItem>
-                </TextField>
-              </Box>
-            </Stack>
-              
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                Descrizione
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Descrizione dettagliata del gruppo e dei suoi obiettivi..."
-                size="small"
-              />
-            </Box>
-          </Box>
-
-          <Divider />
-              
-          {/* Settings */}
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              Impostazioni
-            </Typography>
-            
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Max Membri *
+                  Descrizione
                 </Typography>
                 <TextField
-                  type="number"
-                  value={formData.max_members}
-                  onChange={(e) => handleInputChange('max_members', e.target.value)}
-                  error={Boolean(formErrors.max_members)}
-                  helperText={formErrors.max_members}
-                  inputProps={{ min: 1, max: 50 }}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Descrizione dettagliata del gruppo e dei suoi obiettivi..."
                   size="small"
-                  sx={{ width: 120 }}
                 />
               </Box>
               
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Status
-                </Typography>
-                <TextField
-                  select
-                  value={formData.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                  size="small"
-                  sx={{ width: 140 }}
-                >
-                  <MenuItem value="active">Attivo</MenuItem>
-                  <MenuItem value="inactive">Inattivo</MenuItem>
-                  <MenuItem value="archived">Archiviato</MenuItem>
-                </TextField>
-              </Box>
-              
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Frequenza Incontri
+                  Frequenza Incontri *
                 </Typography>
                 <TextField
                   fullWidth
                   value={formData.meeting_frequency}
                   onChange={(e) => handleInputChange('meeting_frequency', e.target.value)}
-                  placeholder="es. Settimanale, Bisettimanale"
+                  error={Boolean(formErrors.meeting_frequency)}
+                  helperText={formErrors.meeting_frequency}
+                  placeholder="es. Settimanale, Bisettimanale, Mensile"
                   size="small"
                 />
               </Box>
             </Stack>
           </Box>
+
+          <Divider />
               
+          {/* Conductors and Members */}
           <Box>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+              Conduttori e Membri
+            </Typography>
+            
+            <Stack spacing={2}>
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Data Inizio
+                  Conduttori *
                 </Typography>
-                <TextField
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => handleInputChange('start_date', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  sx={{ width: 160 }}
+                <Autocomplete
+                  multiple
+                  options={conductors}
+                  value={selectedConductors}
+                  onChange={(event, newValue) => {
+                    setSelectedConductors(newValue);
+                    // Clear error when user selects conductors
+                    if (formErrors.conductors && newValue.length > 0) {
+                      setFormErrors(prev => ({ ...prev, conductors: null }));
+                    }
+                  }}
+                  getOptionLabel={(option) => `${option.first_name || option.nome || ''} ${option.last_name || option.cognome || ''} (${option.role || option.ruolo || option.job_title || 'Staff'})`}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Seleziona uno o più conduttori..."
+                      size="small"
+                      error={Boolean(formErrors.conductors)}
+                      helperText={formErrors.conductors}
+                    />
+                  )}
+                  renderTags={(tagValue, getTagProps) =>
+                    tagValue.map((option, index) => {
+                      const { key, ...chipProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          key={option.id}
+                          label={`${option.first_name || option.nome || ''} ${option.last_name || option.cognome || ''}`}
+                          {...chipProps}
+                          size="small"
+                          color="primary"
+                        />
+                      );
+                    })
+                  }
+                  loading={loadingOptions}
+                  noOptionsText="Nessun conduttore trovato"
                 />
               </Box>
               
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Data Fine
+                  Membri (Pazienti)
                 </Typography>
-                <TextField
-                  type="date"
-                  value={formData.end_date}
-                  onChange={(e) => handleInputChange('end_date', e.target.value)}
-                  error={Boolean(formErrors.end_date)}
-                  helperText={formErrors.end_date}
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  sx={{ width: 160 }}
+                <Autocomplete
+                  multiple
+                  options={patients}
+                  value={selectedMembers}
+                  onChange={(event, newValue) => {
+                    setSelectedMembers(newValue);
+                  }}
+                  getOptionLabel={(option) => `${option.nome || ''} ${option.cognome || ''}`}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Seleziona i pazienti da aggiungere al gruppo..."
+                      size="small"
+                      helperText="Opzionale - puoi aggiungere membri anche dopo la creazione del gruppo"
+                    />
+                  )}
+                  renderTags={(tagValue, getTagProps) =>
+                    tagValue.map((option, index) => {
+                      const { key, ...chipProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          key={option.id}
+                          label={`${option.nome || ''} ${option.cognome || ''}`}
+                          {...chipProps}
+                          size="small"
+                          color="secondary"
+                        />
+                      );
+                    })
+                  }
+                  loading={loadingOptions}
+                  noOptionsText="Nessun paziente trovato"
                 />
               </Box>
             </Stack>
-            
-            <Box>
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                Luogo Incontri
-              </Typography>
-              <TextField
-                fullWidth
-                value={formData.meeting_location}
-                onChange={(e) => handleInputChange('meeting_location', e.target.value)}
-                placeholder="es. Sala A - Piano 1, Studio 205"
-                size="small"
-              />
-            </Box>
           </Box>
               
           <Divider />

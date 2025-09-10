@@ -3,6 +3,7 @@ const Group = require('../models/Group');
 const GroupMember = require('../models/GroupMember');
 const { 
   validateGroup, 
+  validateGroupCreate,
   validateGroupUpdate, 
   validateGroupFilters, 
   validateId 
@@ -93,18 +94,17 @@ router.get('/:id', validateId, async (req, res) => {
 });
 
 // POST /groups - Crea nuovo gruppo
-router.post('/', validateGroup, async (req, res) => {
+router.post('/', validateGroupCreate, async (req, res) => {
   try {
     const {
       name,
       description,
-      group_type,
-      max_members,
-      start_date,
-      end_date,
       meeting_frequency,
-      meeting_location
+      conductors = [],
+      members = []
     } = req.body;
+
+    console.log(`[POST /groups] Creating group with:`, { name, description, meeting_frequency, conductors, members });
 
     // TODO: Ottieni created_by dal token JWT
     const created_by = 1; // Placeholder - da implementare con autenticazione
@@ -112,16 +112,45 @@ router.post('/', validateGroup, async (req, res) => {
     const groupData = {
       name,
       description,
-      group_type,
-      max_members,
-      start_date,
-      end_date,
+      group_type: 'support', // Default type
+      max_members: 50, // Default max members
       meeting_frequency,
-      meeting_location,
+      status: 'active',
       created_by
     };
 
     const newGroup = await Group.create(groupData);
+    console.log(`[POST /groups] Group created with ID:`, newGroup.id);
+
+    // Add conductors if provided
+    if (conductors.length > 0) {
+      for (const conductorId of conductors) {
+        const conductorData = {
+          group_id: newGroup.id,
+          user_id: parseInt(conductorId, 10),
+          patient_id: null,
+          member_type: 'psychologist',
+          created_by
+        };
+        await GroupMember.addMember(conductorData);
+        console.log(`[POST /groups] Added conductor:`, conductorId);
+      }
+    }
+
+    // Add members if provided
+    if (members.length > 0) {
+      for (const memberId of members) {
+        const memberData = {
+          group_id: newGroup.id,
+          patient_id: parseInt(memberId, 10),
+          user_id: null,
+          member_type: 'patient',
+          created_by
+        };
+        await GroupMember.addMember(memberData);
+        console.log(`[POST /groups] Added member:`, memberId);
+      }
+    }
     
     res.status(201).json({
       success: true,

@@ -290,7 +290,10 @@ const GroupsPageNew = () => {
                     
                     <TableCell>
                       <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                        {group.created_by_username || '-'}
+                        {group.conductors && group.conductors.length > 0 
+                          ? group.conductors.filter(c => c !== null).join(', ') 
+                          : '-'
+                        }
                       </Typography>
                     </TableCell>
                     
