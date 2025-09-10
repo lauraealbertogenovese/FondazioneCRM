@@ -57,8 +57,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
   const [newDocument, setNewDocument] = useState({
     file: null,
     category: 'medical_report',
-    description: '',
-    tags: ''
+    description: ''
   });
 
   const documentCategories = {
@@ -138,7 +137,6 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       formData.append('file', newDocument.file);
       formData.append('category', newDocument.category);
       formData.append('description', newDocument.description);
-      formData.append('tags', newDocument.tags);
 
       // Real API upload
       let response;
@@ -153,7 +151,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
 
       // Refresh documents list
       await fetchDocuments();
-      setNewDocument({ file: null, category: 'medical_report', description: '', tags: '' });
+      setNewDocument({ file: null, category: 'medical_report', description: '' });
       setUploadDialogOpen(false);
       setUploadProgress(0);
 
@@ -407,19 +405,6 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
                       {formatFileSize(document.size)} • {new Date(document.uploaded_at).toLocaleDateString('it-IT')}
                     </Typography>
                     
-                    {document.tags && (
-                      <Box sx={{ mt: 1 }}>
-                        {document.tags.split(',').map((tag, index) => (
-                          <Chip 
-                            key={index}
-                            label={tag.trim()} 
-                            size="small" 
-                            variant="outlined"
-                            sx={{ mr: 0.5, fontSize: '0.7rem' }}
-                          />
-                        ))}
-                      </Box>
-                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -487,15 +472,6 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
               disabled={uploading}
             />
 
-            {/* Tags */}
-            <TextField
-              label="Tag"
-              value={newDocument.tags}
-              onChange={(e) => setNewDocument({ ...newDocument, tags: e.target.value })}
-              placeholder="tag1, tag2, tag3..."
-              helperText="Separare i tag con virgole"
-              disabled={uploading}
-            />
 
             {/* Upload Progress */}
             {uploading && (
@@ -509,13 +485,34 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setUploadDialogOpen(false)} disabled={uploading}>
+          <Button 
+            onClick={() => setUploadDialogOpen(false)} 
+            disabled={uploading}
+            sx={{
+              color: theme.palette.text.primary,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+              }
+            }}
+          >
             Annulla
           </Button>
           <Button 
             variant="contained" 
             onClick={handleFileUpload}
             disabled={!newDocument.file || uploading}
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+              },
+              '&:disabled': {
+                backgroundColor: theme.palette.action.disabledBackground,
+                color: theme.palette.action.disabled,
+              }
+            }}
           >
             {uploading ? 'Caricamento...' : 'Carica'}
           </Button>

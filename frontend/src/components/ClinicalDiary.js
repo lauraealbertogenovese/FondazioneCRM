@@ -96,8 +96,7 @@ const ClinicalDiary = ({ patientId, clinicalRecordId, showAddButton = true }) =>
       const entries = (recordsResponse.data || []).map(record => ({
         id: record.id,
         type: record.record_type || 'consultation',
-        content: record.description || record.diagnosis || record.title || 'Record clinico',
-        notes: record.notes || '',
+        content: record.notes || record.description || 'Record clinico',
         created_at: record.created_at,
         author: record.created_by_username || user?.username || 'Utente',
         author_id: record.created_by
@@ -368,15 +367,6 @@ const ClinicalDiary = ({ patientId, clinicalRecordId, showAddButton = true }) =>
                       <Typography variant="body1" sx={{ mb: 1, lineHeight: 1.6 }}>
                         {entry.content}
                       </Typography>
-                      
-                      {entry.notes && (
-                        <>
-                          <Divider sx={{ my: 1 }} />
-                          <Typography variant="body2" color="text.secondary">
-                            <strong>Note:</strong> {entry.notes}
-                          </Typography>
-                        </>
-                      )}
                     </Box>
                   </Stack>
                 </CardContent>
@@ -468,7 +458,7 @@ const ClinicalDiary = ({ patientId, clinicalRecordId, showAddButton = true }) =>
               label="Contenuto"
               multiline
               rows={4}
-              value={editEntry.content}
+              value={editEntry.content || ''}
               onChange={(e) => setEditEntry({ ...editEntry, content: e.target.value })}
               placeholder="Descrivi l'intervento, osservazione o trattamento..."
               required

@@ -156,25 +156,81 @@ class ClinicalRecord {
   // Aggiorna cartella clinica
   static async update(id, updateData) {
     const {
+      title,
+      description,
+      notes,
+      record_type,
       record_number,
       status,
       diagnosis,
-      treatment_plan,
-      notes
+      treatment_plan
     } = updateData;
+
+    // Build dynamic query based on provided fields
+    const updateFields = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (title !== undefined) {
+      updateFields.push(`title = $${paramIndex}`);
+      values.push(title);
+      paramIndex++;
+    }
+
+    if (description !== undefined) {
+      updateFields.push(`description = $${paramIndex}`);
+      values.push(description);
+      paramIndex++;
+    }
+
+    if (notes !== undefined) {
+      updateFields.push(`notes = $${paramIndex}`);
+      values.push(notes);
+      paramIndex++;
+    }
+
+    if (record_type !== undefined) {
+      updateFields.push(`record_type = $${paramIndex}`);
+      values.push(record_type);
+      paramIndex++;
+    }
+
+    if (record_number !== undefined) {
+      updateFields.push(`record_number = $${paramIndex}`);
+      values.push(record_number);
+      paramIndex++;
+    }
+
+    if (status !== undefined) {
+      updateFields.push(`status = $${paramIndex}`);
+      values.push(status);
+      paramIndex++;
+    }
+
+    if (diagnosis !== undefined) {
+      updateFields.push(`diagnosis = $${paramIndex}`);
+      values.push(diagnosis);
+      paramIndex++;
+    }
+
+    if (treatment_plan !== undefined) {
+      updateFields.push(`treatment_plan = $${paramIndex}`);
+      values.push(treatment_plan);
+      paramIndex++;
+    }
+
+    // Always update the updated_at timestamp
+    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+
+    // Add the id parameter
+    values.push(id);
 
     const query = `
       UPDATE clinical.clinical_records 
-      SET record_number = $1, status = $2, diagnosis = $3, 
-          treatment_plan = $4, notes = $5, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $6
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramIndex}
       RETURNING *
     `;
-
-    const values = [
-      record_number, status, diagnosis, 
-      treatment_plan, notes, id
-    ];
 
     try {
       const result = await pool.query(query, values);
