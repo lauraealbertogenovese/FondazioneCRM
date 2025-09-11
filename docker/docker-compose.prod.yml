@@ -1,14 +1,13 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Database PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: fondazione-crm-postgres-prod
+    env_file:
+      - ../.env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-fondazione_crm}
-      POSTGRES_USER: ${POSTGRES_USER:-crm_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
@@ -23,19 +22,15 @@ services:
   api-gateway:
     build:
       context: ../backend/api-gateway
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.dev
     container_name: fondazione-crm-api-gateway-prod
     ports:
-      - "3000:3000"
+      - "3001:3001"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - AUTH_SERVICE_URL=http://auth-service:3001
-      - PATIENT_SERVICE_URL=http://patient-service:3002
-      - CLINICAL_SERVICE_URL=http://clinical-service:3003
-      - GROUP_SERVICE_URL=http://group-service:3004
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
-      - JWT_SECRET=${JWT_SECRET}
+      - PORT=3001
     depends_on:
       - postgres
       - auth-service
@@ -54,11 +49,11 @@ services:
     container_name: fondazione-crm-auth-service-prod
     ports:
       - "3001:3001"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
-      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - postgres
     networks:
@@ -73,10 +68,11 @@ services:
     container_name: fondazione-crm-patient-service-prod
     ports:
       - "3002:3002"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=production
       - PORT=3002
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
     depends_on:
       - postgres
     networks:
@@ -91,10 +87,11 @@ services:
     container_name: fondazione-crm-clinical-service-prod
     ports:
       - "3003:3003"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=production
       - PORT=3003
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
     depends_on:
       - postgres
     networks:
@@ -109,10 +106,11 @@ services:
     container_name: fondazione-crm-group-service-prod
     ports:
       - "3004:3004"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=production
       - PORT=3004
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fondazione_crm}
     depends_on:
       - postgres
     networks:
@@ -127,8 +125,8 @@ services:
     container_name: fondazione-crm-frontend-prod
     ports:
       - "80:80"
-    environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3000}
+    env_file:
+      - ../.env
     depends_on:
       - api-gateway
     networks:
