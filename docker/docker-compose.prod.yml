@@ -22,7 +22,7 @@ services:
   api-gateway:
     build:
       context: ../backend/api-gateway
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     container_name: fondazione-crm-api-gateway-prod
     ports:
       - "3001:3001"
@@ -48,12 +48,12 @@ services:
       dockerfile: Dockerfile.prod
     container_name: fondazione-crm-auth-service-prod
     ports:
-      - "3001:3001"
+      - "3002:3002"
     env_file:
       - ../.env
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=3002
     depends_on:
       - postgres
     networks:
@@ -67,12 +67,12 @@ services:
       dockerfile: Dockerfile.prod
     container_name: fondazione-crm-patient-service-prod
     ports:
-      - "3002:3002"
+      - "3003:3003"
     env_file:
       - ../.env
     environment:
       - NODE_ENV=production
-      - PORT=3002
+      - PORT=3003
     depends_on:
       - postgres
     networks:
@@ -86,12 +86,12 @@ services:
       dockerfile: Dockerfile.prod
     container_name: fondazione-crm-clinical-service-prod
     ports:
-      - "3003:3003"
+      - "3004:3004"
     env_file:
       - ../.env
     environment:
       - NODE_ENV=production
-      - PORT=3003
+      - PORT=3004
     depends_on:
       - postgres
     networks:
@@ -105,12 +105,12 @@ services:
       dockerfile: Dockerfile.prod
     container_name: fondazione-crm-group-service-prod
     ports:
-      - "3004:3004"
+      - "3005:3005"
     env_file:
       - ../.env
     environment:
       - NODE_ENV=production
-      - PORT=3004
+      - PORT=3005
     depends_on:
       - postgres
     networks:
