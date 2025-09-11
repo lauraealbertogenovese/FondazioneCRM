@@ -1,6 +1,96 @@
 version: "3.8"
 
 services:
+  # Patient Service (starts first to create patient tables)
+  patient-service:
+    build:
+      context: ../backend/services/patient
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-patient-service-prod
+    ports:
+      - "3003:3003"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ../backend/services/auth
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-auth-service-prod
+    ports:
+      - "3002:3002"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Clinical Service
+  clinical-service:
+    build:
+      context: ../backend/services/clinical
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-clinical-service-prod
+    ports:
+      - "3004:3004"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+    depends_on:
+      - patient-service
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Group Service
+  group-service:
+    build:
+      context: ../backend/services/group
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-group-service-prod
+    ports:
+      - "3005:3005"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+    networks:
+      - crm-network
+    restart: unless-stopped
+
+  # Billing Service (depends on patient service tables)
+  billing-service:
+    build:
+      context: ../backend/services/billing
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-billing-service-prod
+    ports:
+      - "3006:3006"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+    depends_on:
+      - patient-service
+      - clinical-service
+    networks:
+      - crm-network
+    restart: unless-stopped
+
   # API Gateway
   api-gateway:
     build:
@@ -24,96 +114,17 @@ services:
       - crm-network
     restart: unless-stopped
 
-  # Auth Service
-  auth-service:
-    build:
-      context: ../backend/services/auth
-      dockerfile: Dockerfile.prod
-    container_name: fondazione-crm-auth-service-prod
-    ports:
-      - "3002:3002"
-    env_file:
-      - ../.env
-    environment:
-      - NODE_ENV=production
-      - PORT=3002
-    networks:
-      - crm-network
-    restart: unless-stopped
-
-  # Patient Service
-  patient-service:
-    build:
-      context: ../backend/services/patient
-      dockerfile: Dockerfile.prod
-    container_name: fondazione-crm-patient-service-prod
-    ports:
-      - "3003:3003"
-    env_file:
-      - ../.env
-    environment:
-      - NODE_ENV=production
-      - PORT=3003
-    networks:
-      - crm-network
-    restart: unless-stopped
-
-  # Clinical Service
-  clinical-service:
-    build:
-      context: ../backend/services/clinical
-      dockerfile: Dockerfile.prod
-    container_name: fondazione-crm-clinical-service-prod
-    ports:
-      - "3004:3004"
-    env_file:
-      - ../.env
-    environment:
-      - NODE_ENV=production
-      - PORT=3004
-    networks:
-      - crm-network
-    restart: unless-stopped
-
-  # Group Service
-  group-service:
-    build:
-      context: ../backend/services/group
-      dockerfile: Dockerfile.prod
-    container_name: fondazione-crm-group-service-prod
-    ports:
-      - "3005:3005"
-    env_file:
-      - ../.env
-    environment:
-      - NODE_ENV=production
-      - PORT=3005
-    networks:
-      - crm-network
-    restart: unless-stopped
-
-  # Billing Service
-  billing-service:
-    build:
-      context: ../backend/services/billing
-      dockerfile: Dockerfile.prod
-    container_name: fondazione-crm-billing-service-prod
-    ports:
-      - "3006:3006"
-    env_file:
-      - ../.env
-    environment:
-      - NODE_ENV=production
-      - PORT=3006
-    networks:
-      - crm-network
-    restart: unless-stopped
-
   # Frontend React
   frontend:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
+        - REACT_APP_AUTH_SERVICE_URL=${REACT_APP_AUTH_SERVICE_URL}
+        - REACT_APP_PATIENT_SERVICE_URL=${REACT_APP_PATIENT_SERVICE_URL}
+        - REACT_APP_CLINICAL_SERVICE_URL=${REACT_APP_CLINICAL_SERVICE_URL}
+        - REACT_APP_GROUP_SERVICE_URL=${REACT_APP_GROUP_SERVICE_URL}
     container_name: fondazione-crm-frontend-prod
     ports:
       - "3007:80"
