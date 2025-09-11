@@ -1,23 +1,6 @@
 version: "3.8"
 
 services:
-  # Database PostgreSQL
-  postgres:
-    image: postgres:15-alpine
-    container_name: fondazione-crm-postgres-prod
-    env_file:
-      - ../.env
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
-    networks:
-      - crm-network
-    restart: unless-stopped
-
   # API Gateway
   api-gateway:
     build:
@@ -32,7 +15,6 @@ services:
       - NODE_ENV=production
       - PORT=3001
     depends_on:
-      - postgres
       - auth-service
       - patient-service
       - clinical-service
@@ -55,8 +37,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3002
-    depends_on:
-      - postgres
     networks:
       - crm-network
     restart: unless-stopped
@@ -74,8 +54,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3003
-    depends_on:
-      - postgres
     networks:
       - crm-network
     restart: unless-stopped
@@ -93,8 +71,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3004
-    depends_on:
-      - postgres
     networks:
       - crm-network
     restart: unless-stopped
@@ -112,8 +88,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3005
-    depends_on:
-      - postgres
     networks:
       - crm-network
     restart: unless-stopped
@@ -131,8 +105,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3006
-    depends_on:
-      - postgres
     networks:
       - crm-network
     restart: unless-stopped
@@ -144,7 +116,7 @@ services:
       dockerfile: Dockerfile
     container_name: fondazione-crm-frontend-prod
     ports:
-      - "80:80"
+      - "3007:80"
     env_file:
       - ../.env
     depends_on:
@@ -152,9 +124,6 @@ services:
     networks:
       - crm-network
     restart: unless-stopped
-
-volumes:
-  postgres_data_prod:
 
 networks:
   crm-network:
