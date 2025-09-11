@@ -36,6 +36,7 @@ import {
   Psychology as PsychologyIcon,
   Work as OperatorIcon,
   Email as EmailIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import {
   Table,
@@ -49,6 +50,7 @@ import {
 import { userService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import PermissionEditor from '../components/PermissionEditor';
 
 const UsersPageNew = () => {
   const theme = useTheme();
@@ -60,6 +62,8 @@ const UsersPageNew = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
+  const [userPermissions, setUserPermissions] = useState({});
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -111,6 +115,12 @@ const UsersPageNew = () => {
     handleMenuClose();
   };
 
+  const handlePermissions = () => {
+    setUserPermissions(selectedUser.permissions || {});
+    setPermissionDialogOpen(true);
+    handleMenuClose();
+  };
+
   const confirmDelete = async () => {
     try {
       await userService.deleteUser(selectedUser.id);
@@ -119,6 +129,16 @@ const UsersPageNew = () => {
       setSelectedUser(null);
     } catch (error) {
       console.error('Errore nella cancellazione:', error);
+    }
+  };
+
+  const handlePermissionSave = async (permissions) => {
+    try {
+      await userService.updateUserPermissions(selectedUser.id, permissions);
+      setPermissionDialogOpen(false);
+      await fetchUsers(); // Ricarica la lista utenti
+    } catch (error) {
+      console.error('Errore nel salvataggio permessi:', error);
     }
   };
 
@@ -508,6 +528,12 @@ const UsersPageNew = () => {
             Modifica Dati
           </MenuItem>
         )}
+        {user?.role === 'admin' && selectedUser?.role !== 'admin' && (
+          <MenuItem onClick={handlePermissions} sx={{ fontSize: '0.875rem' }}>
+            <SecurityIcon sx={{ fontSize: 18, mr: 1.5 }} />
+            Modifica Permessi
+          </MenuItem>
+        )}
         {hasPermission('users.delete') && selectedUser?.id !== user?.id && selectedUser?.role !== 'admin' && (
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
             <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
@@ -567,6 +593,54 @@ const UsersPageNew = () => {
             }}
           >
             Disattiva
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Permission Editor Dialog */}
+      <Dialog 
+        open={permissionDialogOpen} 
+        onClose={() => setPermissionDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+        sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
+      >
+        <DialogTitle sx={{ 
+          bgcolor: 'primary.main', 
+          color: 'white', 
+          fontWeight: 600 
+        }}>
+          Modifica Permessi - {selectedUser?.first_name} {selectedUser?.last_name}
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          <PermissionEditor
+            permissions={userPermissions}
+            onChange={setUserPermissions}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button 
+            onClick={() => setPermissionDialogOpen(false)}
+            sx={{
+              color: 'text.secondary',
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              }
+            }}
+          >
+            Annulla
+          </Button>
+          <Button 
+            onClick={() => handlePermissionSave(userPermissions)}
+            variant="contained"
+            sx={{
+              backgroundColor: '#3b82f6',
+              '&:hover': {
+                backgroundColor: '#2563eb',
+              }
+            }}
+          >
+            Salva Permessi
           </Button>
         </DialogActions>
       </Dialog>

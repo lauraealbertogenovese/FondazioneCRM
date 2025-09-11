@@ -344,6 +344,62 @@ router.put('/roles/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin
   }
 });
 
+// DELETE /roles/:id - Delete role (admin only)
+router.delete('/roles/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!Number.isInteger(Number(id)) || Number(id) < 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid role ID'
+      });
+    }
+
+    // Check if role exists
+    const role = await Role.findById(id);
+    if (!role) {
+      return res.status(404).json({
+        success: false,
+        error: 'Role not found'
+      });
+    }
+
+    // Check if role is not a system role (admin, doctor, etc.)
+    const systemRoles = ['admin', 'doctor', 'psychologist', 'operator'];
+    if (systemRoles.includes(role.name)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot delete system roles'
+      });
+    }
+
+    // Check if role has users assigned
+    const users = await role.getUsers();
+    if (users && users.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot delete role with assigned users'
+      });
+    }
+
+    // Delete role
+    await role.delete();
+
+    res.json({
+      success: true,
+      message: 'Role deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete role error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
 // GET /roles/:id/users - Get users with specific role (admin only)
 router.get('/roles/:id/users', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
   try {
@@ -430,6 +486,84 @@ router.delete('/roles/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAd
     });
   } catch (error) {
     console.error('Delete role error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+});
+
+// Update user permissions
+router.put('/users/:id/permissions', AuthMiddleware.verifyToken, AuthMiddleware.requireRole('admin'), async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { permissions } = req.body;
+
+    if (isNaN(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid user ID'
+      });
+    }
+
+    if (!permissions || typeof permissions !== 'object') {
+      return res.status(400).json({
+        success: false,
+        error: 'Permissions must be a valid object'
+      });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Prevent modifying admin user permissions
+    if (existingUser.role === 'admin') {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot modify permissions for admin users'
+      });
+    }
+
+    // Update user permissions
+    const queryText = `
+      UPDATE auth.users 
+      SET permissions = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, username, email, first_name, last_name, permissions
+    `;
+
+    const result = await query(queryText, [JSON.stringify(permissions), userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const updatedUser = result.rows[0];
+
+    res.json({
+      success: true,
+      message: 'User permissions updated successfully',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        first_name: updatedUser.first_name,
+        last_name: updatedUser.last_name,
+        permissions: updatedUser.permissions
+      }
+    });
+
+  } catch (error) {
+    console.error('Update user permissions error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'

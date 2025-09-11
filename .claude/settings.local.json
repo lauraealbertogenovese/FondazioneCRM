@@ -39,7 +39,8 @@
       "Bash(docker container prune:*)",
       "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT id, nome, cognome, is_active FROM patient.patients ORDER BY id;\")",
       "Bash(docker stop:*)",
-      "Bash(docker rm:*)"
+      "Bash(docker rm:*)",
+      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT id, name, description FROM auth.roles ORDER BY id;\")"
     ],
     "deny": [],
     "ask": []

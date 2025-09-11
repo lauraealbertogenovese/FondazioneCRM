@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { userService, authService } from '../services/api';
+import roleService from '../services/roleService';
 
 const UserFormPage = () => {
   const { id } = useParams();
@@ -38,13 +39,10 @@ const UserFormPage = () => {
   
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [rolesLoading, setRolesLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  // Ruoli limitati a Clinico e Amministrazione
-  const availableRoles = [
-    { id: 'clinico', name: 'clinico', display_name: 'Clinico' },
-    { id: 'amministrazione', name: 'amministrazione', display_name: 'Amministrazione' }
-  ];
+  const [availableRoles, setAvailableRoles] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -55,18 +53,56 @@ const UserFormPage = () => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
-    role_id: 'clinico',
+    role_id: 1,
     is_active: true
   });
 
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    loadRoles();
     if (isEdit) {
       loadUser();
     }
   }, [id, isEdit]);
 
+  // Carica i ruoli disponibili dal database con mappatura per UI
+  const loadRoles = async () => {
+    try {
+      setRolesLoading(true);
+      const roles = await roleService.getRoles();
+      
+      // Filtra e mappa solo i ruoli desiderati con nomi user-friendly
+      const roleMapping = {
+        1: { id: 1, name: 'admin', display_name: 'Amministrazione' },
+        2: { id: 2, name: 'doctor', display_name: 'Clinico' }
+      };
+      
+      const filteredRoles = roles
+        .filter(role => roleMapping[role.id])
+        .map(role => ({
+          ...role,
+          display_name: roleMapping[role.id].display_name
+        }));
+      
+      setAvailableRoles(filteredRoles);
+      
+      // Set default role_id se non già impostato
+      if (!isEdit && filteredRoles.length > 0) {
+        setFormData(prev => ({ ...prev, role_id: filteredRoles[0].id }));
+      }
+    } catch (error) {
+      console.error('Errore nel caricamento dei ruoli:', error);
+      setError('Errore nel caricamento dei ruoli');
+      // Fallback ai ruoli hardcoded in caso di errore
+      setAvailableRoles([
+        { id: 1, name: 'admin', display_name: 'Amministrazione' },
+        { id: 2, name: 'doctor', display_name: 'Clinico' }
+      ]);
+    } finally {
+      setRolesLoading(false);
+    }
+  };
 
   const loadUser = async () => {
     setLoading(true);
@@ -79,7 +115,7 @@ const UserFormPage = () => {
         confirmPassword: '',
         first_name: response.user.first_name || '',
         last_name: response.user.last_name || '',
-        role_id: response.user.role_name || response.user.role_id || 'clinico',
+        role_id: response.user.role_id || 1,
         is_active: response.user.is_active !== false
       });
     } catch (error) {
@@ -143,7 +179,7 @@ const UserFormPage = () => {
     }
 
     // Role validation
-    if (!formData.role_id) {
+    if (!formData.role_id || !Number.isInteger(Number(formData.role_id))) {
       newErrors.role_id = 'Ruolo obbligatorio';
     }
 
@@ -168,7 +204,7 @@ const UserFormPage = () => {
         email: formData.email.trim().toLowerCase(),
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
-        role_id: formData.role_id,
+        role_id: Number(formData.role_id),
         is_active: formData.is_active
       };
 
@@ -404,22 +440,26 @@ const UserFormPage = () => {
                     <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
                       Ruolo *
                     </Typography>
-                    <RadioGroup
-                      name="role_id"
-                      value={formData.role_id}
-                      onChange={handleChange}
-                      row
-                    >
-                      {availableRoles.map(role => (
-                        <FormControlLabel
-                          key={role.id}
-                          value={role.id}
-                          control={<Radio size="small" />}
-                          label={role.display_name}
-                          sx={{ mr: 3 }}
-                        />
-                      ))}
-                    </RadioGroup>
+                    {rolesLoading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <RadioGroup
+                        name="role_id"
+                        value={formData.role_id}
+                        onChange={handleChange}
+                        row
+                      >
+                        {availableRoles.map(role => (
+                          <FormControlLabel
+                            key={role.id}
+                            value={role.id}
+                            control={<Radio size="small" />}
+                            label={role.display_name}
+                            sx={{ mr: 3 }}
+                          />
+                        ))}
+                      </RadioGroup>
+                    )}
                     {errors.role_id && (
                       <Typography variant="caption" color="error" sx={{ ml: 1, mt: 0.5, display: 'block' }}>
                         {errors.role_id}

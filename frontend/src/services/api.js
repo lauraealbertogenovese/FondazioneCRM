@@ -205,6 +205,11 @@ export const userService = {
     const response = await api.get('/roles');
     return response.data;
   },
+
+  updateUserPermissions: async (userId, permissions) => {
+    const response = await api.put(`/users/${userId}/permissions`, { permissions });
+    return response.data;
+  },
 };
 
 // Clinical Service API

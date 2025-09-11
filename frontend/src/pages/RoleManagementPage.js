@@ -118,8 +118,8 @@ const RoleManagementPage = ({ embedded = false }) => {
   const handleEditPermissions = () => {
     if (selectedRole) {
       setPermissionDialogOpen(true);
+      setAnchorEl(null); // Chiudi solo il menu, mantieni selectedRole
     }
-    handleMenuClose();
   };
 
   const handleViewUsers = async () => {
@@ -353,21 +353,29 @@ const RoleManagementPage = ({ embedded = false }) => {
       </Dialog>
 
       {/* Permission Editor Dialog */}
-      <Dialog open={permissionDialogOpen} onClose={() => setPermissionDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={permissionDialogOpen} onClose={() => {
+        setPermissionDialogOpen(false);
+        setSelectedRole(null);
+      }} maxWidth="md" fullWidth>
         <DialogTitle>
           Modifica Permessi - {selectedRole?.name}
         </DialogTitle>
         <DialogContent>
-          {selectedRole && (
+          {selectedRole ? (
             <PermissionEditor
               permissions={selectedRole.permissions || {}}
               onChange={handlePermissionChange}
             />
+          ) : (
+            <div>Nessun ruolo selezionato</div>
           )}
         </DialogContent>
         <DialogActions>
           <Button 
-            onClick={() => setPermissionDialogOpen(false)}
+            onClick={() => {
+              setPermissionDialogOpen(false);
+              setSelectedRole(null);
+            }}
             variant="outlined"
             color="inherit"
             sx={{

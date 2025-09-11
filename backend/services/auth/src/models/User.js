@@ -39,7 +39,7 @@ class User {
   // Find user by ID
   static async findById(id) {
     const queryText = `
-      SELECT u.*, r.name as role_name, r.permissions
+      SELECT u.*, r.name as role_name, r.permissions as role_permissions
       FROM auth.users u
       LEFT JOIN auth.roles r ON u.role_id = r.id
       WHERE u.id = $1
@@ -51,7 +51,7 @@ class User {
       if (result.rows[0].role_name) {
         user.role = {
           name: result.rows[0].role_name,
-          permissions: result.rows[0].permissions
+          permissions: result.rows[0].role_permissions
         };
       }
       return user;
@@ -62,7 +62,7 @@ class User {
   // Find user by username
   static async findByUsername(username) {
     const queryText = `
-      SELECT u.*, r.name as role_name, r.permissions
+      SELECT u.*, r.name as role_name, r.permissions as role_permissions
       FROM auth.users u
       LEFT JOIN auth.roles r ON u.role_id = r.id
       WHERE u.username = $1
@@ -74,7 +74,7 @@ class User {
       if (result.rows[0].role_name) {
         user.role = {
           name: result.rows[0].role_name,
-          permissions: result.rows[0].permissions
+          permissions: result.rows[0].role_permissions
         };
       }
       return user;
@@ -85,7 +85,7 @@ class User {
   // Find user by email
   static async findByEmail(email) {
     const queryText = `
-      SELECT u.*, r.name as role_name, r.permissions
+      SELECT u.*, r.name as role_name, r.permissions as role_permissions
       FROM auth.users u
       LEFT JOIN auth.roles r ON u.role_id = r.id
       WHERE u.email = $1
@@ -97,7 +97,7 @@ class User {
       if (result.rows[0].role_name) {
         user.role = {
           name: result.rows[0].role_name,
-          permissions: result.rows[0].permissions
+          permissions: result.rows[0].role_permissions
         };
       }
       return user;
@@ -122,7 +122,7 @@ class User {
   // Find users by role
   static async findByRole(roleId) {
     const queryText = `
-      SELECT u.*, r.name as role_name, r.permissions
+      SELECT u.*, r.name as role_name, r.permissions as role_permissions
       FROM auth.users u
       LEFT JOIN auth.roles r ON u.role_id = r.id
       WHERE u.role_id = $1 AND u.is_active = true
@@ -135,7 +135,7 @@ class User {
       if (row.role_name) {
         user.role = {
           name: row.role_name,
-          permissions: row.permissions
+          permissions: row.role_permissions
         };
       }
       return user;
@@ -253,24 +253,44 @@ class User {
 
   // Check if user has permission
   hasPermission(permission) {
+    // First check user-specific permissions
+    if (this.permissions && typeof this.permissions === 'object') {
+      const userPermissionResult = this._checkPermissionInObject(permission, this.permissions);
+      if (userPermissionResult !== null) {
+        return userPermissionResult;
+      }
+    }
+
+    // Fallback to role permissions
     if (!this.role || !this.role.permissions) return false;
     
-    // Check for wildcard permission
+    // Check for wildcard permission in role
     if (this.role.permissions.all === true) return true;
+    
+    // Check specific permission in role
+    return this._checkPermissionInObject(permission, this.role.permissions) === true;
+  }
+
+  // Helper method to check permission in a permission object
+  _checkPermissionInObject(permission, permissionObj) {
+    if (!permissionObj || typeof permissionObj !== 'object') return null;
+    
+    // Check for wildcard permission
+    if (permissionObj.all === true) return true;
     
     // Check specific permission
     const permissionParts = permission.split('.');
-    let current = this.role.permissions;
+    let current = permissionObj;
     
     for (const part of permissionParts) {
       if (current && typeof current === 'object' && current[part] !== undefined) {
         current = current[part];
       } else {
-        return false;
+        return null; // Permission path not found
       }
     }
     
-    return current === true;
+    return current === true ? true : null;
   }
 
   // Get public user data
