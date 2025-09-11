@@ -30,11 +30,9 @@ import {
   Settings as SettingsIcon,
   Tune as TuneIcon,
   AdminPanelSettings as AdminIcon,
-  Person as PersonIcon,
   Monitor as MonitorIcon,
   Assessment as AnalyticsIcon,
   Storage as DatabaseIcon,
-  Shield as ShieldIcon,
   Notifications as NotificationsIcon,
   Language as LanguageIcon,
   Backup as BackupIcon
@@ -434,38 +432,6 @@ const AdminSettingsPage = () => {
       permission: 'admin',
       component: <SystemMonitoringSection />,
       category: 'Sistema'
-    },
-    {
-      key: 'users',
-      label: 'Gestione Utenti Avanzata',
-      icon: <PersonIcon />,
-      description: 'Strumenti avanzati per la gestione utenti',
-      permission: 'admin',
-      disabled: true,
-      component: <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-        <PersonIcon sx={{ fontSize: 64, mb: 2 }} />
-        <Typography variant="h6">Gestione Utenti Avanzata</Typography>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Questa sezione è in fase di sviluppo
-        </Typography>
-      </Box>,
-      category: 'Sicurezza'
-    },
-    {
-      key: 'security',
-      label: 'Centro Sicurezza',
-      icon: <ShieldIcon />,
-      description: 'Audit, compliance e sicurezza avanzata',
-      permission: 'admin',
-      disabled: true,
-      component: <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-        <ShieldIcon sx={{ fontSize: 64, mb: 2 }} />
-        <Typography variant="h6">Centro Sicurezza</Typography>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Questa sezione è in fase di sviluppo
-        </Typography>
-      </Box>,
-      category: 'Sicurezza'
     },
   ];
 
