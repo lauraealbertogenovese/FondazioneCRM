@@ -37,6 +37,7 @@ services:
       - patient-service
       - clinical-service
       - group-service
+      - billing-service
     networks:
       - crm-network
     restart: unless-stopped
@@ -117,11 +118,30 @@ services:
       - crm-network
     restart: unless-stopped
 
+  # Billing Service
+  billing-service:
+    build:
+      context: ../backend/services/billing
+      dockerfile: Dockerfile.prod
+    container_name: fondazione-crm-billing-service-prod
+    ports:
+      - "3006:3006"
+    env_file:
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+    depends_on:
+      - postgres
+    networks:
+      - crm-network
+    restart: unless-stopped
+
   # Frontend React
   frontend:
     build:
       context: ../frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: fondazione-crm-frontend-prod
     ports:
       - "80:80"
