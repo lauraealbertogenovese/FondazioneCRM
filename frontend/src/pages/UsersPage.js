@@ -37,7 +37,6 @@ import {
   MedicalServices as DoctorIcon,
   Psychology as PsychologyIcon,
   Work as OperatorIcon,
-  RemoveRedEye as ViewerIcon,
   TableView as TableViewIcon,
   Filter as FilterIcon,
 } from '@mui/icons-material';
@@ -154,15 +153,14 @@ const UsersPage = () => {
         bgColor: alpha(theme.palette.success.main, 0.1),
         textColor: theme.palette.success.main
       },
-      viewer: { 
-        label: 'Visualizzatore', 
-        color: 'default',
-        icon: ViewerIcon,
-        bgColor: alpha(theme.palette.grey[500], 0.1),
-        textColor: theme.palette.grey[600]
-      },
     };
-    return roleMap[role] || roleMap.viewer;
+    return roleMap[role] || { 
+      label: role || 'Sconosciuto', 
+      color: 'default',
+      icon: PersonIcon,
+      bgColor: alpha(theme.palette.grey[500], 0.1),
+      textColor: theme.palette.grey[600]
+    };
   };
 
   const getInitials = (firstName, lastName) => {

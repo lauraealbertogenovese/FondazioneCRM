@@ -35,7 +35,6 @@ import {
   MedicalServices as DoctorIcon,
   Psychology as PsychologyIcon,
   Work as OperatorIcon,
-  RemoveRedEye as ViewerIcon,
   Email as EmailIcon,
 } from '@mui/icons-material';
 import {
@@ -128,13 +127,9 @@ const UsersPageNew = () => {
       admin: { label: 'Amministratore', color: 'error' },
       doctor: { label: 'Clinico', color: 'primary' },
       psychologist: { label: 'Psicologo', color: 'secondary' },
-      social_worker: { label: 'Assistente Sociale', color: 'info' },
-      counselor: { label: 'Counselor', color: 'warning' },
-      operator: { label: 'Utente', color: 'success' },
-      volunteer: { label: 'Volontario', color: 'default' },
-      viewer: { label: 'Osservatore', color: 'default' },
+      operator: { label: 'Operatore', color: 'success' },
     };
-    return roleMap[role] || roleMap.viewer;
+    return roleMap[role] || { label: role || 'Sconosciuto', color: 'default' };
   };
 
   const getInitials = (firstName, lastName) => {
@@ -513,7 +508,7 @@ const UsersPageNew = () => {
             Modifica Dati
           </MenuItem>
         )}
-        {hasPermission('users.delete') && selectedUser?.id !== user?.id && (
+        {hasPermission('users.delete') && selectedUser?.id !== user?.id && selectedUser?.role !== 'admin' && (
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
             <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
             Disattiva Utente

@@ -139,6 +139,13 @@ router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, a
       });
     }
 
+    // Prevent deletion of admin users
+    if (user.role === 'admin') {
+      return res.status(400).json({
+        error: 'Cannot delete admin users'
+      });
+    }
+
     // Soft delete user
     await user.delete();
 

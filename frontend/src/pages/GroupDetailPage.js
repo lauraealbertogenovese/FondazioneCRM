@@ -150,7 +150,7 @@ const GroupDetailPage = () => {
       if (selectedOperator) {
         const conductorData = {
           user_id: parseInt(selectedOperator, 10),
-          member_type: 'psychologist', // Usa psychologist invece di conductor
+          member_type: 'conductor',
           notes: memberNotes
         };
         await groupService.addGroupMember(parseInt(id, 10), conductorData);
@@ -215,7 +215,7 @@ const GroupDetailPage = () => {
   const getMemberTypeLabel = (type) => {
     switch (type) {
       case 'patient': return 'Paziente';
-      case 'psychologist': return 'Conduttore';
+      case 'conductor': return 'Conduttore';
       default: return type;
     }
   };
@@ -223,7 +223,7 @@ const GroupDetailPage = () => {
   const getMemberTypeColor = (type) => {
     switch (type) {
       case 'patient': return 'primary';
-      case 'psychologist': return 'secondary';
+      case 'conductor': return 'secondary';
       default: return 'default';
     }
   };

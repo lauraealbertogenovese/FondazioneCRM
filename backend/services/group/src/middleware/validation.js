@@ -172,11 +172,11 @@ const memberSchema = Joi.object({
     }),
 
   member_type: Joi.string()
-    .valid('patient', 'psychologist', 'referente', 'observer')
+    .valid('patient', 'conductor')
     .default('patient')
     .messages({
       'string.base': 'Il tipo di membro deve essere una stringa',
-      'any.only': 'Il tipo di membro deve essere uno tra: patient, psychologist, referente, observer'
+      'any.only': 'Il tipo di membro deve essere uno tra: patient, conductor'
     }),
 
   role: Joi.string()
@@ -203,11 +203,11 @@ const memberSchema = Joi.object({
 // Schema per l'aggiornamento dei membri
 const memberUpdateSchema = Joi.object({
   member_type: Joi.string()
-    .valid('patient', 'psychologist', 'referente', 'observer')
+    .valid('patient', 'conductor')
     .optional()
     .messages({
       'string.base': 'Il tipo di membro deve essere una stringa',
-      'any.only': 'Il tipo di membro deve essere uno tra: patient, psychologist, referente, observer'
+      'any.only': 'Il tipo di membro deve essere uno tra: patient, conductor'
     }),
 
   role: Joi.string()

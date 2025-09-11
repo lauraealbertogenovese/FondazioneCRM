@@ -129,7 +129,7 @@ router.post('/', validateGroupCreate, async (req, res) => {
           group_id: newGroup.id,
           user_id: parseInt(conductorId, 10),
           patient_id: null,
-          member_type: 'psychologist',
+          member_type: 'conductor',
           created_by
         };
         await GroupMember.addMember(conductorData);
@@ -252,10 +252,10 @@ router.post('/:id/members', validateId, async (req, res) => {
       });
     }
 
-    if (member_type === 'psychologist' && !user_id) {
+    if (member_type === 'conductor' && !user_id) {
       return res.status(400).json({
         success: false,
-        error: 'user_id is required for psychologist members'
+        error: 'user_id is required for conductor members'
       });
     }
 
@@ -284,13 +284,13 @@ router.post('/:id/members', validateId, async (req, res) => {
     
     if (member_type === 'patient') {
       newMember = await GroupMember.addMember(memberData);
-    } else if (member_type === 'psychologist') {
-      // For psychologists/conductors, we need to modify the data structure
-      const psychologistData = {
+    } else if (member_type === 'conductor') {
+      // For conductors, we need to modify the data structure
+      const conductorData = {
         ...memberData,
-        patient_id: null // Psychologists don't have patient_id
+        patient_id: null // Conductors don't have patient_id
       };
-      newMember = await GroupMember.addMember(psychologistData);
+      newMember = await GroupMember.addMember(conductorData);
     }
     
     console.log(`[POST /groups/${id}/members] Member added successfully:`, newMember);

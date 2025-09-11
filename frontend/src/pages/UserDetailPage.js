@@ -73,11 +73,7 @@ const UserDetailPage = () => {
       admin: 'error',
       doctor: 'primary',
       psychologist: 'secondary',
-      social_worker: 'info',
-      counselor: 'success',
-      operator: 'default',
-      volunteer: 'warning',
-      viewer: 'default',
+      operator: 'success',
     };
     return colors[roleName] || 'default';
   };
