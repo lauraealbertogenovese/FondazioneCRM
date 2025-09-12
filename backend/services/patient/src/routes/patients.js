@@ -147,15 +147,11 @@ router.get('/patients/ts/:numero_tessera_sanitaria', AuthMiddleware.verifyToken,
 // POST /patients - Create new patient
 router.post('/patients', AuthMiddleware.verifyToken, AuthMiddleware.requirePermission('patients.write'), async (req, res) => {
   try {
-    console.log('Received patient data:', req.body);
     const patientData = PatientValidationUtils.sanitizeInput(req.body);
-    console.log('Sanitized patient data:', patientData);
     
     // Validate input
     const validation = PatientValidationUtils.validatePatientCreation(patientData);
-    console.log('Validation result:', validation);
     if (!validation.isValid) {
-      console.log('Validation errors:', validation.errors);
       return res.status(400).json({
         error: 'Validation failed',
         details: validation.errors
@@ -206,7 +202,10 @@ router.post('/patients', AuthMiddleware.verifyToken, AuthMiddleware.requirePermi
 router.put('/patients/:id', AuthMiddleware.verifyToken, AuthMiddleware.requirePermission('patients.write'), async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('🔄 UPDATE Patient - Raw body:', req.body);
     const updateData = PatientValidationUtils.sanitizeInput(req.body);
+    console.log('🧼 UPDATE Patient - Sanitized data:', updateData);
+    console.log('🩺 medico_curante field:', updateData.medico_curante, 'type:', typeof updateData.medico_curante);
     
     if (!Number.isInteger(Number(id)) || Number(id) < 1) {
       return res.status(400).json({

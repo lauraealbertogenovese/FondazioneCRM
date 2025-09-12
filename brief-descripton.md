@@ -50,17 +50,24 @@ Il sistema permette di definire permessi specifici per ogni pagina e funzionalit
 
 ### Anagrafica Paziente Completa:
 **Dati Personali:**
-- Nome, Cognome, Data di Nascita, Codice Fiscale
+- Nome, Cognome, Data di Nascita, Codice Fiscale, Numero Tessera Sanitaria
 - Contatti: telefono, email  
-- Stato Civile, Indirizzo di abitazione
-- Con chi abita (da solo, in famiglia, convivente)
+- Stato Civile, Professione, Indirizzo di abitazione (via, città, CAP, provincia)
+- Luogo di nascita, Sesso
 
-**Informazioni Contestuali:**
-- Lavoro, Modalità di contatto ("Come vi raggiunge")
+**Informazioni di Emergenza:**
+- Contatto di emergenza: nome, telefono, relazione
 
 **Dati Clinici:**
-- Sostanza di abuso primaria, Abusi secondari, Diagnosi
-- Stato "In Cura" / "Non in Cura" con switch funzionale
+- **Clinico di Riferimento**: Sistema di assegnazione medico curante con selezione autocomplete
+- Sostanza di abuso primaria, Abusi secondari (supporto array multipli)
+- Anamnesi medica, Allergie, Farmaci assunti
+- Stato "In Cura" / "Non in Cura" con visualizzazione chip colorato
+- Note cliniche generali
+
+**Consensi Privacy:**
+- Consenso trattamento dati (obbligatorio)
+- Consenso marketing (opzionale)
 
 ### Diario Clinico (Note Cronologiche) ✅:
 - **Aggiunta Note**: Interfaccia per inserire note testuali
@@ -208,6 +215,20 @@ Il sistema permette di definire permessi specifici per ogni pagina e funzionalit
 - **Data Cleanup**: Pulizia completa seed data inconsistenti (16 utenti rimossi)
 - **Foreign Key Handling**: Gestione sicura vincoli integrità referenziale
 - **UI Consistency**: Sincronizzazione perfetta tra tabelle utenti e role management
+
+### Implementazioni Sistema Clinico (Settembre 2025) ✅:
+- **Clinico di Riferimento**: Implementazione completa assegnazione medico curante ai pazienti
+  - Selezione autocomplete con ricerca per nome/cognome
+  - Display nome completo e ruolo del clinico
+  - Integrazione database con JOIN tables per dati completi
+- **Campi Paziente Avanzati**: Aggiunta supporto per professione, stato civile, sostanze di abuso
+  - Sostanza abuso primaria e secondaria (array multipli)  
+  - Schema database esteso con nuove colonne
+  - Validazione e sanitizzazione dati
+- **Patient Model Fix**: Risoluzione mapping campi JOIN nel constructor
+  - Aggiunta medico_curante_first_name, medico_curante_last_name, medico_curante_role
+  - Fix getPublicData() per includere tutti i campi clinici
+  - Correzione visualizzazione status "In Cura" / "Non in Cura"
 
 ### Compatibilità:
 - **Browser**: Testato su Chrome, Firefox, Safari, Edge

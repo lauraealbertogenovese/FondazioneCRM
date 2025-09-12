@@ -25,8 +25,18 @@ class Patient {
     this.consenso_trattamento_dati = data.consenso_trattamento_dati;
     this.consenso_marketing = data.consenso_marketing;
     this.note = data.note;
+    this.medico_curante = data.medico_curante;
+    this.sostanza_abuso = data.sostanza_abuso;
+    this.abusi_secondari = data.abusi_secondari;
+    this.professione = data.professione;
+    this.stato_civile = data.stato_civile;
     this.is_active = data.is_active;
     this.created_by = data.created_by;
+    this.created_by_username = data.created_by_username;
+    this.medico_curante_username = data.medico_curante_username;
+    this.medico_curante_first_name = data.medico_curante_first_name;
+    this.medico_curante_last_name = data.medico_curante_last_name;
+    this.medico_curante_role = data.medico_curante_role;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
   }
@@ -56,6 +66,11 @@ class Patient {
       consenso_trattamento_dati,
       consenso_marketing,
       note,
+      medico_curante,
+      sostanza_abuso,
+      abusi_secondari,
+      professione,
+      stato_civile,
       created_by
     } = patientData;
     
@@ -65,11 +80,12 @@ class Patient {
         luogo_nascita, sesso, indirizzo, citta, cap, provincia, telefono, email,
         anamnesi_medica, allergie, farmaci_assunti, contatto_emergenza_nome,
         contatto_emergenza_telefono, contatto_emergenza_relazione,
-        consenso_trattamento_dati, consenso_marketing, note, created_by
+        consenso_trattamento_dati, consenso_marketing, note, medico_curante, 
+        sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-        $17, $18, $19, $20, $21, $22, $23
+        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
       )
       RETURNING *
     `;
@@ -79,7 +95,8 @@ class Patient {
       luogo_nascita, sesso, indirizzo, citta, cap, provincia, telefono, email,
       anamnesi_medica, allergie, farmaci_assunti, contatto_emergenza_nome,
       contatto_emergenza_telefono, contatto_emergenza_relazione,
-      consenso_trattamento_dati, consenso_marketing, note, created_by
+      consenso_trattamento_dati, consenso_marketing, note, medico_curante, 
+      sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
     ];
     
     const result = await query(queryText, values);
@@ -89,9 +106,15 @@ class Patient {
   // Find patient by ID
   static async findById(id) {
     const queryText = `
-      SELECT p.*, u.username as created_by_username
+      SELECT p.*, u.username as created_by_username,
+             mc.username as medico_curante_username,
+             mc.first_name as medico_curante_first_name,
+             mc.last_name as medico_curante_last_name,
+             mr.name as medico_curante_role
       FROM patient.patients p
       LEFT JOIN auth.users u ON p.created_by = u.id
+      LEFT JOIN auth.users mc ON p.medico_curante = mc.id
+      LEFT JOIN auth.roles mr ON mc.role_id = mr.id
       WHERE p.id = $1
     `;
     
@@ -144,9 +167,15 @@ class Patient {
   // Get all patients with pagination
   static async findAll(limit = 10, offset = 0, filters = {}) {
     let queryText = `
-      SELECT p.*, u.username as created_by_username
+      SELECT p.*, u.username as created_by_username, 
+             mc.username as medico_curante_username,
+             mc.first_name as medico_curante_first_name,
+             mc.last_name as medico_curante_last_name,
+             mr.name as medico_curante_role
       FROM patient.patients p
       LEFT JOIN auth.users u ON p.created_by = u.id
+      LEFT JOIN auth.users mc ON p.medico_curante = mc.id
+      LEFT JOIN auth.roles mr ON mc.role_id = mr.id
       WHERE 1=1
     `;
     
@@ -264,7 +293,8 @@ class Patient {
       'cap', 'provincia', 'telefono', 'email', 'anamnesi_medica',
       'allergie', 'farmaci_assunti', 'contatto_emergenza_nome',
       'contatto_emergenza_telefono', 'contatto_emergenza_relazione',
-      'consenso_trattamento_dati', 'consenso_marketing', 'note', 'is_active'
+      'consenso_trattamento_dati', 'consenso_marketing', 'note', 'medico_curante', 
+      'sostanza_abuso', 'abusi_secondari', 'professione', 'stato_civile', 'is_active'
     ];
     
     const updates = [];
@@ -399,6 +429,15 @@ class Patient {
       consenso_trattamento_dati: this.consenso_trattamento_dati,
       consenso_marketing: this.consenso_marketing,
       note: this.note,
+      medico_curante: this.medico_curante,
+      medico_curante_username: this.medico_curante_username,
+      medico_curante_first_name: this.medico_curante_first_name,
+      medico_curante_last_name: this.medico_curante_last_name,
+      medico_curante_role: this.medico_curante_role,
+      sostanza_abuso: this.sostanza_abuso,
+      abusi_secondari: this.abusi_secondari,
+      professione: this.professione,
+      stato_civile: this.stato_civile,
       is_active: this.is_active,
       created_by_username: this.created_by_username,
       created_at: this.created_at,

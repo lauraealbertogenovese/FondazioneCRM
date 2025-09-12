@@ -36,7 +36,7 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { patientService } from '../services/api';
+import { patientService, userService } from '../services/api';
 
 const PatientFormPage = () => {
   const theme = useTheme();
@@ -63,15 +63,16 @@ const PatientFormPage = () => {
     provincia: '',
     consenso_trattamento_dati: false,
     note: '',
+    medico_curante: '', // Clinician assignment
     // New fields as per TODO requirements
     sostanza_abuso: '', // Substance of abuse
     abusi_secondari: [], // Secondary substance abuse (multi-select)
-    diagnosi_primaria: '', // Primary diagnosis
     stato_civile: '', // Civil status
-    lavoro: '', // Work information
+    professione: '', // Profession information
   });
 
   const [errors, setErrors] = useState({});
+  const [clinicians, setClinicians] = useState([]);
   
   // Opzioni per i selettori
   const sostanzaAbusoOptions = [
@@ -93,6 +94,7 @@ const PatientFormPage = () => {
     if (isEdit) {
       fetchPatient();
     }
+    fetchClinicians();
   }, [id, isEdit]);
 
 
@@ -122,6 +124,7 @@ const PatientFormPage = () => {
         professione: patientData.professione || '',
         stato_civile: patientData.stato_civile || '',
         note: patientData.note || '',
+        medico_curante: patientData.medico_curante || '',
         data_nascita: patientData.data_nascita ? patientData.data_nascita.split('T')[0] : '',
         abusi_secondari: patientData.abusi_secondari || [],
       });
@@ -130,6 +133,27 @@ const PatientFormPage = () => {
       setError('Errore nel caricamento del paziente');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchClinicians = async () => {
+    try {
+      const response = await userService.getUsers();
+      // Filter and deduplicate users
+      const uniqueUsers = response.users
+        .filter(user => user.first_name && user.last_name) // Only users with complete name info
+        .reduce((unique, user) => {
+          // Remove duplicates based on ID
+          if (!unique.find(u => u.id === user.id)) {
+            unique.push(user);
+          }
+          return unique;
+        }, [])
+        .sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)); // Sort by name
+      
+      setClinicians(uniqueUsers);
+    } catch (error) {
+      console.error('Errore nel caricamento dei clinici:', error);
     }
   };
 
@@ -143,6 +167,18 @@ const PatientFormPage = () => {
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
+    }
+  };
+
+  const handleClinicianChange = (event, newValue) => {
+    setFormData(prev => ({
+      ...prev,
+      medico_curante: newValue ? newValue.id : ''
+    }));
+
+    // Clear error when user makes selection
+    if (errors.medico_curante) {
+      setErrors(prev => ({ ...prev, medico_curante: null }));
     }
   };
 
@@ -169,6 +205,13 @@ const PatientFormPage = () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Debug: check formData content
+      console.log('📋 FormData being sent:', {
+        ...formData,
+        medico_curante: formData.medico_curante,
+        medico_curante_type: typeof formData.medico_curante
+      });
 
       if (isEdit) {
         await patientService.updatePatient(id, formData);
@@ -515,13 +558,16 @@ const PatientFormPage = () => {
                       helperText={errors.sostanza_abuso}
                     />
                   )}
-                  renderOption={(props, option) => (
-                    <Box component="li" {...props}>
-                      <Typography variant="body2">
-                        {option.label}
-                      </Typography>
-                    </Box>
-                  )}
+                  renderOption={(props, option) => {
+                    const { key, ...optionProps } = props;
+                    return (
+                      <Box component="li" key={option.value} {...optionProps}>
+                        <Typography variant="body2">
+                          {option.label}
+                        </Typography>
+                      </Box>
+                    );
+                  }}
                   noOptionsText="Nessuna sostanza trovata"
                   isOptionEqualToValue={(option, value) => option?.value === value?.value}
                 />
@@ -544,25 +590,28 @@ const PatientFormPage = () => {
                     }));
                   }}
                   renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip
-                        key={option.value}
-                        label={option.label}
-                        {...getTagProps({ index })}
-                        size="small"
-                        sx={{
-                          backgroundColor: '#f0f9ff',
-                          border: '1px solid #0ea5e9',
-                          color: '#0369a1',
-                          '& .MuiChip-deleteIcon': {
+                    value.map((option, index) => {
+                      const { key, ...chipProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          key={option.value}
+                          label={option.label}
+                          {...chipProps}
+                          size="small"
+                          sx={{
+                            backgroundColor: '#f0f9ff',
+                            border: '1px solid #0ea5e9',
                             color: '#0369a1',
-                            '&:hover': {
-                              color: '#dc2626'
+                            '& .MuiChip-deleteIcon': {
+                              color: '#0369a1',
+                              '&:hover': {
+                                color: '#dc2626'
+                              }
                             }
-                          }
-                        }}
-                      />
-                    ))
+                          }}
+                        />
+                      );
+                    })
                   }
                   renderInput={(params) => (
                     <TextField
@@ -574,28 +623,21 @@ const PatientFormPage = () => {
                       helperText={errors.abusi_secondari || "Seleziona le sostanze di abuso secondarie (opzionale)"}
                     />
                   )}
-                  renderOption={(props, option) => (
-                    <Box component="li" {...props}>
-                      <Typography variant="body2">
-                        {option.label}
-                      </Typography>
-                    </Box>
-                  )}
+                  renderOption={(props, option) => {
+                    const { key, ...optionProps } = props;
+                    return (
+                      <Box component="li" key={option.value} {...optionProps}>
+                        <Typography variant="body2">
+                          {option.label}
+                        </Typography>
+                      </Box>
+                    );
+                  }}
                   noOptionsText="Nessuna sostanza trovata"
                   isOptionEqualToValue={(option, value) => option?.value === value?.value}
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
-                <TextField
-                  name="diagnosi_primaria"
-                  label="Diagnosi Primaria"
-                  fullWidth
-                  value={formData.diagnosi_primaria}
-                  onChange={handleChange}
-                  placeholder="Es. Disturbo da uso di sostanze, Depressione..."
-                />
-              </Grid>
 
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
@@ -619,15 +661,66 @@ const PatientFormPage = () => {
 
               <Grid item xs={12} md={6}>
                 <TextField
-                  name="lavoro"
-                  label="Occupazione"
+                  name="professione"
+                  label="Professione"
                   fullWidth
-                  value={formData.lavoro}
+                  value={formData.professione}
                   onChange={handleChange}
                   placeholder="Professione, status lavorativo..."
                 />
               </Grid>
 
+              {/* Medico Curante */}
+              <Grid item xs={12}>
+                <Autocomplete
+                  options={clinicians}
+                  getOptionLabel={(option) => 
+                    `${option.first_name} ${option.last_name} (${option.role_name || 'N/A'})`
+                  }
+                  value={clinicians.find(c => c.id === parseInt(formData.medico_curante)) || null}
+                  onChange={handleClinicianChange}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option.id}>
+                      {option.first_name} {option.last_name} ({option.role_name || 'N/A'})
+                    </li>
+                  )}
+                  componentsProps={{
+                    popper: {
+                      placement: 'bottom-start',
+                      modifiers: [
+                        {
+                          name: 'flip',
+                          enabled: false, // Disable auto-flip to top
+                        },
+                        {
+                          name: 'preventOverflow',
+                          enabled: true,
+                          options: {
+                            altAxis: true,
+                            altBoundary: true,
+                            tether: false,
+                            rootBoundary: 'document',
+                          },
+                        },
+                      ],
+                    },
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Clinico di Riferimento"
+                      placeholder="Cerca e seleziona un clinico..."
+                      error={!!errors.medico_curante}
+                      helperText={errors.medico_curante}
+                    />
+                  )}
+                  noOptionsText="Nessun clinico trovato"
+                  clearText="Rimuovi selezione"
+                  openText="Apri opzioni"
+                  closeText="Chiudi opzioni"
+                />
+              </Grid>
               
               <Grid item xs={12}>
                 <TextField

@@ -43,7 +43,11 @@
       "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT id, name, description FROM auth.roles ORDER BY id;\")",
       "Bash(winpty docker exec -it fondazione-crm-postgres psql -U crm_user -d fondazione_crm -c \"SELECT id, username, email, is_active, role_id FROM auth.users WHERE id = 17;\")",
       "Read(//c/**)",
-      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT u.id, u.username, u.email, u.first_name, u.last_name, r.name as role_name FROM auth.users u LEFT JOIN auth.roles r ON u.role_id = r.id ORDER BY u.id;\")"
+      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT u.id, u.username, u.email, u.first_name, u.last_name, r.name as role_name FROM auth.users u LEFT JOIN auth.roles r ON u.role_id = r.id ORDER BY u.id;\")",
+      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT u.id, u.username, u.first_name, u.last_name, r.name as role_name FROM auth.users u LEFT JOIN auth.roles r ON u.role_id = r.id WHERE u.id = 26;\")",
+      "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"\\d patient.patients\")",
+      "Bash(docker start:*)",
+      "Bash(winpty docker exec:*)"
     ],
     "deny": [],
     "ask": []

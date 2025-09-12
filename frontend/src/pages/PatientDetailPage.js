@@ -226,8 +226,8 @@ const PatientDetailPage = () => {
                     Status
                   </Typography>
                   <Chip
-                    label={getStatusLabel(patient.status)}
-                    color={getStatusColor(patient.status)}
+                    label={patient.is_active ? 'In Cura' : 'Non in Cura'}
+                    color={patient.is_active ? 'success' : 'warning'}
                     size="small"
                     variant="outlined"
                     sx={{ fontWeight: 500 }}
@@ -292,7 +292,10 @@ const PatientDetailPage = () => {
                     Clinico di Riferimento
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {patient.medico_curante || 'Non assegnato'}
+                    {patient.medico_curante_first_name && patient.medico_curante_last_name 
+                      ? `${patient.medico_curante_first_name} ${patient.medico_curante_last_name}${patient.medico_curante_role ? ` (${patient.medico_curante_role})` : ''}`
+                      : 'Non assegnato'
+                    }
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
@@ -317,6 +320,14 @@ const PatientDetailPage = () => {
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
                     {patient.stato_civile || 'Non specificato'}
+                  </Typography>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                    Professione
+                  </Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {patient.professione || 'Non specificata'}
                   </Typography>
                 </Box>
               </Grid>
@@ -384,15 +395,18 @@ const PatientDetailPage = () => {
                     Clinico di Riferimento
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {patient.medico_curante || 'Non assegnato'}
+                    {patient.medico_curante_first_name && patient.medico_curante_last_name 
+                      ? `${patient.medico_curante_first_name} ${patient.medico_curante_last_name}${patient.medico_curante_role ? ` (${patient.medico_curante_role})` : ''}`
+                      : 'Non assegnato'
+                    }
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
-                    Diagnosi Principale
+                    Professione
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {patient.diagnosi_principale || 'Non specificata'}
+                    {patient.professione || 'Non specificata'}
                   </Typography>
                 </Box>
               </Grid>
@@ -407,10 +421,13 @@ const PatientDetailPage = () => {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
-                    Lavoro
+                    Abusi Secondari
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {patient.lavoro || 'Non specificato'}
+                    {patient.abusi_secondari && patient.abusi_secondari.length > 0 
+                      ? patient.abusi_secondari.join(', ')
+                      : 'Nessuno'
+                    }
                   </Typography>
                 </Box>
               </Grid>

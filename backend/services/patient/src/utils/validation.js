@@ -177,6 +177,25 @@ class PatientValidationUtils {
     };
   }
 
+  // Validate medico curante (clinician) ID
+  static validateMedicoCurante(medicoId) {
+    const errors = [];
+    
+    if (medicoId !== null && medicoId !== undefined && medicoId !== '') {
+      // Convert to number if it's a string
+      const numericId = typeof medicoId === 'string' ? parseInt(medicoId, 10) : medicoId;
+      
+      if (isNaN(numericId) || numericId <= 0) {
+        errors.push('Invalid clinician ID');
+      }
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }
+
   // Validate patient creation data
   static validatePatientCreation(data) {
     const errors = [];
@@ -226,6 +245,12 @@ class PatientValidationUtils {
     const capValidation = this.validateCAP(data.cap);
     if (!capValidation.isValid) {
       errors.push(...capValidation.errors);
+    }
+    
+    // Validate medico curante
+    const medicoCuranteValidation = this.validateMedicoCurante(data.medico_curante);
+    if (!medicoCuranteValidation.isValid) {
+      errors.push(...medicoCuranteValidation.errors);
     }
     
     // Validate consensi
@@ -319,6 +344,14 @@ class PatientValidationUtils {
       const capValidation = this.validateCAP(data.cap);
       if (!capValidation.isValid) {
         errors.push(...capValidation.errors);
+      }
+    }
+
+    // Validate medico curante if provided
+    if (data.medico_curante !== undefined) {
+      const medicoCuranteValidation = this.validateMedicoCurante(data.medico_curante);
+      if (!medicoCuranteValidation.isValid) {
+        errors.push(...medicoCuranteValidation.errors);
       }
     }
 
