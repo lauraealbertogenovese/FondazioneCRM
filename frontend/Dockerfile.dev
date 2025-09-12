@@ -6,8 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-COPY .env.docker .env
 
-EXPOSE 3000
+EXPOSE 3007
 
 CMD ["npm", "start"]

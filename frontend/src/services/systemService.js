@@ -17,12 +17,12 @@ const systemService = {
   async getServiceStatus() {
     try {
       const services = [
-        { name: 'Auth Service', url: 'http://localhost:3001/health', port: '3001' },
-        { name: 'Patient Service', url: 'http://localhost:3002/health', port: '3002' },
-        { name: 'Clinical Service', url: 'http://localhost:3003/health', port: '3003' },
-        { name: 'Group Service', url: 'http://localhost:3004/health', port: '3004' },
-        { name: 'API Gateway', url: 'http://localhost:3000/health', port: '3000' }
-      ];
+        { name: 'Auth Service', url: process.env.REACT_APP_AUTH_SERVICE_URL + '/health', port: '3001' },
+        { name: 'Patient Service', url: process.env.REACT_APP_PATIENT_SERVICE_URL + '/health', port: '3002' },
+        { name: 'Clinical Service', url: process.env.REACT_APP_CLINICAL_SERVICE_URL + '/health', port: '3003' },
+        { name: 'Group Service', url: process.env.REACT_APP_GROUP_SERVICE_URL + '/health', port: '3004' },
+        { name: 'API Gateway', url: process.env.REACT_APP_API_BASE_URL + '/health', port: '3000' }
+      ];        
 
       const statusChecks = await Promise.allSettled(
         services.map(async (service) => {

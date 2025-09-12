@@ -1,14 +1,13 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Database PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: fondazione-crm-postgres
+    env_file:
+      - ../.env
     environment:
-      POSTGRES_DB: fondazione_crm
-      POSTGRES_USER: crm_user
-      POSTGRES_PASSWORD: crm_password
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5433:5432"
@@ -25,16 +24,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-api-gateway
     ports:
-      - "3000:3000"
+      - "3001:3001"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=development
-      - PORT=3000
-      - AUTH_SERVICE_URL=http://auth-service:3001
-      - PATIENT_SERVICE_URL=http://patient-service:3002
-      - CLINICAL_SERVICE_URL=http://clinical-service:3003
-      - GROUP_SERVICE_URL=http://group-service:3004
-      - BILLING_SERVICE_URL=http://billing-service:3005
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/fondazione_crm
+      - PORT=3001
     depends_on:
       - postgres
       - auth-service
@@ -55,12 +50,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-auth-service
     ports:
-      - "3001:3001"
+      - "3002:3002"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=development
-      - PORT=3001
-      - JWT_SECRET=o7bHyEqwr4m/NH5gZ+iWATZb/bCJk3xn5JmrTjoNR92Jvm9VYNw65jrst9Ss9ox0d0SSEOiAe7zjS1V/Q3LpNw==
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/fondazione_crm
+      - PORT=3002
     depends_on:
       - postgres
     networks:
@@ -76,12 +71,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-patient-service
     ports:
-      - "3002:3002"
+      - "3003:3003"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=development
-      - PORT=3002
-      - AUTH_SERVICE_URL=http://auth-service:3001
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/fondazione_crm
+      - PORT=3003
     depends_on:
       - postgres
     networks:
@@ -97,12 +92,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-clinical-service
     ports:
-      - "3003:3003"
+      - "3004:3004"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=development
-      - PORT=3003
-      - AUTH_SERVICE_URL=http://auth-service:3001
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/fondazione_crm
+      - PORT=3004
     depends_on:
       - postgres
     networks:
@@ -118,11 +113,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-group-service
     ports:
-      - "3004:3004"
+      - "3005:3005"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=development
-      - PORT=3004
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/fondazione_crm
+      - PORT=3005
     depends_on:
       - postgres
     networks:
@@ -138,13 +134,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-billing-service
     ports:
-      - "3005:3005"
+      - "3006:3006"
+    env_file:
+      - ../.env
     environment:
       - NODE_ENV=development
-      - PORT=3005
-      - AUTH_SERVICE_URL=http://auth-service:3001
-      - DATABASE_URL=postgresql://crm_user:crm_password@postgres:5432/fondazione_crm
-      - JWT_SECRET=o7bHyEqwr4m/NH5gZ+iWATZb/bCJk3xn5JmrTjoNR92Jvm9VYNw65jrst9Ss9ox0d0SSEOiAe7zjS1V/Q3LpNw==
+      - PORT=3006
     depends_on:
       - postgres
     networks:
@@ -160,13 +155,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: fondazione-crm-frontend
     ports:
-      - "3006:3007"
+      - "3007:3007"
+    env_file:
+      - ../.env
     environment:
-      - REACT_APP_API_BASE_URL=http://localhost:3000
-      - REACT_APP_AUTH_SERVICE_URL=http://localhost:3000
-      - REACT_APP_PATIENT_SERVICE_URL=http://localhost:3000
-      - REACT_APP_CLINICAL_SERVICE_URL=http://localhost:3000
-      - REACT_APP_FRONTEND_PORT=3006
+      - NODE_ENV=development
+      - PORT=3007
       - CHOKIDAR_USEPOLLING=true
     depends_on:
       - api-gateway

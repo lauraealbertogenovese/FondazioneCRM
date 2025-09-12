@@ -11,7 +11,11 @@ dist/
 */build/
 */dist/
 
+
 # Environment variables
+.env
+backend/services/*/.env
+frontend/.env
 
 
 # IDE
@@ -49,7 +53,7 @@ coverage/
 .nyc_output
 
 # Docker
-.dockerignore
+# .dockerignore
 
 # Temporary files
 tmp/
