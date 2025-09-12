@@ -13,7 +13,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 // Componenti
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
 import PatientsPageNew from './pages/PatientsPageNew';
 import PatientDetailPage from './pages/PatientDetailPage';
 import PatientFormPage from './pages/PatientFormPage';
@@ -81,14 +80,6 @@ const AppContent = () => {
       
       {/* Protected routes */}
       <Route path="/" element={<Navigate to="/patients" replace />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        } 
-      />
       <Route 
         path="/patients" 
         element={

@@ -23,7 +23,8 @@ import {
   Menu,
   MenuItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Box
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -137,7 +138,7 @@ const RoleManagementPage = ({ embedded = false }) => {
 
   const handleDeleteRole = () => {
     setDeleteDialogOpen(true);
-    handleMenuClose();
+    setAnchorEl(null); // Chiudi solo il menu, mantieni selectedRole
   };
 
   const handleSaveRole = async () => {
@@ -158,14 +159,105 @@ const RoleManagementPage = ({ embedded = false }) => {
 
   const handleConfirmDelete = async () => {
     try {
+      console.log('Eliminando ruolo:', selectedRole);
       await roleService.deleteRole(selectedRole.id);
       showSnackbar('Ruolo eliminato con successo');
       setDeleteDialogOpen(false);
+      setSelectedRole(null);
       loadRoles();
     } catch (error) {
+      console.error('Errore eliminazione ruolo:', error);
       showSnackbar(error.response?.data?.error || 'Errore nell\'eliminazione del ruolo', 'error');
       setDeleteDialogOpen(false);
+      setSelectedRole(null);
     }
+  };
+
+  const getPermissionSummary = (permissions) => {
+    if (!permissions) return [];
+    
+    const summary = [];
+    
+    // Handle legacy admin format
+    if (Array.isArray(permissions)) {
+      if (permissions.includes('*')) {
+        return ['Amministratore'];
+      }
+      
+      // Parse legacy format ["patients.read", "patients.write", etc.]
+      const uniqueModules = new Set();
+      permissions.forEach(perm => {
+        const [module] = perm.split('.');
+        uniqueModules.add(module);
+      });
+      
+      const moduleLabels = {
+        patients: 'Pazienti',
+        clinical: 'Cartelle',
+        groups: 'Gruppi',
+        billing: 'Fatturazione',
+        visits: 'Visite',
+        users: 'Utenti',
+        roles: 'Ruoli'
+      };
+      
+      uniqueModules.forEach(module => {
+        if (moduleLabels[module]) {
+          summary.push(moduleLabels[module]);
+        }
+      });
+      
+      if (summary.length > 4) {
+        return [...summary.slice(0, 3), `+${summary.length - 3}`];
+      }
+      return summary;
+    }
+
+    // Handle new granular format
+    if (typeof permissions === 'object') {
+      // Check if it's the all permissions format
+      if (permissions.all) {
+        return ['Amministratore'];
+      }
+      
+      // Check pages permissions
+      if (permissions.pages) {
+        Object.keys(permissions.pages).forEach(page => {
+          if (permissions.pages[page]?.access) {
+            const pageLabels = {
+              patients: 'Pazienti',
+              clinical: 'Cartelle',
+              groups: 'Gruppi',
+              billing: 'Fatturazione'
+            };
+            summary.push(pageLabels[page] || page);
+          }
+        });
+      }
+
+      // Check features permissions
+      if (permissions.features?.documents?.upload || permissions.features?.documents?.download) {
+        summary.push('Documenti');
+      }
+
+      // Check admin permissions  
+      if (permissions.administration?.users?.access) {
+        summary.push('Utenti');
+      }
+      if (permissions.administration?.roles?.access) {
+        summary.push('Ruoli');
+      }
+      if (permissions.administration?.system?.access) {
+        summary.push('Sistema');
+      }
+
+      // Limit to 4 items to avoid overflow
+      if (summary.length > 4) {
+        return [...summary.slice(0, 3), `+${summary.length - 3}`];
+      }
+    }
+    
+    return summary;
   };
 
   const handlePermissionChange = (permissions) => {
@@ -248,11 +340,37 @@ const RoleManagementPage = ({ embedded = false }) => {
                     />
                   </TableCell>
                   <TableCell>
-                    <Chip 
-                      label={role.permissions?.all ? 'Amministratore' : 'Limitato'}
-                      size="small"
-                      color={role.permissions?.all ? 'error' : 'default'}
-                    />
+                    {role.permissions?.all ? (
+                      <Chip 
+                        label="Amministratore"
+                        size="small"
+                        color="error"
+                      />
+                    ) : (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {getPermissionSummary(role.permissions).map((perm, index) => (
+                          <Chip
+                            key={index}
+                            label={perm}
+                            size="small"
+                            variant="outlined"
+                            sx={{ 
+                              fontSize: '0.7rem',
+                              height: '20px',
+                              '& .MuiChip-label': { px: 1 }
+                            }}
+                          />
+                        ))}
+                        {getPermissionSummary(role.permissions).length === 0 && (
+                          <Chip 
+                            label="Nessun permesso"
+                            size="small"
+                            color="default"
+                            variant="outlined"
+                          />
+                        )}
+                      </Box>
+                    )}
                   </TableCell>
                   <TableCell align="right">
                     <IconButton
@@ -409,18 +527,40 @@ const RoleManagementPage = ({ embedded = false }) => {
       <Dialog open={usersDialogOpen} onClose={() => setUsersDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
           Utenti con ruolo: {selectedRole?.name}
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            {roleUsers.filter(u => u.is_active).length} attivi di {roleUsers.length} totali
+          </Typography>
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             {roleUsers.length > 0 ? (
               roleUsers.map((user) => (
-                <Paper key={user.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider' }}>
-                  <Typography variant="body1" fontWeight={600}>
-                    {user.first_name} {user.last_name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.username} - {user.email}
-                  </Typography>
+                <Paper 
+                  key={user.id} 
+                  sx={{ 
+                    p: 2, 
+                    border: '1px solid', 
+                    borderColor: 'divider',
+                    opacity: user.is_active ? 1 : 0.6,
+                    backgroundColor: user.is_active ? 'background.paper' : 'grey.50'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" fontWeight={600}>
+                        {user.first_name} {user.last_name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {user.username} - {user.email}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={user.is_active ? 'Attivo' : 'Inattivo'}
+                      size="small"
+                      color={user.is_active ? 'success' : 'default'}
+                      variant={user.is_active ? 'filled' : 'outlined'}
+                    />
+                  </Box>
                 </Paper>
               ))
             ) : (
@@ -450,7 +590,10 @@ const RoleManagementPage = ({ embedded = false }) => {
       </Dialog>
 
       {/* Delete Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog open={deleteDialogOpen} onClose={() => {
+        setDeleteDialogOpen(false);
+        setSelectedRole(null);
+      }}>
         <DialogTitle>Conferma Eliminazione</DialogTitle>
         <DialogContent>
           <Typography>
@@ -464,7 +607,10 @@ const RoleManagementPage = ({ embedded = false }) => {
         </DialogContent>
         <DialogActions>
           <Button 
-            onClick={() => setDeleteDialogOpen(false)}
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setSelectedRole(null);
+            }}
             variant="outlined"
             color="inherit"
             sx={{

@@ -9,7 +9,7 @@ const router = express.Router();
 // GET /users - Get all users (admin only)
 router.get('/', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 50 } = req.query;
     const offset = (page - 1) * limit;
     
     const users = await User.findAll(parseInt(limit), parseInt(offset));
@@ -53,6 +53,58 @@ router.get('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, asyn
     });
   } catch (error) {
     console.error('Get user error:', error);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
+// POST /users - Create new user (admin only)
+router.post('/', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
+  try {
+    const userData = ValidationUtils.sanitizeInput(req.body);
+    
+    // Validate input
+    const validation = ValidationUtils.validateUserRegistration(userData);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: validation.errors
+      });
+    }
+
+    // Check if email already exists
+    const existingUser = await User.findByEmail(userData.email);
+    if (existingUser) {
+      return res.status(409).json({
+        error: 'Email already exists'
+      });
+    }
+
+    // Check if username already exists
+    const existingUsername = await User.findByUsername(userData.username);
+    if (existingUsername) {
+      return res.status(409).json({
+        error: 'Username already exists'
+      });
+    }
+
+    // Create user
+    const user = await User.create({
+      username: userData.username,
+      email: userData.email.toLowerCase(),
+      password: userData.password,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      role_id: userData.role_id
+    });
+
+    res.status(201).json({
+      message: 'User created successfully',
+      user: user.getPublicData()
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
     res.status(500).json({
       error: 'Internal server error'
     });
@@ -132,6 +184,8 @@ router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, a
       });
     }
 
+    console.log('Deleting user:', { id: user.id, username: user.username, role: user.role });
+
     // Prevent admin from deleting themselves
     if (Number(id) === req.user.id) {
       return res.status(400).json({
@@ -139,15 +193,20 @@ router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, a
       });
     }
 
-    // Prevent deletion of admin users
-    if (user.role === 'admin') {
-      return res.status(400).json({
-        error: 'Cannot delete admin users'
-      });
+    // Prevent deletion of the last admin user
+    if (user.role && user.role.name === 'admin') {
+      const adminCount = await User.countByRole(1); // ID 1 = admin role
+      if (adminCount <= 1) {
+        return res.status(400).json({
+          error: 'Cannot delete the last admin user. At least one admin must remain.'
+        });
+      }
     }
 
-    // Soft delete user
+    // Hard delete user
+    console.log('About to delete user from database...');
     await user.delete();
+    console.log('User deleted from database successfully');
 
     res.json({
       message: 'User deleted successfully'
@@ -365,12 +424,11 @@ router.delete('/roles/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAd
       });
     }
 
-    // Check if role is not a system role (admin, doctor, etc.)
-    const systemRoles = ['admin', 'doctor', 'psychologist', 'operator'];
-    if (systemRoles.includes(role.name)) {
+    // Prevent deleting admin role only
+    if (role.name === 'admin') {
       return res.status(400).json({
         success: false,
-        error: 'Cannot delete system roles'
+        error: 'Cannot delete admin role'
       });
     }
 
@@ -432,7 +490,6 @@ router.get('/roles/:id/users', AuthMiddleware.verifyToken, AuthMiddleware.requir
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
-        is_active: user.is_active,
         last_login: user.last_login,
         created_at: user.created_at
       }))

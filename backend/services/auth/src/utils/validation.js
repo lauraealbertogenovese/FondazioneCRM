@@ -10,26 +10,26 @@ class ValidationUtils {
     const errors = [];
     
     if (!password) {
-      errors.push('Password is required');
+      errors.push('La password è obbligatoria');
     } else {
       if (password.length < 8) {
-        errors.push('Password must be at least 8 characters long');
+        errors.push('La password deve contenere almeno 8 caratteri');
       }
       
       if (!/[A-Z]/.test(password)) {
-        errors.push('Password must contain at least one uppercase letter');
+        errors.push('La password deve contenere almeno una lettera maiuscola');
       }
       
       if (!/[a-z]/.test(password)) {
-        errors.push('Password must contain at least one lowercase letter');
+        errors.push('La password deve contenere almeno una lettera minuscola');
       }
       
       if (!/\d/.test(password)) {
-        errors.push('Password must contain at least one number');
+        errors.push('La password deve contenere almeno un numero');
       }
       
       if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        errors.push('Password must contain at least one special character');
+        errors.push('La password deve contenere almeno un carattere speciale');
       }
     }
     
@@ -44,18 +44,18 @@ class ValidationUtils {
     const errors = [];
     
     if (!username) {
-      errors.push('Username is required');
+      errors.push('Il nome utente è obbligatorio');
     } else {
       if (username.length < 3) {
-        errors.push('Username must be at least 3 characters long');
+        errors.push('Il nome utente deve contenere almeno 3 caratteri');
       }
       
       if (username.length > 50) {
-        errors.push('Username must be less than 50 characters');
+        errors.push('Il nome utente deve contenere meno di 50 caratteri');
       }
       
       if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-        errors.push('Username can only contain letters, numbers, underscores, and hyphens');
+        errors.push('Il nome utente può contenere solo lettere, numeri, underscore e trattini');
       }
     }
     
@@ -66,22 +66,22 @@ class ValidationUtils {
   }
 
   // Validate name fields
-  static validateName(name, fieldName = 'Name') {
+  static validateName(name, fieldName = 'Nome') {
     const errors = [];
     
     if (!name) {
-      errors.push(`${fieldName} is required`);
+      errors.push(`${fieldName} è obbligatorio`);
     } else {
       if (name.length < 2) {
-        errors.push(`${fieldName} must be at least 2 characters long`);
+        errors.push(`${fieldName} deve contenere almeno 2 caratteri`);
       }
       
       if (name.length > 50) {
-        errors.push(`${fieldName} must be less than 50 characters`);
+        errors.push(`${fieldName} deve contenere meno di 50 caratteri`);
       }
       
       if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(name)) {
-        errors.push(`${fieldName} can only contain letters, spaces, hyphens, and apostrophes`);
+        errors.push(`${fieldName} può contenere solo lettere, spazi, trattini e apostrofi`);
       }
     }
     
@@ -121,7 +121,7 @@ class ValidationUtils {
     
     // Validate email
     if (!this.validateEmail(data.email)) {
-      errors.push('Invalid email format');
+      errors.push('Formato email non valido');
     }
     
     // Validate password
@@ -131,13 +131,13 @@ class ValidationUtils {
     }
     
     // Validate first name
-    const firstNameValidation = this.validateName(data.first_name, 'First name');
+    const firstNameValidation = this.validateName(data.first_name, 'Il nome');
     if (!firstNameValidation.isValid) {
       errors.push(...firstNameValidation.errors);
     }
     
     // Validate last name
-    const lastNameValidation = this.validateName(data.last_name, 'Last name');
+    const lastNameValidation = this.validateName(data.last_name, 'Il cognome');
     if (!lastNameValidation.isValid) {
       errors.push(...lastNameValidation.errors);
     }
@@ -203,9 +203,6 @@ class ValidationUtils {
       }
     }
     
-    if (data.is_active !== undefined && typeof data.is_active !== 'boolean') {
-      errors.push('is_active must be a boolean value');
-    }
     
     return {
       isValid: errors.length === 0,

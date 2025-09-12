@@ -58,6 +58,30 @@ const UserFormPage = () => {
   });
 
   const [errors, setErrors] = useState({});
+  
+  // Funzione per mappare errori di validazione ai campi
+  const parseValidationErrors = (validationErrors) => {
+    const fieldErrors = {};
+    
+    if (Array.isArray(validationErrors)) {
+      validationErrors.forEach(error => {
+        const errorLower = error.toLowerCase();
+        if (errorLower.includes('password') || errorLower.includes('obbligatoria')) {
+          fieldErrors.password = error;
+        } else if (errorLower.includes('nome utente')) {
+          fieldErrors.username = error;
+        } else if (errorLower.includes('email')) {
+          fieldErrors.email = error;
+        } else if (errorLower.includes('il nome')) {
+          fieldErrors.first_name = error;
+        } else if (errorLower.includes('il cognome')) {
+          fieldErrors.last_name = error;
+        }
+      });
+    }
+    
+    return fieldErrors;
+  };
 
   useEffect(() => {
     loadRoles();
@@ -66,39 +90,28 @@ const UserFormPage = () => {
     }
   }, [id, isEdit]);
 
-  // Carica i ruoli disponibili dal database con mappatura per UI
+  // Carica tutti i ruoli disponibili dal database
   const loadRoles = async () => {
     try {
       setRolesLoading(true);
       const roles = await roleService.getRoles();
       
-      // Filtra e mappa solo i ruoli desiderati con nomi user-friendly
-      const roleMapping = {
-        1: { id: 1, name: 'admin', display_name: 'Amministrazione' },
-        2: { id: 2, name: 'doctor', display_name: 'Clinico' }
-      };
-      
-      const filteredRoles = roles
-        .filter(role => roleMapping[role.id])
-        .map(role => ({
-          ...role,
-          display_name: roleMapping[role.id].display_name
-        }));
-      
-      setAvailableRoles(filteredRoles);
+      // Usa direttamente i ruoli dal database esattamente come sono stati creati dall'admin
+      const rolesFormatted = roles.map(role => ({
+        id: role.id,
+        name: role.name,
+        display_name: role.name  // Usa il nome esatto del ruolo dal database
+      }));
+      setAvailableRoles(rolesFormatted);
       
       // Set default role_id se non già impostato
-      if (!isEdit && filteredRoles.length > 0) {
-        setFormData(prev => ({ ...prev, role_id: filteredRoles[0].id }));
+      if (!isEdit && roles.length > 0) {
+        setFormData(prev => ({ ...prev, role_id: roles[0].id }));
       }
     } catch (error) {
       console.error('Errore nel caricamento dei ruoli:', error);
-      setError('Errore nel caricamento dei ruoli');
-      // Fallback ai ruoli hardcoded in caso di errore
-      setAvailableRoles([
-        { id: 1, name: 'admin', display_name: 'Amministrazione' },
-        { id: 2, name: 'doctor', display_name: 'Clinico' }
-      ]);
+      setError('Errore nel caricamento dei ruoli. Impossibile caricare la lista dei ruoli.');
+      setAvailableRoles([]); // Non usare fallback hardcodati, usare solo ruoli dal database
     } finally {
       setRolesLoading(false);
     }
@@ -226,7 +239,18 @@ const UserFormPage = () => {
       }, 1500);
     } catch (error) {
       console.error('Errore nel salvataggio:', error);
-      setError(error.response?.data?.message || 'Errore nel salvataggio dell\'utente');
+      
+      // Gestisci errori di validazione con dettagli
+      if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
+        const fieldErrors = parseValidationErrors(error.response.data.details);
+        setErrors(fieldErrors);
+        
+        const validationErrors = error.response.data.details.join(', ');
+        setError(`Errori di validazione: ${validationErrors}`);
+      } else {
+        setErrors({});
+        setError(error.response?.data?.error || error.response?.data?.message || 'Errore nel salvataggio dell\'utente');
+      }
     } finally {
       setSubmitLoading(false);
     }
@@ -335,6 +359,7 @@ const UserFormPage = () => {
                       type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={handleChange}
+                      placeholder={isEdit && !formData.password ? '••••••••' : ''}
                       fullWidth
                       size="small"
                       error={!!errors.password}
@@ -364,6 +389,7 @@ const UserFormPage = () => {
                       type={showConfirmPassword ? 'text' : 'password'}
                       value={formData.confirmPassword}
                       onChange={handleChange}
+                      placeholder={isEdit && !formData.confirmPassword ? '••••••••' : ''}
                       fullWidth
                       size="small"
                       error={!!errors.confirmPassword}
@@ -447,15 +473,25 @@ const UserFormPage = () => {
                         name="role_id"
                         value={formData.role_id}
                         onChange={handleChange}
-                        row
+                        sx={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                          gap: 1,
+                          mt: 1
+                        }}
                       >
                         {availableRoles.map(role => (
                           <FormControlLabel
                             key={role.id}
                             value={role.id}
                             control={<Radio size="small" />}
-                            label={role.display_name}
-                            sx={{ mr: 3 }}
+                            label={role.name}
+                            sx={{ 
+                              mr: 0,
+                              '& .MuiFormControlLabel-label': {
+                                fontSize: '0.875rem'
+                              }
+                            }}
                           />
                         ))}
                       </RadioGroup>
@@ -522,9 +558,7 @@ const UserFormPage = () => {
         {/* Help Text */}
         <Box sx={{ mt: 2, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            <strong>Suggerimento:</strong> Scegli il ruolo appropriato per l'utente. Gli utenti con ruolo 
-            "Amministrazione" hanno accesso completo al sistema, mentre i "Clinici" possono gestire 
-            pazienti e cartelle cliniche.
+            <strong>Suggerimento:</strong> I ruoli e i relativi permessi sono configurabili dalla sezione "Gestione Ruoli" del sistema.
           </Typography>
         </Box>
     </Container>

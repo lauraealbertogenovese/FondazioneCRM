@@ -147,11 +147,15 @@ router.get('/patients/ts/:numero_tessera_sanitaria', AuthMiddleware.verifyToken,
 // POST /patients - Create new patient
 router.post('/patients', AuthMiddleware.verifyToken, AuthMiddleware.requirePermission('patients.write'), async (req, res) => {
   try {
+    console.log('Received patient data:', req.body);
     const patientData = PatientValidationUtils.sanitizeInput(req.body);
+    console.log('Sanitized patient data:', patientData);
     
     // Validate input
     const validation = PatientValidationUtils.validatePatientCreation(patientData);
+    console.log('Validation result:', validation);
     if (!validation.isValid) {
+      console.log('Validation errors:', validation.errors);
       return res.status(400).json({
         error: 'Validation failed',
         details: validation.errors

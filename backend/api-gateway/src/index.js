@@ -291,14 +291,34 @@ app.use('/users', createProxyMiddleware({
   proxyTimeout: 30000,
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[Users Proxy] ${req.method} ${req.url} → ${proxyReq.path}`);
+    console.log(`[Users Proxy] Auth header: ${req.headers.authorization ? 'PRESENT' : 'MISSING'}`);
+    
+    // Passa tutti gli headers di autenticazione
     if (req.headers.authorization) {
       proxyReq.setHeader('Authorization', req.headers.authorization);
+      console.log(`[Users Proxy] Token forwarded: ${req.headers.authorization.substring(0, 20)}...`);
+    } else {
+      console.log(`[Users Proxy] WARNING: No authorization header found`);
     }
+    
+    // Handle request body for PUT/POST requests (only for JSON, not multipart)
+    if ((req.method === 'POST' || req.method === 'PUT') && req.body && req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
+      const bodyData = JSON.stringify(req.body);
+      console.log(`[Users Proxy] Body data length: ${bodyData.length}`);
+      proxyReq.setHeader('Content-Type', 'application/json');
+      proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+      proxyReq.write(bodyData);
+    } else if (req.method === 'POST' || req.method === 'PUT') {
+      console.log(`[Users Proxy] Forwarding ${req.headers['content-type'] || 'unknown'} body as-is`);
+    }
+  },
+  onProxyRes: (proxyRes, req, res) => {
+    console.log(`[Users Proxy Response] ${proxyRes.statusCode} ${proxyRes.statusMessage}`);
   },
   onError: (err, req, res) => {
     console.error(`[Users Proxy Error] ${err.message}`);
     if (!res.headersSent) {
-      res.status(500).json({ error: 'Auth Service unavailable' });
+      res.status(500).json({ error: 'Auth Service unavailable', details: err.message });
     }
   }
 }));

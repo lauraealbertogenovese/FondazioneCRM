@@ -32,12 +32,6 @@ class AuthMiddleware {
         });
       }
 
-      // Check if user is active
-      if (!user.is_active) {
-        return res.status(401).json({
-          error: 'User account is deactivated'
-        });
-      }
 
       // Verify session is still valid
       const tokenHash = JWTUtils.generateTokenHash(token);
@@ -151,7 +145,7 @@ class AuthMiddleware {
       
       if (decoded.type === 'access') {
         User.findById(decoded.id).then(user => {
-          if (user && user.is_active) {
+          if (user) {
             req.user = user;
             req.token = decoded;
           }
@@ -195,12 +189,6 @@ class AuthMiddleware {
         });
       }
 
-      // Check if user is active
-      if (!user.is_active) {
-        return res.status(401).json({
-          error: 'User account is deactivated'
-        });
-      }
 
       // Verify session is still valid
       const tokenHash = JWTUtils.generateTokenHash(refreshToken);

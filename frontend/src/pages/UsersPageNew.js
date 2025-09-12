@@ -112,7 +112,7 @@ const UsersPageNew = () => {
 
   const handleDelete = () => {
     setDeleteDialogOpen(true);
-    handleMenuClose();
+    setAnchorEl(null); // Chiudi solo il menu, mantieni selectedUser
   };
 
   const handlePermissions = () => {
@@ -122,11 +122,20 @@ const UsersPageNew = () => {
   };
 
   const confirmDelete = async () => {
+    if (!selectedUser) {
+      console.error('Nessun utente selezionato per la cancellazione');
+      return;
+    }
+
+    console.log('Tentativo di cancellare utente:', selectedUser.id, selectedUser.username);
+
     try {
-      await userService.deleteUser(selectedUser.id);
+      const result = await userService.deleteUser(selectedUser.id);
+      console.log('Risultato cancellazione:', result);
       await fetchUsers();
       setDeleteDialogOpen(false);
       setSelectedUser(null);
+      console.log('Utente cancellato con successo');
     } catch (error) {
       console.error('Errore nella cancellazione:', error);
     }
@@ -142,15 +151,6 @@ const UsersPageNew = () => {
     }
   };
 
-  const getRoleInfo = (role) => {
-    const roleMap = {
-      admin: { label: 'Amministratore', color: 'error' },
-      doctor: { label: 'Clinico', color: 'primary' },
-      psychologist: { label: 'Psicologo', color: 'secondary' },
-      operator: { label: 'Operatore', color: 'success' },
-    };
-    return roleMap[role] || { label: role || 'Sconosciuto', color: 'default' };
-  };
 
   const getInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
@@ -275,24 +275,6 @@ const UsersPageNew = () => {
               }}
             />
             
-            <Button
-              variant="outlined"
-              size="medium"
-              sx={{ 
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                borderColor: alpha(theme.palette.grey[300], 0.8),
-                color: 'text.secondary',
-                '&:hover': { 
-                  borderColor: theme.palette.primary.main,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  color: 'primary.main',
-                }
-              }}
-            >
-              Filtri Avanzati
-            </Button>
             
             {hasPermission('users.create') && (
               <Button
@@ -362,8 +344,6 @@ const UsersPageNew = () => {
               {filteredUsers
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((userItem) => {
-                  const roleInfo = getRoleInfo(userItem.role_name);
-                  
                   return (
                     <TableRow
                       key={userItem.id}
@@ -413,8 +393,8 @@ const UsersPageNew = () => {
                       
                       <TableCell>
                         <Chip
-                          label={roleInfo.label}
-                          color={roleInfo.color}
+                          label={userItem.role_name || 'Nessun ruolo'}
+                          color="default"
                           size="small"
                           variant="outlined"
                           sx={{ fontSize: '0.75rem', height: 20 }}
@@ -534,26 +514,29 @@ const UsersPageNew = () => {
             Modifica Permessi
           </MenuItem>
         )}
-        {hasPermission('users.delete') && selectedUser?.id !== user?.id && selectedUser?.role !== 'admin' && (
+        {hasPermission('users.delete') && selectedUser?.id !== user?.id && selectedUser?.role_name !== 'admin' && (
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
             <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Disattiva Utente
+            Cancella Utente
           </MenuItem>
         )}
       </Menu>
 
       {/* Delete Dialog */}
       <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        open={deleteDialogOpen && selectedUser !== null}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedUser(null);
+        }}
         maxWidth="xs"
         sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
       >
-        <DialogTitle sx={{ pb: 1 }}>Disattiva operatore</DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>Cancella operatore</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Sei sicuro di voler disattivare l'operatore {selectedUser?.first_name} {selectedUser?.last_name}?
-            L'operatore non potrà più accedere al sistema.
+            Sei sicuro di voler cancellare l'operatore {selectedUser?.first_name} {selectedUser?.last_name}?
+            Questa azione è irreversibile e cancellerà definitivamente l'utente dal sistema.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -577,22 +560,22 @@ const UsersPageNew = () => {
           </Button>
           <Button 
             onClick={confirmDelete} 
-            color="warning" 
+            color="error" 
             variant="contained" 
             size="small"
             sx={{
-              backgroundColor: '#f59e0b',
+              backgroundColor: '#ef4444',
               color: '#ffffff',
               fontWeight: 600,
               px: 2,
               py: 0.5,
               '&:hover': {
-                backgroundColor: '#d97706',
+                backgroundColor: '#dc2626',
                 color: '#ffffff',
               }
             }}
           >
-            Disattiva
+            Cancella
           </Button>
         </DialogActions>
       </Dialog>

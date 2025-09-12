@@ -425,18 +425,16 @@ const DashboardPage = () => {
                               </Typography>
                             }
                             secondary={
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatDate(patient.created_at)}
-                                </Typography>
-                                <Chip
-                                  label={patient.is_active ? 'Attivo' : 'Inattivo'}
-                                  size="small"
-                                  color={patient.is_active ? 'success' : 'default'}
-                                  variant="outlined"
-                                />
-                              </Stack>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatDate(patient.created_at)}
+                              </Typography>
                             }
+                          />
+                          <Chip
+                            label={patient.is_active ? 'Attivo' : 'Inattivo'}
+                            size="small"
+                            color={patient.is_active ? 'success' : 'default'}
+                            variant="outlined"
                           />
                         </ListItem>
                       ))}

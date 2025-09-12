@@ -351,24 +351,6 @@ const PatientsPageNew = () => {
               }}
             />
             
-            <Button
-              variant="outlined"
-              size="medium"
-              sx={{ 
-                borderRadius: 2,
-                px: 3,
-                py: 1,
-                borderColor: alpha(theme.palette.grey[300], 0.8),
-                color: 'text.secondary',
-                '&:hover': { 
-                  borderColor: theme.palette.primary.main,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  color: 'primary.main',
-                }
-              }}
-            >
-              Filtri Avanzati
-            </Button>
             
             {hasPermission('patients.write') && (
               <Button

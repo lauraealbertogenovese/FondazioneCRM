@@ -18,7 +18,7 @@ class Role {
     const queryText = `
       SELECT r.*, COUNT(u.id) as user_count
       FROM auth.roles r
-      LEFT JOIN auth.users u ON r.id = u.role_id AND u.is_active = true
+      LEFT JOIN auth.users u ON r.id = u.role_id
       GROUP BY r.id, r.name, r.description, r.permissions, r.created_at, r.updated_at
       ORDER BY r.name
     `;
@@ -146,9 +146,9 @@ class Role {
   // Get users with this role
   async getUsers() {
     const queryText = `
-      SELECT u.id, u.username, u.email, u.first_name, u.last_name, u.is_active, u.last_login, u.created_at
+      SELECT u.id, u.username, u.email, u.first_name, u.last_name, u.last_login, u.created_at
       FROM auth.users u
-      WHERE u.role_id = $1 AND u.is_active = true
+      WHERE u.role_id = $1
       ORDER BY u.username
     `;
     
@@ -161,7 +161,7 @@ class Role {
     const queryText = `
       SELECT COUNT(*) as count
       FROM auth.users
-      WHERE role_id = $1 AND is_active = true
+      WHERE role_id = $1
     `;
     
     const result = await query(queryText, [this.id]);

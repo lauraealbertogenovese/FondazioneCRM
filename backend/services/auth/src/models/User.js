@@ -10,7 +10,7 @@ class User {
     this.first_name = data.first_name;
     this.last_name = data.last_name;
     this.role_id = data.role_id;
-    this.is_active = data.is_active;
+    this.role_name = data.role_name; // Nome del ruolo dalla tabella roles
     this.last_login = data.last_login;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
@@ -125,7 +125,7 @@ class User {
       SELECT u.*, r.name as role_name, r.permissions as role_permissions
       FROM auth.users u
       LEFT JOIN auth.roles r ON u.role_id = r.id
-      WHERE u.role_id = $1 AND u.is_active = true
+      WHERE u.role_id = $1
       ORDER BY u.username
     `;
     
@@ -147,7 +147,7 @@ class User {
     const queryText = `
       SELECT COUNT(*) as count
       FROM auth.users
-      WHERE role_id = $1 AND is_active = true
+      WHERE role_id = $1
     `;
     
     const result = await query(queryText, [roleId]);
@@ -156,7 +156,7 @@ class User {
 
   // Update user
   async update(updateData) {
-    const allowedFields = ['first_name', 'last_name', 'email', 'role_id', 'is_active'];
+    const allowedFields = ['first_name', 'last_name', 'email', 'role_id'];
     const updates = [];
     const values = [];
     let paramCount = 1;
@@ -228,21 +228,16 @@ class User {
     return this;
   }
 
-  // Delete user (soft delete)
+  // Delete user (hard delete)
   async delete() {
     const queryText = `
-      UPDATE auth.users 
-      SET is_active = false, updated_at = CURRENT_TIMESTAMP
+      DELETE FROM auth.users 
       WHERE id = $1
       RETURNING *
     `;
     
     const result = await query(queryText, [this.id]);
-    const deletedUser = result.rows[0];
-    
-    this.is_active = deletedUser.is_active;
-    this.updated_at = deletedUser.updated_at;
-    return this;
+    return result.rows[0];
   }
 
   // Get user data without sensitive information
@@ -302,9 +297,8 @@ class User {
       first_name: this.first_name,
       last_name: this.last_name,
       role_id: this.role_id,
-      role_name: this.role ? this.role.name : null,
+      role_name: this.role_name,
       permissions: this.role ? this.role.permissions : null,
-      is_active: this.is_active,
       last_login: this.last_login,
       created_at: this.created_at
     };
