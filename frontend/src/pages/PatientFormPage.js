@@ -27,6 +27,8 @@ import {
   FormLabel,
   Chip,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { parse, isValid } from 'date-fns';
 import {
   Person as PersonIcon,
   Save as SaveIcon,
@@ -53,7 +55,7 @@ const PatientFormPage = () => {
     numero_tessera_sanitaria: '',
     nome: '',
     cognome: '',
-    data_nascita: '',
+    data_nascita: null,
     sesso: '',
     telefono: '',
     email: '',
@@ -125,7 +127,7 @@ const PatientFormPage = () => {
         stato_civile: patientData.stato_civile || '',
         note: patientData.note || '',
         medico_curante: patientData.medico_curante || '',
-        data_nascita: patientData.data_nascita ? patientData.data_nascita.split('T')[0] : '',
+        data_nascita: patientData.data_nascita ? new Date(patientData.data_nascita) : null,
         abusi_secondari: patientData.abusi_secondari || [],
       });
     } catch (error) {
@@ -138,9 +140,9 @@ const PatientFormPage = () => {
 
   const fetchClinicians = async () => {
     try {
-      const response = await userService.getUsers();
+      const response = await userService.getClinicians();
       // Filter and deduplicate users
-      const uniqueUsers = response.users
+      const uniqueUsers = response.clinicians
         .filter(user => user.first_name && user.last_name) // Only users with complete name info
         .reduce((unique, user) => {
           // Remove duplicates based on ID
@@ -188,7 +190,24 @@ const PatientFormPage = () => {
     if (!formData.nome?.trim()) newErrors.nome = 'Nome è obbligatorio';
     if (!formData.cognome?.trim()) newErrors.cognome = 'Cognome è obbligatorio';
     if (!formData.codice_fiscale?.trim()) newErrors.codice_fiscale = 'Codice Fiscale è obbligatorio';
-    if (!formData.data_nascita) newErrors.data_nascita = 'Data di nascita è obbligatoria';
+    
+    // Validazione data di nascita
+    if (!formData.data_nascita) {
+      newErrors.data_nascita = 'Data di nascita è obbligatoria';
+    } else {
+      const today = new Date();
+      const birthDate = formData.data_nascita;
+      const age = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24 * 365.25));
+      
+      if (birthDate > today) {
+        newErrors.data_nascita = 'La data di nascita non può essere nel futuro';
+      } else if (age < 16) {
+        newErrors.data_nascita = 'Il paziente deve avere almeno 16 anni';
+      } else if (age > 80) {
+        newErrors.data_nascita = 'Il paziente non può avere più di 80 anni';
+      }
+    }
+    
     if (!formData.sesso) newErrors.sesso = 'Sesso è obbligatorio';
 
     setErrors(newErrors);
@@ -206,17 +225,26 @@ const PatientFormPage = () => {
       setLoading(true);
       setError(null);
 
+      // Prepare form data with Date object converted to string for API
+      const submissionData = {
+        ...formData,
+        // Convert Date object to YYYY-MM-DD format for API
+        data_nascita: formData.data_nascita 
+          ? formData.data_nascita.toISOString().split('T')[0]
+          : null
+      };
+
       // Debug: check formData content
       console.log('📋 FormData being sent:', {
-        ...formData,
-        medico_curante: formData.medico_curante,
-        medico_curante_type: typeof formData.medico_curante
+        ...submissionData,
+        medico_curante: submissionData.medico_curante,
+        medico_curante_type: typeof submissionData.medico_curante
       });
 
       if (isEdit) {
-        await patientService.updatePatient(id, formData);
+        await patientService.updatePatient(id, submissionData);
       } else {
-        await patientService.createPatient(formData);
+        await patientService.createPatient(submissionData);
       }
 
       setSuccess(true);
@@ -225,7 +253,49 @@ const PatientFormPage = () => {
       }, 1500);
     } catch (error) {
       console.error('Errore nel salvataggio del paziente:', error);
-      setError(error.response?.data?.error || 'Errore nel salvataggio del paziente');
+      
+      // Handle detailed validation errors from backend
+      if (error.response?.data?.details) {
+        const validationErrors = {};
+        error.response.data.details.forEach(errorMsg => {
+          // Map backend error messages to form fields
+          if (errorMsg.includes('Nome')) {
+            validationErrors.nome = errorMsg;
+          } else if (errorMsg.includes('Cognome')) {
+            validationErrors.cognome = errorMsg;
+          } else if (errorMsg.includes('Codice Fiscale')) {
+            validationErrors.codice_fiscale = errorMsg;
+          } else if (errorMsg.includes('Numero Tessera Sanitaria')) {
+            validationErrors.numero_tessera_sanitaria = errorMsg;
+          } else if (errorMsg.includes('Data di nascita') || errorMsg.includes('date')) {
+            validationErrors.data_nascita = errorMsg;
+          } else if (errorMsg.includes('Sesso')) {
+            validationErrors.sesso = errorMsg;
+          } else if (errorMsg.includes('email')) {
+            validationErrors.email = errorMsg;
+          } else if (errorMsg.includes('phone') || errorMsg.includes('telefono')) {
+            validationErrors.telefono = errorMsg;
+          } else if (errorMsg.includes('CAP')) {
+            validationErrors.cap = errorMsg;
+          } else if (errorMsg.includes('clinician') || errorMsg.includes('medico')) {
+            validationErrors.medico_curante = errorMsg;
+          } else if (errorMsg.includes('Consenso')) {
+            validationErrors.consenso_trattamento_dati = errorMsg;
+          }
+        });
+        
+        // If we mapped any errors to specific fields, show them on the form
+        if (Object.keys(validationErrors).length > 0) {
+          setErrors(validationErrors);
+          setError(`Errori di validazione: ${error.response.data.details.join(', ')}`);
+        } else {
+          // Show all validation errors as general error if we couldn't map them
+          setError(`Errori di validazione: ${error.response.data.details.join(', ')}`);
+        }
+      } else {
+        // Standard error handling
+        setError(error.response?.data?.error || 'Errore nel salvataggio del paziente');
+      }
     } finally {
       setLoading(false);
     }
@@ -363,18 +433,34 @@ const PatientFormPage = () => {
               </Grid>
               
               <Grid item xs={12} md={6}>
-                <TextField
-                  name="data_nascita"
-                  label="Data di Nascita"
-                  type="date"
-                  fullWidth
+                <DatePicker
+                  label="Data di Nascita *"
                   value={formData.data_nascita}
-                  onChange={handleChange}
-                  error={!!errors.data_nascita}
-                  helperText={errors.data_nascita}
-                  variant="outlined"
-                  required
-                  InputLabelProps={{ shrink: true }}
+                  onChange={(newValue) => {
+                    setFormData(prev => ({ ...prev, data_nascita: newValue }));
+                    // Clear error when user changes the date
+                    if (errors.data_nascita) {
+                      setErrors(prev => ({ ...prev, data_nascita: null }));
+                    }
+                  }}
+                  maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 16))} // Massimo 16 anni fa
+                  minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 80))} // Massimo 80 anni fa
+                  shouldDisableDate={(date) => {
+                    const today = new Date();
+                    const age = Math.floor((today - date) / (1000 * 60 * 60 * 24 * 365.25));
+                    return age < 16 || age > 80;
+                  }}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      variant: "outlined",
+                      error: !!errors.data_nascita,
+                      helperText: errors.data_nascita || 'Età consentita: 16-80 anni',
+                      required: true
+                    }
+                  }}
+                  format="dd/MM/yyyy"
+                  views={['year', 'month', 'day']}
                 />
               </Grid>
               

@@ -17,7 +17,7 @@ class AuthMiddleware {
       console.log(`[Patient Auth] Authorization header present: ${authHeader.substring(0, 20)}...`);
 
       // Call Auth Service to verify token
-      const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3001';
+      const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3002';
       
       try {
         console.log(`[Patient Auth] Calling Auth Service at ${authServiceUrl}/auth/verify`);
@@ -68,7 +68,7 @@ class AuthMiddleware {
         console.log(`[Patient Permission] User found: ${req.user.username}`);
 
         // Call Auth Service to check permissions
-        const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3001';
+        const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3002';
         
         try {
           const response = await axios.get(`${authServiceUrl}/auth/profile`, {
@@ -79,10 +79,14 @@ class AuthMiddleware {
           });
 
           const user = response.data.user;
-          console.log(`[Patient Permission] Auth Service profile response:`, {role_name: user.role_name, permissions: user.permissions});
+          console.log(`[Patient Permission] Auth Service profile response:`, {
+            role_name: user.role_name, 
+            permissions: user.permissions,
+            role: user.role
+          });
           
-          // Check if user has required permission
-          if (!user.role_name || !this.hasPermission(user.role_name, permission)) {
+          // Check if user has required permission using granular permissions
+          if (!this.hasGranularPermission(user, permission)) {
             console.log(`[Patient Permission] Permission denied for '${permission}' - role: '${user.role_name}'`);
             return res.status(403).json({
               error: 'Insufficient permissions'
@@ -111,7 +115,83 @@ class AuthMiddleware {
     };
   }
 
-  // Check if role has permission (simplified version)
+  // Check if user has granular permission
+  static hasGranularPermission(user, permission) {
+    try {
+      // Mappa permessi legacy a permessi granulari
+      const permissionMap = {
+        'patients.read': 'pages.patients.access',
+        'patients.write': 'pages.patients.create',
+        'patients.update': 'pages.patients.edit',
+        'patients.delete': 'pages.patients.delete',
+        'clinical.read': 'pages.clinical.access',
+        'clinical.write': 'pages.clinical.create_records',
+        'clinical.update': 'pages.clinical.edit_own_records',
+        'groups.read': 'pages.groups.access',
+        'groups.write': 'pages.groups.create',
+        'groups.update': 'pages.groups.edit',
+        'groups.delete': 'pages.groups.delete',
+        'billing.read': 'pages.billing.access',
+        'billing.write': 'pages.billing.create',
+        'billing.update': 'pages.billing.edit',
+        'billing.delete': 'pages.billing.delete',
+        'users.read': 'administration.users.access',
+        'users.write': 'administration.users.create',
+        'users.update': 'administration.users.edit',
+        'users.delete': 'administration.users.delete',
+        'roles.read': 'administration.roles.access',
+        'roles.write': 'administration.roles.create',
+        'roles.update': 'administration.roles.edit',
+        'roles.delete': 'administration.roles.delete'
+      };
+      
+      // Converti permesso legacy a granulare
+      const granularPermission = permissionMap[permission] || permission;
+      
+      // Usa i permessi del ruolo (non user.permissions)
+      const permissions = user.role?.permissions;
+      
+      if (!permissions) {
+        console.log(`[Patient Permission] No role permissions found for user ${user.username}`);
+        return false;
+      }
+      
+      // Controlla se admin ha tutti i permessi
+      if (typeof permissions === 'object' && permissions.all === true) {
+        return true;
+      }
+      
+      // Controlla permesso wildcard
+      if (Array.isArray(permissions) && permissions.includes('*')) {
+        return true;
+      }
+      
+      // Controlla permesso specifico (formato: "area.action")
+      if (Array.isArray(permissions) && permissions.includes(permission)) {
+        return true;
+      }
+      
+      // Controlla permesso nell'oggetto permissions (formato granulare)
+      if (typeof permissions === 'object' && !Array.isArray(permissions)) {
+        const [section, area, action] = granularPermission.split('.');
+        if (!section || !area || !action) {
+          return false;
+        }
+        
+        // Controlla permesso granulare: permissions[section][area][action]
+        return permissions[section] && 
+               permissions[section][area] && 
+               permissions[section][area][action] === true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error in hasGranularPermission:', error);
+      return false;
+    }
+  }
+
+  // Check if role has permission (legacy version - kept for compatibility)
   static hasPermission(roleName, permission) {
     const rolePermissions = {
       'admin': ['*'], // Admin has all permissions

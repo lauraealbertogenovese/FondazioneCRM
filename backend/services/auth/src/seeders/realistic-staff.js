@@ -1,11 +1,11 @@
 /**
- * Realistic Staff Data Seeder for Addiction Recovery Foundation
+ * Realistic Staff Data Seeder for Addiction Recovery Foundation - UPDATED
  * 
- * This file contains realistic staff data for a psychological assistance
- * foundation dealing with addiction recovery.
- * 
- * Includes various professional roles: psychologists, doctors, social workers,
- * counselors, administrators, and volunteers.
+ * This file contains realistic staff data aligned with the current system:
+ * - Only 2 base roles: admin, Operatore
+ * - All staff members use 'Operatore' role (customizable by admin)
+ * - Granular permissions format
+ * - Compatible with current database schema
  */
 
 const bcrypt = require('bcrypt');
@@ -32,7 +32,7 @@ const realisticStaff = [
     password: 'ClinicalDir456!',
     first_name: 'Giuseppe',
     last_name: 'Marchetti',
-    role: 'doctor',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -45,7 +45,7 @@ const realisticStaff = [
     password: 'Psychology789!',
     first_name: 'Laura',
     last_name: 'Ferrari',
-    role: 'psychologist',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -56,7 +56,7 @@ const realisticStaff = [
     password: 'Therapy321!',
     first_name: 'Alessandro',
     last_name: 'Conti',
-    role: 'psychologist',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -67,7 +67,7 @@ const realisticStaff = [
     password: 'GroupTherapy654!',
     first_name: 'Giulia',
     last_name: 'Bianchi',
-    role: 'psychologist',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -80,31 +80,7 @@ const realisticStaff = [
     password: 'Medical987!',
     first_name: 'Marco',
     last_name: 'Verdi',
-    role: 'doctor',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Social Workers
-  {
-    username: 'sw.reinserimento',
-    email: 'e.romano@fondazionecura.it',
-    password: 'SocialWork246!',
-    first_name: 'Elena',
-    last_name: 'Romano',
-    role: 'social_worker',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'sw.famiglia',
-    email: 's.marino@fondazionecura.it',
-    password: 'FamilySupport135!',
-    first_name: 'Silvia',
-    last_name: 'Marino',
-    role: 'social_worker',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -117,7 +93,7 @@ const realisticStaff = [
     password: 'Counseling579!',
     first_name: 'Roberto',
     last_name: 'Galli',
-    role: 'counselor',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -128,20 +104,20 @@ const realisticStaff = [
     password: 'Recovery468!',
     first_name: 'Francesca',
     last_name: 'Costa',
-    role: 'counselor',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
   },
 
-  // Healthcare Operators
+  // Healthcare Operators (now using 'Operatore' role)
   {
     username: 'op.accoglienza',
     email: 'c.ricci@fondazionecura.it',
     password: 'Operator357!',
     first_name: 'Chiara',
     last_name: 'Ricci',
-    role: 'operator',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -152,20 +128,20 @@ const realisticStaff = [
     password: 'Support802!',
     first_name: 'Davide',
     last_name: 'Fontana',
-    role: 'operator',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
   },
 
-  // Peer Counselors (Ex-patients now helping others)
+  // Peer Counselors (now using 'Operatore' role)
   {
     username: 'peer.recovery1',
     email: 'a.lombardi@fondazionecura.it',
     password: 'PeerHelp913!',
     first_name: 'Andrea',
     last_name: 'Lombardi',
-    role: 'counselor',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -176,20 +152,20 @@ const realisticStaff = [
     password: 'SharedExperience624!',
     first_name: 'Valentina',
     last_name: 'Esposito',
-    role: 'counselor',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
   },
 
-  // Volunteers
+  // Support Staff (now using 'Operatore' role)
   {
     username: 'vol.supporto1',
     email: 'l.moretti@fondazionecura.it',
     password: 'Volunteer147!',
     first_name: 'Luca',
     last_name: 'Moretti',
-    role: 'volunteer',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -200,20 +176,20 @@ const realisticStaff = [
     password: 'VolunteerHelp258!',
     first_name: 'Tommaso',
     last_name: 'Giuliani',
-    role: 'volunteer',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
   },
 
-  // Observer/Trainee
+  // Trainee (now using 'Operatore' role with limited permissions)
   {
     username: 'trainee.psy',
     email: 'm.pellegrini@fondazionecura.it',
     password: 'Learning369!',
     first_name: 'Martina',
     last_name: 'Pellegrini',
-    role: 'viewer',
+    role: 'Operatore',
     is_active: true,
     created_at: new Date(),
     updated_at: new Date()
@@ -226,105 +202,66 @@ const realisticStaff = [
     password: 'Inactive000!',
     first_name: 'Paolo',
     last_name: 'Inattivo',
-    role: 'operator',
+    role: 'Operatore',
     is_active: false,
     created_at: new Date(),
     updated_at: new Date()
   }
 ];
 
-// Role mapping for the foundation context
+// Updated role mapping - ONLY 2 BASE ROLES (aligned with current system)
 const foundationRoles = [
   {
     name: 'admin',
     display_name: 'Amministratore',
     description: 'Accesso completo al sistema, gestione utenti e configurazioni',
-    permissions: ['*'] // All permissions
+    permissions: {
+      pages: {
+        patients: { access: true, create: true, edit: true, delete: true, view_sensitive: true },
+        clinical: { access: true, create_records: true, edit_own_records: true, edit_all_records: true },
+        groups: { access: true, create: true, edit: true, delete: true },
+        billing: { access: true, create: true, edit: true, delete: true }
+      },
+      features: {
+        documents: { access: true, upload: true, download: true, delete: true }
+      },
+      administration: {
+        users: { access: true, create: true, edit: true, delete: true },
+        roles: { access: true, create: true, edit: true, delete: true },
+        system: { access: true, email_config: true, audit_logs: true }
+      }
+    }
   },
   {
-    name: 'doctor',
-    display_name: 'Medico',
-    description: 'Medico specialista per detox e gestione farmacologica',
-    permissions: [
-      'patients.read', 'patients.write', 'patients.update',
-      'clinical.read', 'clinical.write', 'clinical.update',
-      'visits.read', 'visits.write', 'visits.update',
-      'groups.read'
-    ]
-  },
-  {
-    name: 'psychologist',
-    display_name: 'Psicologo',
-    description: 'Psicologo specializzato in dipendenze',
-    permissions: [
-      'patients.read', 'patients.write', 'patients.update',
-      'clinical.read', 'clinical.write', 'clinical.update',
-      'visits.read', 'visits.write', 'visits.update',
-      'groups.read', 'groups.write', 'groups.update'
-    ]
-  },
-  {
-    name: 'social_worker',
-    display_name: 'Assistente Sociale',
-    description: 'Assistente sociale per reinserimento e supporto familiare',
-    permissions: [
-      'patients.read', 'patients.update',
-      'clinical.read', 'clinical.update',
-      'visits.read', 'visits.write',
-      'groups.read', 'groups.write'
-    ]
-  },
-  {
-    name: 'counselor',
-    display_name: 'Counselor',
-    description: 'Counselor per dipendenze e peer counselor',
-    permissions: [
-      'patients.read',
-      'clinical.read',
-      'visits.read', 'visits.write',
-      'groups.read', 'groups.write', 'groups.update'
-    ]
-  },
-  {
-    name: 'operator',
+    name: 'Operatore',
     display_name: 'Operatore',
-    description: 'Operatore sanitario di supporto',
-    permissions: [
-      'patients.read',
-      'clinical.read',
-      'visits.read',
-      'groups.read'
-    ]
-  },
-  {
-    name: 'volunteer',
-    display_name: 'Volontario',
-    description: 'Volontario per attività di supporto',
-    permissions: [
-      'patients.read',
-      'visits.read',
-      'groups.read'
-    ]
-  },
-  {
-    name: 'viewer',
-    display_name: 'Osservatore',
-    description: 'Accesso in sola lettura per tirocinanti',
-    permissions: [
-      'patients.read',
-      'clinical.read',
-      'visits.read',
-      'groups.read'
-    ]
+    description: 'Operatore sanitario di supporto - ruolo base personalizzabile',
+    permissions: {
+      pages: {
+        patients: { access: true, create: true, edit: true, delete: false, view_sensitive: true },
+        clinical: { access: true, create_records: true, edit_own_records: true, edit_all_records: false },
+        groups: { access: true, create: true, edit: true, delete: false },
+        billing: { access: false, create: false, edit: false, delete: false }
+      },
+      features: {
+        documents: { access: true, upload: true, download: true, delete: false }
+      },
+      administration: {
+        users: { access: false, create: false, edit: false, delete: false },
+        roles: { access: false, create: false, edit: false, delete: false },
+        system: { access: false, email_config: false, audit_logs: false }
+      }
+    }
   }
 ];
 
 /**
  * Seeds the database with realistic staff data for addiction recovery foundation
+ * Updated to work with current system (only 2 base roles: admin + Operatore)
  */
 const seedRealisticStaff = async () => {
   try {
-    console.log('🌱 Starting realistic staff data seeding...');
+    console.log('🌱 Starting realistic staff data seeding (UPDATED)...');
     
     // First, ensure roles exist
     console.log('📋 Creating/updating foundation roles...');
@@ -334,8 +271,11 @@ const seedRealisticStaff = async () => {
         const existingRole = await Role.findByName(roleData.name);
         
         if (existingRole) {
-          // Update existing role
-          await existingRole.update(roleData);
+          // Update existing role with new permissions
+          await existingRole.update({
+            description: roleData.description,
+            permissions: roleData.permissions
+          });
           console.log(`🔄 Updated role: ${roleData.display_name}`);
         } else {
           // Create new role
@@ -392,6 +332,8 @@ const seedRealisticStaff = async () => {
     }
     
     console.log(`🎉 Successfully seeded ${createdUsers.length} staff members for addiction recovery foundation`);
+    console.log('🔐 Admin login: admin.fondazione / SecurePass123!');
+    console.log('📝 Note: All staff use "Operatore" role - customize permissions via admin panel');
     return createdUsers;
     
   } catch (error) {

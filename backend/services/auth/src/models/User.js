@@ -54,6 +54,8 @@ class User {
           permissions: result.rows[0].role_permissions
         };
       }
+      // Set user-specific permissions if they exist
+      user.permissions = result.rows[0].permissions || null;
       return user;
     }
     return null;
@@ -77,6 +79,8 @@ class User {
           permissions: result.rows[0].role_permissions
         };
       }
+      // Set user-specific permissions if they exist
+      user.permissions = result.rows[0].permissions || null;
       return user;
     }
     return null;
@@ -100,6 +104,8 @@ class User {
           permissions: result.rows[0].role_permissions
         };
       }
+      // Set user-specific permissions if they exist
+      user.permissions = result.rows[0].permissions || null;
       return user;
     }
     return null;
@@ -298,7 +304,8 @@ class User {
       last_name: this.last_name,
       role_id: this.role_id,
       role_name: this.role_name,
-      permissions: this.role ? this.role.permissions : null,
+      role: this.role, // Include full role object with permissions
+      permissions: this.permissions, // User-specific permissions
       last_login: this.last_login,
       created_at: this.created_at
     };

@@ -11,7 +11,7 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     // Verifica il token con l'Auth Service
-    const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3001';
+    const authServiceUrl = process.env.AUTH_SERVICE_URL || 'http://auth-service:3002';
     const response = await axios.get(`${authServiceUrl}/auth/verify`, {
       headers: {
         'Authorization': `Bearer ${token}`

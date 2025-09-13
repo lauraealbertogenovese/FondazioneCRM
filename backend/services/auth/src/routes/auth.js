@@ -196,15 +196,27 @@ router.post('/logout-all', AuthMiddleware.verifyToken, async (req, res) => {
 // GET /profile - Get user profile
 router.get('/profile', AuthMiddleware.verifyToken, async (req, res) => {
   try {
+    console.log('🔍 DEBUG /profile: Getting user with ID:', req.user.id);
     const user = await User.findById(req.user.id);
     if (!user) {
+      console.log('❌ DEBUG /profile: User not found');
       return res.status(404).json({
         error: 'User not found'
       });
     }
 
+    console.log('🔍 DEBUG /profile: User found:', {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      permissions: user.permissions
+    });
+
+    const publicData = user.getPublicData();
+    console.log('🔍 DEBUG /profile: Public data:', publicData);
+
     res.json({
-      user: user.getPublicData()
+      user: publicData
     });
   } catch (error) {
     console.error('Get profile error:', error);

@@ -181,6 +181,11 @@ export const userService = {
     return response.data;
   },
 
+  getClinicians: async () => {
+    const response = await api.get('/users/clinicians');
+    return response.data;
+  },
+
   getUser: async (id) => {
     const response = await api.get(`/users/${id}`);
     return response.data;
@@ -208,6 +213,16 @@ export const userService = {
 
   updateUserPermissions: async (userId, permissions) => {
     const response = await api.put(`/users/${userId}/permissions`, { permissions });
+    return response.data;
+  },
+
+  transferUserOwnership: async (userId, newOwnerId) => {
+    const response = await api.post(`/users/${userId}/transfer-ownership`, { newOwnerId });
+    return response.data;
+  },
+
+  getUserOwnershipSummary: async (userId) => {
+    const response = await api.get(`/users/${userId}/ownership-summary`);
     return response.data;
   },
 };

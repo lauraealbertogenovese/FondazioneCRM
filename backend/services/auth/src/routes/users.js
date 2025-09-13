@@ -3,8 +3,36 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const ValidationUtils = require('../utils/validation');
 const AuthMiddleware = require('../middleware/auth');
+const { query } = require('../database/connection');
 
 const router = express.Router();
+
+// GET /users/clinicians - Get available clinicians for patient assignment (all authenticated users)
+router.get('/clinicians', AuthMiddleware.verifyToken, async (req, res) => {
+  try {
+    // Get all users with basic info for clinician selection
+    const clinicians = await User.findAll(50, 0); // Get up to 50 users
+    
+    // Return only necessary data for clinician selection
+    const cliniciansData = clinicians.map(user => ({
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      role_name: user.role_name
+    }));
+    
+    res.json({
+      success: true,
+      clinicians: cliniciansData
+    });
+  } catch (error) {
+    console.error('Get clinicians error:', error);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
 
 // GET /users - Get all users (admin only)
 router.get('/', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
@@ -150,8 +178,28 @@ router.put('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, asyn
       }
     }
 
-    // Update user
-    await user.update(updateData);
+    // Handle password update separately if provided
+    if (updateData.password) {
+      // Validate password
+      const passwordValidation = ValidationUtils.validatePassword(updateData.password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({
+          error: 'Password validation failed',
+          details: passwordValidation.errors
+        });
+      }
+      
+      // Update password using the secure method
+      await user.updatePassword(updateData.password);
+      
+      // Remove password from updateData so it's not processed again
+      delete updateData.password;
+    }
+    
+    // Update user (without password)
+    if (Object.keys(updateData).some(key => ['first_name', 'last_name', 'email', 'role_id'].includes(key))) {
+      await user.update(updateData);
+    }
 
     res.json({
       message: 'User updated successfully',
@@ -165,10 +213,213 @@ router.put('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, asyn
   }
 });
 
-// DELETE /users/:id - Delete user (admin only)
-router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
+// POST /users/:id/transfer-ownership - Transfer ownership of user's records (admin only)
+router.post('/:id/transfer-ownership', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    const { newOwnerId } = req.body;
+    
+    if (!Number.isInteger(Number(id)) || Number(id) < 1) {
+      return res.status(400).json({
+        error: 'Invalid user ID'
+      });
+    }
+    
+    if (!Number.isInteger(Number(newOwnerId)) || Number(newOwnerId) < 1) {
+      return res.status(400).json({
+        error: 'Invalid new owner ID'
+      });
+    }
+    
+    if (Number(id) === Number(newOwnerId)) {
+      return res.status(400).json({
+        error: 'Cannot transfer ownership to the same user'
+      });
+    }
+
+    // Check if both users exist
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        error: 'User to transfer from not found'
+      });
+    }
+    
+    const newOwner = await User.findById(newOwnerId);
+    if (!newOwner) {
+      return res.status(404).json({
+        error: 'New owner user not found'
+      });
+    }
+
+    console.log(`Transferring ownership from user ${id} to user ${newOwnerId}`);
+    
+    // Start transaction
+    await query('BEGIN');
+    
+    try {
+      const transferredTables = [];
+      
+      // REAL transfer ownership - update actual database records
+      console.log(`Starting REAL ownership transfer from user ${id} to user ${newOwnerId}`);
+      
+      // Transfer ownership in each table that references users
+      const transferOperations = [
+        { table: 'patient.patients', column: 'created_by', description: 'Pazienti creati' },
+        { table: 'patient.patients', column: 'medico_curante', description: 'Pazienti come medico curante' },
+        { table: 'clinical.clinical_records', column: 'created_by', description: 'Cartelle cliniche' }
+      ];
+      
+      for (const operation of transferOperations) {
+        try {
+          const updateQuery = `
+            UPDATE ${operation.table} 
+            SET ${operation.column} = $1 
+            WHERE ${operation.column} = $2
+          `;
+          
+          const result = await query(updateQuery, [newOwnerId, id]);
+          
+          if (result.rowCount > 0) {
+            transferredTables.push({
+              table: operation.table,
+              column: operation.column,
+              description: operation.description,
+              recordsTransferred: result.rowCount
+            });
+            console.log(`✅ Transferred ${result.rowCount} records in ${operation.table}.${operation.column}`);
+          }
+        } catch (transferError) {
+          console.error(`❌ Error transferring ${operation.table}.${operation.column}:`, transferError.message);
+          // Continue with other transfers even if one fails
+        }
+      }
+      
+      // Now delete the user - this should work since ownership has been transferred
+      console.log(`Deleting user ${id} after REAL ownership transfer`);
+      await user.delete();
+      
+      // Commit transaction
+      await query('COMMIT');
+      
+      console.log('Ownership transfer and user deletion completed successfully');
+      
+      res.json({
+        message: 'Ownership transferred and user deleted successfully',
+        transferredTables,
+        fromUser: {
+          id: user.id,
+          username: user.username,
+          email: user.email
+        },
+        toUser: {
+          id: newOwner.id,
+          username: newOwner.username,
+          email: newOwner.email
+        }
+      });
+      
+    } catch (transferError) {
+      // Rollback transaction
+      await query('ROLLBACK');
+      throw transferError;
+    }
+    
+  } catch (error) {
+    console.error('Transfer ownership error:', error);
+    res.status(500).json({
+      error: 'Internal server error during ownership transfer'
+    });
+  }
+});
+
+// GET /users/:id/ownership-summary - Get summary of user's data for ownership transfer
+router.get('/:id/ownership-summary', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!Number.isInteger(Number(id)) || Number(id) < 1) {
+      return res.status(400).json({
+        error: 'Invalid user ID'
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        error: 'User not found'
+      });
+    }
+
+    // Query real data from database
+    const ownershipQueries = [
+      // Pazienti creati dall'utente
+      `SELECT id, nome, cognome, created_at 
+       FROM patient.patients 
+       WHERE created_by = $1`,
+      
+      // Pazienti di cui è medico curante
+      `SELECT id, nome, cognome, created_at 
+       FROM patient.patients 
+       WHERE medico_curante = $1`,
+       
+      // Cartelle cliniche create
+      `SELECT cr.id, p.nome as patient_nome, p.cognome as patient_cognome, cr.created_at
+       FROM clinical.clinical_records cr
+       JOIN patient.patients p ON cr.patient_id = p.id
+       WHERE cr.created_by = $1`
+    ];
+
+    const [patientsCreated, patientsAsDoctor, clinicalRecords] = await Promise.all(
+      ownershipQueries.map(queryText => query(queryText, [id]))
+    );
+
+    const ownershipSummary = {
+      user: {
+        id: user.id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name
+      },
+      summary: {
+        patients_created: patientsCreated.rowCount,
+        patients_as_doctor: patientsAsDoctor.rowCount,
+        clinical_records: clinicalRecords.rowCount,
+        total_records: patientsCreated.rowCount + patientsAsDoctor.rowCount + clinicalRecords.rowCount
+      },
+      details: {
+        patients: patientsCreated.rows.map(p => ({
+          id: p.id,
+          name: `${p.nome} ${p.cognome}`,
+          created_at: p.created_at
+        })),
+        patients_as_doctor: patientsAsDoctor.rows.map(p => ({
+          id: p.id,
+          name: `${p.nome} ${p.cognome}`,
+          assigned_at: p.created_at
+        })),
+        clinical_records: clinicalRecords.rows.map(cr => ({
+          id: cr.id,
+          patient: `${cr.patient_nome} ${cr.patient_cognome}`,
+          created_at: cr.created_at
+        }))
+      }
+    };
+
+    res.json(ownershipSummary);
+  } catch (error) {
+    console.error('Get ownership summary error:', error);
+    res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
+});
+
+// DELETE /users/:id - Delete user (admin only)
+router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
     
     if (!Number.isInteger(Number(id)) || Number(id) < 1) {
       return res.status(400).json({
@@ -213,6 +464,17 @@ router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, a
     });
   } catch (error) {
     console.error('Delete user error:', error);
+    
+    // Handle foreign key constraint violations
+    if (error.code === '23503') {
+      return res.status(400).json({
+        error: 'Cannot delete user because they have associated records',
+        details: 'This user has created clinical records, patients, or other data. Use POST /users/:id/transfer-ownership to transfer their data to another user before deletion.',
+        action: 'transfer_ownership_required',
+        endpoint: `/users/${id}/transfer-ownership`
+      });
+    }
+    
     res.status(500).json({
       error: 'Internal server error'
     });

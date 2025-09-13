@@ -92,31 +92,41 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       setError(null);
       
       // Debug log
-      console.log('DocumentManager fetchDocuments:', { patientId, clinicalRecordId, groupId });
+      console.log('📋 DocumentManager fetchDocuments:', { patientId, clinicalRecordId, groupId });
       
       // Fetch real documents data
       let documentsResponse;
       
       if (clinicalRecordId) {
         // Get clinical record documents
-        console.log('Fetching clinical record documents for recordId:', clinicalRecordId);
+        console.log('📋 Fetching clinical record documents for recordId:', clinicalRecordId);
         const clinicalResponse = await clinicalService.getClinicalRecordDocuments(clinicalRecordId);
         documentsResponse = clinicalResponse;
+        console.log('📋 Clinical documents response:', clinicalResponse);
       } else if (patientId) {
         // Get patient documents
+        console.log('📋 Fetching patient documents for patientId:', patientId);
         const patientResponse = await patientService.getPatientDocuments(patientId);
         documentsResponse = patientResponse;
+        console.log('📋 Patient documents response:', patientResponse);
       } else if (selectedCategory && selectedCategory !== 'all') {
         // Get documents by type
+        console.log('📋 Fetching documents by type:', selectedCategory);
         documentsResponse = await documentService.getDocumentsByType(selectedCategory);
+        console.log('📋 Type documents response:', documentsResponse);
       } else {
         // Get all documents (you might need a different endpoint for this)
+        console.log('📋 Fetching all documents');
         documentsResponse = await documentService.getDocumentsByType('all');
+        console.log('📋 All documents response:', documentsResponse);
       }
       
-      setDocuments(documentsResponse.data || []);
+      const documents = documentsResponse.documents || documentsResponse.data || [];
+      console.log('📋 Setting documents:', documents);
+      setDocuments(documents);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error('❌ Error fetching documents:', error);
+      console.error('❌ Error details:', error.response?.data || error.message);
       setError('Errore nel caricamento dei documenti');
     } finally {
       setLoading(false);
@@ -146,21 +156,36 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       formData.append('description', newDocument.description);
 
       // Debug log
-      console.log('DocumentManager handleFileUpload:', { patientId, clinicalRecordId, groupId });
+      console.log('🔄 DocumentManager handleFileUpload:', { 
+        patientId, 
+        clinicalRecordId, 
+        groupId,
+        fileName: newDocument.file.name,
+        fileSize: newDocument.file.size,
+        fileType: newDocument.file.type,
+        category: newDocument.category
+      });
+      
+      // Log FormData contents
+      for (let pair of formData.entries()) {
+        console.log('📎 FormData:', pair[0], pair[1]);
+      }
       
       // Real API upload
       let response;
       if (clinicalRecordId) {
-        console.log('Uploading to clinical record:', clinicalRecordId);
+        console.log('⬆️ Uploading to clinical record:', clinicalRecordId);
         response = await clinicalService.uploadClinicalDocument(clinicalRecordId, formData);
       } else if (patientId) {
-        console.log('Uploading to patient:', patientId);
+        console.log('⬆️ Uploading to patient:', patientId);
         response = await documentService.uploadDocument(patientId, formData);
       } else {
+        console.log('⬆️ Uploading general document');
         // For non-patient specific documents, you might need a different endpoint
         response = await documentService.uploadDocument(null, formData);
       }
 
+      console.log('✅ Upload response:', response);
       setUploadProgress(100);
 
       // Refresh documents list
@@ -170,8 +195,9 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       setUploadProgress(0);
 
     } catch (error) {
-      console.error('Error uploading document:', error);
-      setError(error.message || 'Errore durante il caricamento del documento');
+      console.error('❌ Error uploading document:', error);
+      console.error('❌ Error details:', error.response?.data || error.message);
+      setError(error.response?.data?.error || error.message || 'Errore durante il caricamento del documento');
       setUploadProgress(0);
     } finally {
       setUploading(false);

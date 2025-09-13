@@ -80,11 +80,11 @@ async function seedAllRealisticData() {
     console.log('==============================================================================');
     console.log('🏥 Your Addiction Recovery Foundation CRM now has:');
     console.log('   • 16 Realistic patients (alcohol, drugs, gambling addictions)');
-    console.log('   • 17 Professional staff members (doctors, psychologists, counselors, social workers)');
+    console.log('   • 15 Professional staff members (all with Operatore role - customizable)');
     console.log('   • 16 Clinical records with appropriate diagnoses and treatment plans');
     console.log('   • 15 Support groups (AA, NA, therapy groups, family support)');
     console.log('   • 20+ Therapeutic sessions (individual, group, family, medical)');
-    console.log('   • Foundation-specific roles and permissions');
+    console.log('   • Simplified role system: admin + Operatore (others created dynamically)');
     console.log('');
     console.log('🔐 Default login credentials:');
     console.log('   • Admin: admin.fondazione / SecurePass123!');

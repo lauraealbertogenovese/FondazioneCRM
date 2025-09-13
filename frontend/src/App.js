@@ -2,9 +2,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import 'dayjs/locale/it';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { it } from 'date-fns/locale';
 
 
 import theme from './theme/theme';
@@ -61,8 +61,11 @@ const ProtectedRoute = ({ children, requiredPermission = null }) => {
 // App con React Router
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  
+  console.log('🔍 DEBUG AppContent:', { isAuthenticated, isLoading });
 
   if (isLoading) {
+    console.log('🔍 DEBUG AppContent: Showing LoadingSpinner');
     return <LoadingSpinner />;
   }
 
@@ -306,14 +309,16 @@ const AppContent = () => {
 // App principale
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </Router>
-    </ThemeProvider>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={it}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
+    </LocalizationProvider>
   );
 };
 

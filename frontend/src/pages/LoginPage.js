@@ -23,6 +23,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
+  console.log('🔍 DEBUG LoginPage: Component loaded');
   const theme = useTheme();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -67,19 +68,24 @@ const LoginPage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log('🔍 DEBUG LoginPage: Form submitted', { formData });
     
     if (!validateForm()) {
+      console.log('🔍 DEBUG LoginPage: Form validation failed');
       return;
     }
 
+    console.log('🔍 DEBUG LoginPage: Form validation passed, starting login');
     setLoading(true);
     setLoginError('');
 
     try {
+      console.log('🔍 DEBUG LoginPage: Calling login function');
       await login(formData);
+      console.log('🔍 DEBUG LoginPage: Login successful');
       // Il redirect viene gestito da AuthContext
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('🔍 DEBUG LoginPage: Login error:', error);
       setLoginError(error.message || 'Errore durante il login. Verifica username e password.');
     } finally {
       setLoading(false);
@@ -215,6 +221,9 @@ const LoginPage = () => {
                 fullWidth
                 variant="contained"
                 disabled={loading}
+                onClick={() => {
+                  console.log('🔍 DEBUG LoginPage: Button clicked');
+                }}
                 sx={{
                   py: 1.5,
                   fontSize: '1rem',

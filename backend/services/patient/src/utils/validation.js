@@ -115,8 +115,8 @@ class PatientValidationUtils {
     
     if (!sesso || sesso.trim() === '') {
       errors.push('Sesso is required');
-    } else if (!['M', 'F', 'Altro'].includes(sesso)) {
-      errors.push('Sesso must be M, F, or Altro');
+    } else if (!['M', 'F', 'A'].includes(sesso)) {
+      errors.push('Sesso must be M, F, or A');
     }
     
     return {
@@ -253,10 +253,8 @@ class PatientValidationUtils {
       errors.push(...medicoCuranteValidation.errors);
     }
     
-    // Validate consensi
-    if (data.consenso_trattamento_dati !== true) {
-      errors.push('Consenso trattamento dati is required');
-    }
+    // Consenso trattamento dati is optional - can be true, false, or null
+    // No validation required, just track the patient's choice
     
     return {
       isValid: errors.length === 0,

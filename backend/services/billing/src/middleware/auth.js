@@ -17,7 +17,7 @@ const verifyToken = async (req, res, next) => {
     
     // Get user info from database
     const userResult = await query(
-      'SELECT id, username, email, role_id FROM auth.users WHERE id = $1 AND is_active = true',
+      'SELECT u.id, u.username, u.email, u.role_id, r.name as role_name, r.permissions as role_permissions FROM auth.users u LEFT JOIN auth.roles r ON u.role_id = r.id WHERE u.id = $1',
       [decoded.id]
     );
     
@@ -28,7 +28,18 @@ const verifyToken = async (req, res, next) => {
       });
     }
     
-    req.user = userResult.rows[0];
+    const userData = userResult.rows[0];
+    req.user = {
+      id: userData.id,
+      username: userData.username,
+      email: userData.email,
+      role_id: userData.role_id,
+      role_name: userData.role_name,
+      role: userData.role_name ? {
+        name: userData.role_name,
+        permissions: userData.role_permissions
+      } : null
+    };
     next();
   } catch (error) {
     console.error('Token verification error:', error);
@@ -50,15 +61,21 @@ const requirePermission = (permission) => {
         });
       }
       
-      // Check user permissions
-      const permissionResult = await query(`
-        SELECT p.name 
-        FROM auth.user_permissions up
-        JOIN auth.permissions p ON up.permission_id = p.id
-        WHERE up.user_id = $1 AND (p.name = $2 OR p.name = '*')
-      `, [req.user.id, permission]);
+      // Check user permissions using role-based system
+      if (!req.user.role || !req.user.role.permissions) {
+        return res.status(403).json({
+          success: false,
+          error: 'No role permissions found'
+        });
+      }
       
-      if (permissionResult.rows.length === 0) {
+      // Check for admin role (has all permissions)
+      if (Array.isArray(req.user.role.permissions) && req.user.role.permissions.includes('*')) {
+        return next(); // Admin has all permissions
+      }
+      
+      // Check for specific permission in role
+      if (Array.isArray(req.user.role.permissions) && !req.user.role.permissions.includes(permission)) {
         return res.status(403).json({
           success: false,
           error: 'Insufficient permissions'
@@ -86,15 +103,27 @@ const requireBillingAccess = async (req, res, next) => {
       });
     }
     
-    // Check if user has billing permissions or is root
-    const hasAccess = await query(`
-      SELECT 1 FROM auth.user_permissions up
-      JOIN auth.permissions p ON up.permission_id = p.id
-      WHERE up.user_id = $1 
-      AND (p.name LIKE 'billing.%' OR p.name = '*' OR p.name = 'admin')
-    `, [req.user.id]);
+    // Check if user has billing access using role-based system
+    if (!req.user.role || !req.user.role.permissions) {
+      return res.status(403).json({
+        success: false,
+        error: 'No role permissions found'
+      });
+    }
     
-    if (hasAccess.rows.length === 0) {
+    // Admin role has access to everything
+    if (req.user.role_name === 'admin' || 
+        (Array.isArray(req.user.role.permissions) && req.user.role.permissions.includes('*'))) {
+      return next(); // Admin has billing access
+    }
+    
+    // Check for specific billing permissions
+    const hasBillingAccess = Array.isArray(req.user.role.permissions) && 
+                            req.user.role.permissions.some(perm => 
+                              perm.includes('billing.') || perm === 'billing' || perm === '*'
+                            );
+    
+    if (!hasBillingAccess) {
       return res.status(403).json({
         success: false,
         error: 'Access denied. Billing access required (Administrative role)'

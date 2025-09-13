@@ -21,6 +21,9 @@ import {
   Divider,
   Fade,
   Skeleton,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -37,6 +40,7 @@ import {
   Work as OperatorIcon,
   Email as EmailIcon,
   Security as SecurityIcon,
+  SwapHoriz as TransferIcon,
 } from '@mui/icons-material';
 import {
   Table,
@@ -62,6 +66,11 @@ const UsersPageNew = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transferOwnershipDialogOpen, setTransferOwnershipDialogOpen] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [selectedNewOwnerId, setSelectedNewOwnerId] = useState('');
+  const [ownershipSummary, setOwnershipSummary] = useState(null);
+  const [loadingOwnership, setLoadingOwnership] = useState(false);
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
   const [userPermissions, setUserPermissions] = useState({});
   const [error, setError] = useState(null);
@@ -138,6 +147,60 @@ const UsersPageNew = () => {
       console.log('Utente cancellato con successo');
     } catch (error) {
       console.error('Errore nella cancellazione:', error);
+      
+      // Check if error indicates ownership transfer is required
+      if (error.response?.data?.action === 'transfer_ownership_required') {
+        setDeleteDialogOpen(false);
+        // Load ownership summary and available users
+        loadOwnershipDetails();
+      } else {
+        setError('Errore nella cancellazione dell\'utente: ' + (error.response?.data?.error || error.message));
+        setDeleteDialogOpen(false);
+      }
+    }
+  };
+
+  const loadOwnershipDetails = async () => {
+    if (!selectedUser) return;
+    
+    setLoadingOwnership(true);
+    try {
+      // Load ownership summary
+      const summary = await userService.getUserOwnershipSummary(selectedUser.id);
+      setOwnershipSummary(summary);
+      
+      // Load available users for ownership transfer
+      const allUsers = users.filter(u => u.id !== selectedUser.id && u.is_active !== false);
+      setAvailableUsers(allUsers);
+      
+      // Show transfer dialog
+      setTransferOwnershipDialogOpen(true);
+    } catch (error) {
+      console.error('Errore nel caricamento dettagli proprietà:', error);
+      setError('Errore nel caricamento dei dettagli: ' + (error.response?.data?.error || error.message));
+    } finally {
+      setLoadingOwnership(false);
+    }
+  };
+
+  const handleTransferOwnership = async () => {
+    if (!selectedUser || !selectedNewOwnerId) {
+      return;
+    }
+
+    try {
+      // Transfer ownership (this will also delete the user)
+      await userService.transferUserOwnership(selectedUser.id, selectedNewOwnerId);
+      
+      await fetchUsers();
+      setTransferOwnershipDialogOpen(false);
+      setSelectedUser(null);
+      setSelectedNewOwnerId('');
+      setOwnershipSummary(null);
+      console.log('Utente cancellato con successo dopo trasferimento proprietà');
+    } catch (error) {
+      console.error('Errore nel trasferimento proprietà:', error);
+      setError('Errore nel trasferimento proprietà: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -576,6 +639,157 @@ const UsersPageNew = () => {
             }}
           >
             Cancella
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Transfer Ownership Dialog */}
+      <Dialog
+        open={transferOwnershipDialogOpen}
+        onClose={() => {
+          setTransferOwnershipDialogOpen(false);
+          setSelectedUser(null);
+          setSelectedNewOwnerId('');
+          setOwnershipSummary(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+        sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
+      >
+        <DialogTitle sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TransferIcon sx={{ color: 'warning.main' }} />
+          Trasferimento Proprietà Richiesto
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 3 }}>
+            L'utente <strong>{selectedUser?.first_name} {selectedUser?.last_name}</strong> ha i seguenti dati associati 
+            che devono essere trasferiti ad un altro utente prima della cancellazione.
+          </Typography>
+          
+          {loadingOwnership && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+              <Typography>Caricamento dettagli in corso...</Typography>
+            </Box>
+          )}
+          
+          {ownershipSummary && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Dati da Trasferire:
+              </Typography>
+              
+              <Box sx={{ bgcolor: 'grey.50', p: 2, borderRadius: 2, mb: 2 }}>
+                <Stack spacing={1}>
+                  <Typography variant="body2">
+                    📋 <strong>{ownershipSummary.summary.patients_created}</strong> Pazienti creati
+                  </Typography>
+                  <Typography variant="body2">
+                    👨‍⚕️ <strong>{ownershipSummary.summary.patients_as_doctor}</strong> Pazienti come medico curante
+                  </Typography>
+                  <Typography variant="body2">
+                    🏥 <strong>{ownershipSummary.summary.clinical_records}</strong> Cartelle cliniche
+                  </Typography>
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    📊 <strong>{ownershipSummary.summary.total_records}</strong> Record totali da trasferire
+                  </Typography>
+                </Stack>
+              </Box>
+              
+              {ownershipSummary.details.patients.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                    Pazienti Creati:
+                  </Typography>
+                  {ownershipSummary.details.patients.map(patient => (
+                    <Typography key={patient.id} variant="body2" sx={{ ml: 2, mb: 0.5 }}>
+                      • {patient.name} (creato il {new Date(patient.created_at).toLocaleDateString('it-IT')})
+                    </Typography>
+                  ))}
+                </Box>
+              )}
+              
+              {ownershipSummary.details.patients_as_doctor.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                    Pazienti come Medico Curante:
+                  </Typography>
+                  {ownershipSummary.details.patients_as_doctor.map(patient => (
+                    <Typography key={patient.id} variant="body2" sx={{ ml: 2, mb: 0.5 }}>
+                      • {patient.name} (assegnato il {new Date(patient.assigned_at).toLocaleDateString('it-IT')})
+                    </Typography>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          )}
+          
+          <FormControl fullWidth>
+            <InputLabel>Seleziona nuovo proprietario</InputLabel>
+            <Select
+              value={selectedNewOwnerId}
+              onChange={(e) => setSelectedNewOwnerId(e.target.value)}
+              label="Seleziona nuovo proprietario"
+            >
+              {availableUsers.map((userItem) => (
+                <MenuItem key={userItem.id} value={userItem.id}>
+                  {userItem.first_name} {userItem.last_name} ({userItem.username}) - {userItem.role_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            Tutti i dati creati dall'utente verranno trasferiti al nuovo proprietario selezionato.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button 
+            onClick={() => {
+              setTransferOwnershipDialogOpen(false);
+              setSelectedUser(null);
+              setSelectedNewOwnerId('');
+              setOwnershipSummary(null);
+            }} 
+            size="small"
+            sx={{
+              borderColor: '#6b7280',
+              color: '#374151',
+              fontWeight: 500,
+              px: 2,
+              py: 0.5,
+              '&:hover': {
+                borderColor: '#3b82f6',
+                color: '#3b82f6',
+                backgroundColor: '#f8fafc',
+              }
+            }}
+          >
+            Annulla
+          </Button>
+          <Button 
+            onClick={handleTransferOwnership}
+            disabled={!selectedNewOwnerId}
+            color="warning" 
+            variant="contained" 
+            size="small"
+            sx={{
+              backgroundColor: '#f59e0b',
+              color: '#ffffff',
+              fontWeight: 600,
+              px: 2,
+              py: 0.5,
+              '&:hover': {
+                backgroundColor: '#d97706',
+                color: '#ffffff',
+              },
+              '&:disabled': {
+                backgroundColor: '#d1d5db',
+                color: '#9ca3af',
+              }
+            }}
+          >
+            Trasferisci e Cancella
           </Button>
         </DialogActions>
       </Dialog>

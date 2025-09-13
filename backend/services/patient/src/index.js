@@ -135,5 +135,5 @@ process.on('SIGINT', () => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Patient Service running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Auth Service URL: ${process.env.AUTH_SERVICE_URL || 'http://auth-service:3001'}`);
+  console.log(`Auth Service URL: ${process.env.AUTH_SERVICE_URL || 'http://auth-service:3002'}`);
 });

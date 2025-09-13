@@ -66,7 +66,7 @@ app.get('/health', (req, res) => {
 // Proxy routes
 
 const patientServiceProxy = createProxyMiddleware({
-  target: process.env.PATIENT_SERVICE_URL || 'http://patient-service:3002',
+  target: process.env.PATIENT_SERVICE_URL || 'http://patient-service:3003',
   changeOrigin: true,
   timeout: 30000,
   proxyTimeout: 30000,
@@ -105,7 +105,7 @@ const patientServiceProxy = createProxyMiddleware({
 });
 
 const clinicalServiceProxy = createProxyMiddleware({
-  target: process.env.CLINICAL_SERVICE_URL || 'http://clinical-service:3003',
+  target: process.env.CLINICAL_SERVICE_URL || 'http://clinical-service:3004',
   changeOrigin: true,
   timeout: 30000,
   proxyTimeout: 30000,
@@ -145,7 +145,7 @@ const clinicalServiceProxy = createProxyMiddleware({
 });
 
 const groupServiceProxy = createProxyMiddleware({
-  target: process.env.GROUP_SERVICE_URL || 'http://group-service:3004',
+  target: process.env.GROUP_SERVICE_URL || 'http://group-service:3005',
   changeOrigin: true,
   timeout: 30000,
   proxyTimeout: 30000,
@@ -175,7 +175,7 @@ const groupServiceProxy = createProxyMiddleware({
 });
 
 const billingServiceProxy = createProxyMiddleware({
-  target: process.env.BILLING_SERVICE_URL || 'http://billing-service:3005',
+  target: process.env.BILLING_SERVICE_URL || 'http://billing-service:3006',
   changeOrigin: true,
   timeout: 30000,
   proxyTimeout: 30000,
@@ -250,7 +250,7 @@ const auditServiceProxy = createProxyMiddleware({
 
 // Apply proxies
 app.use('/auth', createProxyMiddleware({
-  target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+  target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3002',
   changeOrigin: true,
   pathRewrite: {
     '^/auth': '/auth' // Keep the /auth prefix since auth service expects it
@@ -282,7 +282,7 @@ app.use('/auth', createProxyMiddleware({
   }
 }));
 app.use('/users', createProxyMiddleware({
-  target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+  target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3002',
   changeOrigin: true,
   pathRewrite: {
     '^/users': '/users' // Keep the /users prefix since auth service expects it
@@ -324,7 +324,7 @@ app.use('/users', createProxyMiddleware({
 }));
 
 app.use('/roles', createProxyMiddleware({
-  target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
+  target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3002',
   changeOrigin: true,
   pathRewrite: {
     '^/roles': '/roles' // Keep the /roles prefix since auth service expects it
@@ -358,11 +358,11 @@ app.get('/system/health', async (req, res) => {
   try {
     const services = [
       { name: 'API Gateway', status: 'OK', responseTime: 0 },
-      { name: 'Auth Service', url: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001' },
-      { name: 'Patient Service', url: process.env.PATIENT_SERVICE_URL || 'http://patient-service:3002' },
-      { name: 'Clinical Service', url: process.env.CLINICAL_SERVICE_URL || 'http://clinical-service:3003' },
-      { name: 'Group Service', url: process.env.GROUP_SERVICE_URL || 'http://group-service:3004' },
-      { name: 'Billing Service', url: process.env.BILLING_SERVICE_URL || 'http://billing-service:3005' },
+      { name: 'Auth Service', url: process.env.AUTH_SERVICE_URL || 'http://auth-service:3002' },
+      { name: 'Patient Service', url: process.env.PATIENT_SERVICE_URL || 'http://patient-service:3003' },
+      { name: 'Clinical Service', url: process.env.CLINICAL_SERVICE_URL || 'http://clinical-service:3004' },
+      { name: 'Group Service', url: process.env.GROUP_SERVICE_URL || 'http://group-service:3005' },
+      { name: 'Billing Service', url: process.env.BILLING_SERVICE_URL || 'http://billing-service:3006' },
       { name: 'Audit Service', url: process.env.AUDIT_SERVICE_URL || 'http://audit-service:3006' }
     ];
 
@@ -412,6 +412,7 @@ app.get('/system/health', async (req, res) => {
 });
 
 app.use('/patients', patientServiceProxy);
+app.use('/documents', patientServiceProxy); // Document endpoints proxied to patient service
 app.use('/clinical', clinicalServiceProxy);
 app.use('/groups', groupServiceProxy);
 app.use('/billing', billingServiceProxy);

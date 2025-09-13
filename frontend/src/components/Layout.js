@@ -59,20 +59,20 @@ const menuItems = [
     subtitle: 'Gestisci le cartelle cliniche e i profili clinici',
   },
   {
-    text: 'Utenti',
-    icon: <AdminIcon />,
-    path: '/users',
-    permission: 'users.read',
-    title: 'Gestione Utenti',
-    subtitle: 'Visualizza e gestisci tutti gli utenti del sistema',
-  },
-  {
     text: 'Gruppi di Supporto',
     icon: <GroupIcon />,
     path: '/groups',
     permission: 'groups.read',
     title: 'Gruppi di Supporto',
     subtitle: 'Gestisci i gruppi di supporto psicologico e i loro membri',
+  },
+  {
+    text: 'Utenti',
+    icon: <AdminIcon />,
+    path: '/users',
+    permission: 'users.read',
+    title: 'Gestione Utenti',
+    subtitle: 'Visualizza e gestisci tutti gli utenti del sistema',
   },
   {
     text: 'Fatturazione',

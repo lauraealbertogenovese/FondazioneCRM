@@ -11,7 +11,9 @@
     "logs": "docker-compose -f docker/docker-compose.dev.yml logs -f",
     "db:setup": "docker-compose -f docker/docker-compose.dev.yml up -d postgres && npm run db:migrate",
     "db:migrate": "node database/migrate.js",
-    "db:seed": "node database/seed.js"
+    "db:migrate:new": "node apply-migrations.js",
+    "db:seed": "node database/seed.js",
+    "init:audit": "node init-audit-db.js"
   },
   "keywords": [
     "crm",

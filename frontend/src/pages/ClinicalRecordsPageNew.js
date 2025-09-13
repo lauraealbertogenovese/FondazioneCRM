@@ -253,7 +253,7 @@ const ClinicalRecordsPageNew = () => {
             />
             
             
-            {hasPermission('clinical.create') && (
+            {hasPermission('clinical.write') && (
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
@@ -448,7 +448,7 @@ const ClinicalRecordsPageNew = () => {
               : 'Inizia creando la prima cartella clinica'
             }
           </Typography>
-          {!searchTerm && hasPermission('clinical.create') && (
+          {!searchTerm && hasPermission('clinical.write') && (
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
