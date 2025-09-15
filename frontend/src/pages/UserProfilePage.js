@@ -15,6 +15,8 @@ import {
   Card,
   CardContent,
   IconButton,
+  Breadcrumbs,
+  Link,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -25,12 +27,16 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   Key as KeyIcon,
+  ArrowBack as ArrowBackIcon,
+  Home as HomeIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/api';
 
 const UserProfilePage = () => {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -209,6 +215,9 @@ const UserProfilePage = () => {
       setShowPasswordPlaceholder(true);
       
       setTimeout(() => setSuccess(false), 3000);
+      
+      // Auto-navigate back after successful update (optional)
+      // setTimeout(() => navigate('/patients'), 2000);
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.error || 
@@ -232,6 +241,35 @@ const UserProfilePage = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
+      {/* Breadcrumbs and Navigation */}
+      <Box sx={{ mb: 3 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate(-1)}
+          variant="outlined"
+          size="small"
+          sx={{ mb: 2 }}
+        >
+          Indietro
+        </Button>
+        
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+          <Link
+            color="inherit"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/patients');
+            }}
+            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+          >
+            <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
+            Dashboard
+          </Link>
+          <Typography color="text.primary">Il mio Profilo</Typography>
+        </Breadcrumbs>
+      </Box>
+
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ mb: 1 }}>

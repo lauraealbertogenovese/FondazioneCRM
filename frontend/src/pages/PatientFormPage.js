@@ -250,7 +250,13 @@ const PatientFormPage = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        navigate('/patients');
+        if (isEdit) {
+          // For edits, redirect to patient detail page
+          navigate(`/patients/${id}`);
+        } else {
+          // For new patients, redirect to patients list
+          navigate('/patients');
+        }
       }, 1500);
     } catch (error) {
       console.error('Errore nel salvataggio del paziente:', error);

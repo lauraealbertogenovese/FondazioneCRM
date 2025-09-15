@@ -192,15 +192,15 @@ const PatientsPageNew = () => {
           height: 24,
           fontWeight: 500,
           borderRadius: 2,
-          backgroundColor: hasConsent 
+          backgroundColor: hasConsent
             ? alpha(theme.palette.success.main, 0.1)
-            : alpha(theme.palette.grey[500], 0.1),
-          color: hasConsent 
+            : alpha(theme.palette.warning.main, 0.1),
+          color: hasConsent
             ? theme.palette.success.main
-            : theme.palette.grey[600],
-          border: `1px solid ${hasConsent 
+            : theme.palette.warning.main,
+          border: `1px solid ${hasConsent
             ? alpha(theme.palette.success.main, 0.2)
-            : alpha(theme.palette.grey[500], 0.2)}`,
+            : alpha(theme.palette.warning.main, 0.2)}`,
         }}
       />
     );

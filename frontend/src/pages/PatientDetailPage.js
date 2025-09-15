@@ -46,7 +46,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { getMaritalStatusLabel } from '../utils/maritalStatusUtils';
 import ClinicalDiary from '../components/ClinicalDiary';
 import DocumentManager from '../components/DocumentManager';
-import PatientClinicalRecords from '../components/PatientClinicalRecords';
 import GDPRCompliance from '../components/GDPRCompliance';
 import AuditLog from '../components/AuditLog';
 
@@ -184,7 +183,6 @@ const PatientDetailPage = () => {
     { label: 'Informazioni', icon: <PersonIcon />, content: 'info' },
     { label: 'Contatti', icon: <PhoneIcon />, content: 'contacts' },
     { label: 'Clinico', icon: <MedicalIcon />, content: 'medical' },
-    { label: 'Cartella Clinica', icon: <HistoryIcon />, content: 'clinical' },
     { label: 'Documenti', icon: <DocumentIcon />, content: 'documents' },
     { label: 'Note Cliniche', icon: <AssignmentIcon />, content: 'notes' },
   ];
@@ -422,20 +420,7 @@ const PatientDetailPage = () => {
           </Box>
         );
       
-      case 3: // Cartella Clinica
-        return (
-          <Box>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
-              Cartella Clinica Completa
-            </Typography>
-            <PatientClinicalRecords 
-              patientId={patient.id}
-              patientName={`${patient.nome} ${patient.cognome}`}
-            />
-          </Box>
-        );
-
-      case 4: // Documenti
+      case 3: // Documenti
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
@@ -448,7 +433,7 @@ const PatientDetailPage = () => {
           </Box>
         );
       
-      case 5: // Note Cliniche
+      case 4: // Note Cliniche
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
