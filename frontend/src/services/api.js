@@ -85,6 +85,16 @@ export const authService = {
     const response = await api.get('/auth/roles');
     return response.data;
   },
+
+  updateProfile: async (profileData) => {
+    const response = await api.put('/auth/profile', profileData);
+    return response.data;
+  },
+
+  changePassword: async (passwordData) => {
+    const response = await api.put('/auth/change-password', passwordData);
+    return response.data;
+  },
 };
 
 // Servizi per i pazienti

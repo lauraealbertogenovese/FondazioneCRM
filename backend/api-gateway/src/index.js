@@ -261,14 +261,23 @@ app.use('/auth', createProxyMiddleware({
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[Auth Proxy] ${req.method} ${req.url} → ${proxyReq.path}`);
     console.log(`[Auth Proxy] Target: ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
+    console.log(`[Auth Proxy] Auth header: ${req.headers.authorization ? 'PRESENT' : 'MISSING'}`);
     
-    // Re-stream body for POST requests
-    if (req.method === 'POST' && req.body) {
+    // Passa tutti gli headers di autenticazione
+    if (req.headers.authorization) {
+      proxyReq.setHeader('Authorization', req.headers.authorization);
+      console.log(`[Auth Proxy] Token forwarded: ${req.headers.authorization.substring(0, 20)}...`);
+    }
+    
+    // Re-stream body for POST and PUT requests
+    if ((req.method === 'POST' || req.method === 'PUT') && req.body && req.headers['content-type'] && req.headers['content-type'].includes('application/json')) {
       const bodyData = JSON.stringify(req.body);
-      console.log(`[Auth Proxy] Body data: ${bodyData}`);
+      console.log(`[Auth Proxy] Body data length: ${bodyData.length}`);
       proxyReq.setHeader('Content-Type', 'application/json');
       proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
       proxyReq.write(bodyData);
+    } else if (req.method === 'POST' || req.method === 'PUT') {
+      console.log(`[Auth Proxy] Forwarding ${req.headers['content-type'] || 'unknown'} body as-is`);
     }
   },
   onProxyRes: (proxyRes, req, res) => {

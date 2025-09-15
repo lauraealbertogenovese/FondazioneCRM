@@ -27,6 +27,7 @@ import {
   Key as KeyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/api';
 
 const UserProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -50,6 +51,9 @@ const UserProfilePage = () => {
     newPassword: '',
     confirmPassword: '',
   });
+  
+  // Show placeholder for existing password
+  const [showPasswordPlaceholder, setShowPasswordPlaceholder] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -72,6 +76,11 @@ const UserProfilePage = () => {
   };
 
   const handlePasswordChange = (field) => (event) => {
+    // Hide placeholder when user starts typing
+    if (field === 'currentPassword' && showPasswordPlaceholder) {
+      setShowPasswordPlaceholder(false);
+    }
+    
     setPasswordData({
       ...passwordData,
       [field]: event.target.value
@@ -83,6 +92,7 @@ const UserProfilePage = () => {
     setIsEditing(true);
     setError(null);
     setSuccess(false);
+    setShowPasswordPlaceholder(true);
   };
 
   const handleCancel = () => {
@@ -104,6 +114,7 @@ const UserProfilePage = () => {
       newPassword: '',
       confirmPassword: '',
     });
+    setShowPasswordPlaceholder(true);
   };
 
   const validateForm = () => {
@@ -159,25 +170,31 @@ const UserProfilePage = () => {
     setError(null);
 
     try {
-      // TODO: Implement API call to update user profile
-      console.log('Updating profile:', formData);
+      // Prepare profile data (excluding password fields)
+      const profileData = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        username: formData.username,
+        email: formData.email,
+        phone: formData.phone,
+      };
+      
+      // Update profile first
+      const profileResponse = await authService.updateProfile(profileData);
+      
+      // If password change is requested, handle it separately
       if (passwordData.newPassword) {
-        console.log('Updating password');
+        const passwordChangeData = {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        };
+        
+        await authService.changePassword(passwordChangeData);
       }
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate updating user data in context (questo sarà sostituito con la vera API)
-      if (updateUser) {
-        updateUser({
-          ...user,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          username: formData.username,
-          email: formData.email,
-          phone: formData.phone,
-        });
+      // Update user data in context with response from server
+      if (updateUser && profileResponse.user) {
+        updateUser(profileResponse.user);
       }
       
       setSuccess(true);
@@ -189,11 +206,15 @@ const UserProfilePage = () => {
         newPassword: '',
         confirmPassword: '',
       });
+      setShowPasswordPlaceholder(true);
       
       setTimeout(() => setSuccess(false), 3000);
     } catch (error) {
       console.error('Error updating profile:', error);
-      setError('Errore nell\'aggiornamento del profilo');
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          'Errore nell\'aggiornamento del profilo';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -358,8 +379,15 @@ const UserProfilePage = () => {
                     fullWidth
                     label="Password Corrente"
                     type="password"
-                    value={passwordData.currentPassword}
+                    value={showPasswordPlaceholder && !passwordData.currentPassword ? "••••••••" : passwordData.currentPassword}
                     onChange={handlePasswordChange('currentPassword')}
+                    placeholder="Inserisci la password attuale"
+                    helperText={showPasswordPlaceholder && !passwordData.currentPassword ? "Password esistente - inserisci per confermare modifiche" : "Inserisci la password attuale per confermare le modifiche"}
+                    InputProps={{
+                      style: {
+                        fontFamily: showPasswordPlaceholder && !passwordData.currentPassword ? 'monospace' : 'inherit'
+                      }
+                    }}
                   />
                 </Grid>
 

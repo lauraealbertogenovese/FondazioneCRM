@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { patientService, userService } from '../services/api';
+import { maritalStatusOptions } from '../utils/maritalStatusUtils';
 
 const PatientFormPage = () => {
   const theme = useTheme();
@@ -734,13 +735,11 @@ const PatientFormPage = () => {
                     onChange={handleChange}
                     label="Stato Civile"
                   >
-                    <MenuItem value="">Seleziona...</MenuItem>
-                    <MenuItem value="single">Celibe/Nubile</MenuItem>
-                    <MenuItem value="married">Coniugato/a</MenuItem>
-                    <MenuItem value="divorced">Divorziato/a</MenuItem>
-                    <MenuItem value="widowed">Vedovo/a</MenuItem>
-                    <MenuItem value="separated">Separato/a</MenuItem>
-                    <MenuItem value="cohabiting">Convivente</MenuItem>
+                    {maritalStatusOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>

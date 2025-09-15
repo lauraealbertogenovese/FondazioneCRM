@@ -43,6 +43,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import { patientService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { getMaritalStatusLabel } from '../utils/maritalStatusUtils';
 import ClinicalDiary from '../components/ClinicalDiary';
 import DocumentManager from '../components/DocumentManager';
 import PatientClinicalRecords from '../components/PatientClinicalRecords';
@@ -305,7 +306,7 @@ const PatientDetailPage = () => {
                     Stato Civile
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                    {patient.stato_civile || 'Non specificato'}
+                    {getMaritalStatusLabel(patient.stato_civile)}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>

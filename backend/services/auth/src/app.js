@@ -17,7 +17,7 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: ['http://localhost:3006', 'http://localhost:3005', 'http://localhost:3000'],
+  origin: ['http://localhost:3006', 'http://localhost:3005', 'http://localhost:3000', 'http://localhost:3007'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -25,6 +25,7 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
 
 // Health check
 app.get('/health', (req, res) => {

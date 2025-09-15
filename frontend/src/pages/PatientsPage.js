@@ -54,6 +54,7 @@ import {
 import { patientService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import AdvancedFilter from '../components/AdvancedFilter';
+import { maritalStatusOptions } from '../utils/maritalStatusUtils';
 
 const PatientsPage = () => {
   // const navigate = useNavigate();
@@ -267,14 +268,7 @@ const PatientsPage = () => {
             field: 'stato_civile',
             label: 'Stato Civile',
             type: 'select',
-            options: [
-              { value: 'Single', label: 'Single' },
-              { value: 'Fidanzato/a', label: 'Fidanzato/a' },
-              { value: 'Sposato/a', label: 'Sposato/a' },
-              { value: 'Separato/a', label: 'Separato/a' },
-              { value: 'Divorziato/a', label: 'Divorziato/a' },
-              { value: 'Vedovo/a', label: 'Vedovo/a' }
-            ]
+            options: maritalStatusOptions.filter(option => option.value !== '') // Escludi la voce vuota dal filtro
           },
           {
             field: 'ageRange',

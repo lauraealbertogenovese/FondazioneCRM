@@ -9,28 +9,32 @@ class User {
     this.password_hash = data.password_hash;
     this.first_name = data.first_name;
     this.last_name = data.last_name;
+    this.phone = data.phone;
     this.role_id = data.role_id;
-    this.role_name = data.role_name; // Nome del ruolo dalla tabella roles
+    this.role_name = data.role_name;
+    this.role = data.role;
+    this.permissions = data.permissions;
+    this.is_active = data.is_active;
     this.last_login = data.last_login;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
   }
 
-  // Create a new user
+  // Create new user
   static async create(userData) {
-    const { username, email, password, first_name, last_name, role_id = 5 } = userData;
+    const { username, email, password, first_name, last_name, phone, role_id } = userData;
     
     // Hash password
-    const saltRounds = 10;
+    const saltRounds = 12;
     const password_hash = await bcrypt.hash(password, saltRounds);
     
     const queryText = `
-      INSERT INTO auth.users (username, email, password_hash, first_name, last_name, role_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO auth.users (username, email, password_hash, first_name, last_name, phone, role_id, is_active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
     
-    const values = [username, email, password_hash, first_name, last_name, role_id];
+    const values = [username, email, password_hash, first_name, last_name, phone, role_id, true];
     const result = await query(queryText, values);
     
     return new User(result.rows[0]);
@@ -161,63 +165,102 @@ class User {
   }
 
   // Update user
-  async update(updateData) {
-    const allowedFields = ['first_name', 'last_name', 'email', 'role_id'];
-    const updates = [];
+  static async update(id, updateData) {
+    console.log('🔍 DEBUG User.update: Starting update', { id, updateData });
+    
+    const allowedFields = ['first_name', 'last_name', 'email', 'username', 'phone'];
+    const updateFields = [];
     const values = [];
     let paramCount = 1;
 
+    // Build dynamic query
     for (const [key, value] of Object.entries(updateData)) {
       if (allowedFields.includes(key) && value !== undefined) {
-        updates.push(`${key} = $${paramCount}`);
+        updateFields.push(`${key} = $${paramCount}`);
         values.push(value);
         paramCount++;
       }
     }
 
-    if (updates.length === 0) {
+    console.log('🔍 DEBUG User.update: Built query fields', { updateFields, values });
+
+    if (updateFields.length === 0) {
+      console.log('❌ DEBUG User.update: No valid fields to update');
       throw new Error('No valid fields to update');
     }
 
-    values.push(this.id);
+    // Add updated_at timestamp
+    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+    
+    // Add user ID as last parameter
+    values.push(id);
+
     const queryText = `
       UPDATE auth.users 
-      SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
+      SET ${updateFields.join(', ')}
       WHERE id = $${paramCount}
       RETURNING *
     `;
 
-    const result = await query(queryText, values);
-    const updatedUser = result.rows[0];
-    
-    // Update current instance
-    Object.assign(this, updatedUser);
-    return this;
-  }
+    console.log('🔍 DEBUG User.update: Executing query', { queryText, values });
 
-  // Update password
-  async updatePassword(newPassword) {
-    const saltRounds = 10;
-    const password_hash = await bcrypt.hash(newPassword, saltRounds);
+    const result = await query(queryText, values);
     
-    const queryText = `
-      UPDATE auth.users 
-      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
-      RETURNING *
-    `;
+    console.log('🔍 DEBUG User.update: Query result', { 
+      rowCount: result.rowCount, 
+      rows: result.rows.length 
+    });
     
-    const result = await query(queryText, [password_hash, this.id]);
-    const updatedUser = result.rows[0];
-    
-    this.password_hash = updatedUser.password_hash;
-    this.updated_at = updatedUser.updated_at;
-    return this;
+    if (result.rows.length === 0) {
+      console.log('❌ DEBUG User.update: No rows updated');
+      return null;
+    }
+
+    console.log('✅ DEBUG User.update: Update successful');
+    return new User(result.rows[0]);
   }
 
   // Verify password
   async verifyPassword(password) {
     return await bcrypt.compare(password, this.password_hash);
+  }
+
+  // Update password
+  async updatePassword(newPassword) {
+    const saltRounds = 12;
+    this.password_hash = await bcrypt.hash(newPassword, saltRounds);
+    
+    const queryText = `
+      UPDATE auth.users 
+      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `;
+    
+    await query(queryText, [this.password_hash, this.id]);
+  }
+
+  // Deactivate user (soft delete)
+  async deactivate() {
+    const queryText = `
+      UPDATE auth.users 
+      SET is_active = false, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `;
+    
+    await query(queryText, [this.id]);
+    this.is_active = false;
+  }
+
+  // Activate user
+  async activate() {
+    const queryText = `
+      UPDATE auth.users 
+      SET is_active = true, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `;
+    
+    await query(queryText, [this.id]);
+    this.is_active = true;
   }
 
   // Update last login
@@ -226,30 +269,10 @@ class User {
       UPDATE auth.users 
       SET last_login = CURRENT_TIMESTAMP
       WHERE id = $1
-      RETURNING last_login
     `;
     
-    const result = await query(queryText, [this.id]);
-    this.last_login = result.rows[0].last_login;
-    return this;
-  }
-
-  // Delete user (hard delete)
-  async delete() {
-    const queryText = `
-      DELETE FROM auth.users 
-      WHERE id = $1
-      RETURNING *
-    `;
-    
-    const result = await query(queryText, [this.id]);
-    return result.rows[0];
-  }
-
-  // Get user data without sensitive information
-  toJSON() {
-    const { password_hash, ...userData } = this;
-    return userData;
+    await query(queryText, [this.id]);
+    this.last_login = new Date();
   }
 
   // Check if user has permission

@@ -54,8 +54,8 @@ class ValidationUtils {
         errors.push('Il nome utente deve contenere meno di 50 caratteri');
       }
       
-      if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-        errors.push('Il nome utente può contenere solo lettere, numeri, underscore e trattini');
+      if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+        errors.push('Il nome utente può contenere solo lettere, numeri, underscore, trattini e punti');
       }
     }
     
@@ -196,6 +196,13 @@ class ValidationUtils {
       }
     }
     
+    if (data.username) {
+      const usernameValidation = this.validateUsername(data.username);
+      if (!usernameValidation.isValid) {
+        errors.push(...usernameValidation.errors);
+      }
+    }
+    
     if (data.role_id) {
       const roleIdValidation = this.validateRoleId(data.role_id);
       if (!roleIdValidation.isValid) {
@@ -203,6 +210,12 @@ class ValidationUtils {
       }
     }
     
+    // Phone validation is optional - just check basic format if provided
+    if (data.phone && data.phone.trim() !== '') {
+      if (!/^\+?[\d\s\-\(\)\.]+$/.test(data.phone)) {
+        errors.push('Formato numero di telefono non valido');
+      }
+    }
     
     return {
       isValid: errors.length === 0,

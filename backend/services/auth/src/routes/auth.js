@@ -229,11 +229,18 @@ router.get('/profile', AuthMiddleware.verifyToken, async (req, res) => {
 // PUT /profile - Update user profile
 router.put('/profile', AuthMiddleware.verifyToken, async (req, res) => {
   try {
+    console.log('🔍 DEBUG PUT /profile: Starting profile update', {
+      userId: req.user.id,
+      updateData: req.body
+    });
+    
     const updateData = ValidationUtils.sanitizeInput(req.body);
+    console.log('🔍 DEBUG PUT /profile: Sanitized data', updateData);
     
     // Validate input
     const validation = ValidationUtils.validateUserUpdate(updateData);
     if (!validation.isValid) {
+      console.log('❌ DEBUG PUT /profile: Validation failed', validation.errors);
       return res.status(400).json({
         error: 'Validation failed',
         details: validation.errors
@@ -242,21 +249,45 @@ router.put('/profile', AuthMiddleware.verifyToken, async (req, res) => {
 
     // Check if email is being changed and already exists
     if (updateData.email && updateData.email !== req.user.email) {
+      console.log('🔍 DEBUG PUT /profile: Checking email uniqueness');
       const existingUser = await User.findByEmail(updateData.email);
       if (existingUser) {
+        console.log('❌ DEBUG PUT /profile: Email already exists');
         return res.status(409).json({
           error: 'Email already exists'
         });
       }
     }
 
-    // Update user
-    const user = await User.findById(req.user.id);
-    await user.update(updateData);
+    // Check if username is being changed and already exists
+    if (updateData.username && updateData.username !== req.user.username) {
+      console.log('🔍 DEBUG PUT /profile: Checking username uniqueness');
+      const existingUser = await User.findByUsername(updateData.username);
+      if (existingUser) {
+        console.log('❌ DEBUG PUT /profile: Username already exists');
+        return res.status(409).json({
+          error: 'Username already exists'
+        });
+      }
+    }
 
+    // Update user
+    console.log('🔍 DEBUG PUT /profile: Calling User.update', {
+      userId: req.user.id,
+      updateData
+    });
+    const updatedUser = await User.update(req.user.id, updateData);
+    if (!updatedUser) {
+      console.log('❌ DEBUG PUT /profile: User not found after update');
+      return res.status(404).json({
+        error: 'User not found'
+      });
+    }
+
+    console.log('✅ DEBUG PUT /profile: Profile updated successfully');
     res.json({
       message: 'Profile updated successfully',
-      user: user.getPublicData()
+      user: updatedUser.getPublicData()
     });
   } catch (error) {
     console.error('Update profile error:', error);
