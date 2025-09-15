@@ -30,6 +30,7 @@ import BillingPageNew from './pages/BillingPageNew';
 import CreateInvoicePage from './pages/CreateInvoicePage';
 import InvoiceDetailPage from './pages/InvoiceDetailPage';
 import InvoiceEditPage from './pages/InvoiceEditPage';
+import UserProfilePage from './pages/UserProfilePage';
 import RoleManagementPage from './pages/RoleManagementPage';
 import AdminSettingsPage from './pages/AdminSettingsPage';
 
@@ -159,6 +160,14 @@ const AppContent = () => {
         element={
           <ProtectedRoute requiredPermission="users.update">
             <UserFormPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <UserProfilePage />
           </ProtectedRoute>
         } 
       />

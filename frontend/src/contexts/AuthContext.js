@@ -18,6 +18,7 @@ const AUTH_ACTIONS = {
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
   CLEAR_ERROR: 'CLEAR_ERROR',
+  UPDATE_USER: 'UPDATE_USER',
 };
 
 // Reducer per gestire lo stato
@@ -68,6 +69,11 @@ const authReducer = (state, action) => {
       return {
         ...state,
         error: null,
+      };
+    case AUTH_ACTIONS.UPDATE_USER:
+      return {
+        ...state,
+        user: action.payload,
       };
     default:
       return state;
@@ -157,6 +163,14 @@ export const AuthProvider = ({ children }) => {
       // Redirect to login page after logout
       window.location.href = '/login';
     }
+  };
+
+  // Funzione per aggiornare i dati utente
+  const updateUser = (userData) => {
+    dispatch({
+      type: AUTH_ACTIONS.UPDATE_USER,
+      payload: userData,
+    });
   };
 
   // Funzione per registrare un nuovo utente
@@ -290,6 +304,7 @@ export const AuthProvider = ({ children }) => {
     clearError,
     hasRole,
     hasPermission,
+    updateUser,
   };
 
   return (

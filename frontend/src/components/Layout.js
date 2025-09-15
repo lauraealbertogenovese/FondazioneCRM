@@ -405,7 +405,7 @@ const Layout = ({ children }) => {
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
             >
-              <MenuItem onClick={handleMenuClose}>
+              <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }}>
                 <ListItemIcon>
                   <AccountIcon fontSize="small" />
                 </ListItemIcon>
