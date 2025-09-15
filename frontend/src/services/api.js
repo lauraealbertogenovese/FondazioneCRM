@@ -307,58 +307,6 @@ export const clinicalService = {
     return response.data;
   },
 
-
-  // Visits
-  getVisits: async (filters = {}) => {
-    const response = await clinicalApi.get('/clinical/visits', { params: filters });
-    return response.data;
-  },
-
-  getVisit: async (id) => {
-    const response = await clinicalApi.get(`/clinical/visits/${id}`);
-    return response.data;
-  },
-
-  getPatientVisits: async (patientId, filters = {}) => {
-    const response = await clinicalApi.get(`/clinical/visits/patient/${patientId}`, { params: filters });
-    return response.data;
-  },
-
-  getUpcomingVisits: async (limit = 20) => {
-    const response = await clinicalApi.get('/clinical/visits/upcoming', { params: { limit } });
-    return response.data;
-  },
-
-  createVisit: async (visitData) => {
-    const response = await clinicalApi.post('/clinical/visits', visitData);
-    return response.data;
-  },
-
-  updateVisit: async (id, visitData) => {
-    const response = await clinicalApi.put(`/clinical/visits/${id}`, visitData);
-    return response.data;
-  },
-
-  deleteVisit: async (id) => {
-    const response = await clinicalApi.delete(`/clinical/visits/${id}`);
-    return response.data;
-  },
-
-  // Calendar specific methods
-  getCalendarEvents: async (params = {}) => {
-    const response = await clinicalApi.get('/clinical/visits/calendar', { params });
-    return response.data;
-  },
-
-  rescheduleVisit: async (id, rescheduleData) => {
-    const response = await clinicalApi.put(`/clinical/visits/${id}/reschedule`, rescheduleData);
-    return response.data;
-  },
-
-  getPatientVisitsCount: async (patientId) => {
-    const response = await clinicalApi.get(`/clinical/visits/patient/${patientId}/count`);
-    return response.data;
-  },
 };
 
 // Istanza axios per Billing Service
@@ -604,36 +552,6 @@ export const gdprService = {
   }
 };
 
-// Visit Service (alias for clinical visits)
-export const visitService = {
-  getAll: async (filters = {}) => {
-    return await clinicalService.getVisits(filters);
-  },
-
-  getById: async (id) => {
-    return await clinicalService.getVisit(id);
-  },
-
-  create: async (visitData) => {
-    return await clinicalService.createVisit(visitData);
-  },
-
-  update: async (id, visitData) => {
-    return await clinicalService.updateVisit(id, visitData);
-  },
-
-  delete: async (id) => {
-    return await clinicalService.deleteVisit(id);
-  },
-
-  getByPatient: async (patientId, filters = {}) => {
-    return await clinicalService.getPatientVisits(patientId, filters);
-  },
-
-  getUpcoming: async (limit = 20) => {
-    return await clinicalService.getUpcomingVisits(limit);
-  },
-};
 
 // Enhanced user service with standard method names
 userService.getAll = userService.getUsers;

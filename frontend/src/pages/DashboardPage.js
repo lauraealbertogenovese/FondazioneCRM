@@ -49,7 +49,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { patientService, clinicalService, userService, visitService, groupService } from '../services/api';
+import { patientService, clinicalService, userService, groupService } from '../services/api';
 
 const DashboardPage = () => {
   const { user, hasPermission } = useAuth();
@@ -59,11 +59,7 @@ const DashboardPage = () => {
   const [stats, setStats] = useState({
     totalPatients: 0,
     totalUsers: 0,
-    totalClinicalRecords: 0,
-    totalVisits: 0,
     totalGroups: 0,
-    upcomingVisits: 0,
-    completedVisits: 0,
     activePatients: 0,
     recentPatients: [],
     upcomingAppointments: [],
@@ -93,15 +89,11 @@ const DashboardPage = () => {
 
       if (hasPermission('clinical.read')) {
         requests.push(
-          clinicalService.getRecords({ limit: 10 }),
-          visitService.getAll({ limit: 10 }),
-          visitService.getUpcoming(5)
+          clinicalService.getRecords({ limit: 10 })
         );
       } else {
         requests.push(
-          Promise.resolve({ records: [] }),
-          Promise.resolve({ visits: [] }),
-          Promise.resolve({ visits: [] })
+          Promise.resolve({ records: [] })
         );
       }
 
@@ -120,8 +112,6 @@ const DashboardPage = () => {
       const [
         patientsResponse,
         clinicalResponse,
-        visitsResponse,
-        upcomingResponse,
         usersResponse,
         groupsResponse
       ] = await Promise.all(requests);
@@ -129,14 +119,10 @@ const DashboardPage = () => {
       setStats({
         totalPatients: patientsResponse.pagination?.total || patientsResponse.patients?.length || 0,
         totalUsers: usersResponse.pagination?.total || usersResponse.users?.length || 0,
-        totalClinicalRecords: clinicalResponse.pagination?.total || clinicalResponse.records?.length || 0,
-        totalVisits: visitsResponse.pagination?.total || visitsResponse.visits?.length || 0,
         totalGroups: groupsResponse.pagination?.total || groupsResponse.groups?.length || 0,
-        upcomingVisits: upcomingResponse.visits?.length || 0,
-        completedVisits: visitsResponse.visits?.filter(v => v.status === 'completed').length || 0,
         activePatients: patientsResponse.patients?.filter(p => p.is_active).length || 0,
         recentPatients: patientsResponse.patients || [],
-        upcomingAppointments: upcomingResponse.visits || [],
+        upcomingAppointments: [],
         recentActivity: [
           ...((patientsResponse.patients || []).slice(0, 3).map(p => ({
             type: 'patient',
@@ -318,16 +304,14 @@ const DashboardPage = () => {
                   }
                 }} />
               </IconButton>
-              <Badge badgeContent={stats.upcomingVisits} color="error">
-                <IconButton
-                  sx={{
-                    background: alpha(theme.palette.info.main, 0.1),
-                    '&:hover': { background: alpha(theme.palette.info.main, 0.2) }
-                  }}
-                >
-                  <NotificationsIcon />
-                </IconButton>
-              </Badge>
+              <IconButton
+                sx={{
+                  background: alpha(theme.palette.info.main, 0.1),
+                  '&:hover': { background: alpha(theme.palette.info.main, 0.2) }
+                }}
+              >
+                <NotificationsIcon />
+              </IconButton>
             </Stack>
           </Stack>
 
@@ -341,16 +325,6 @@ const DashboardPage = () => {
                 color="primary"
                 onClick={() => navigate('/patients')}
                 action={hasPermission('patients.write') ? () => navigate('/patients/new') : null}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard
-                title="Visite Programmate"
-                value={stats.upcomingVisits}
-                icon={CalendarIcon}
-                color="warning"
-                onClick={() => navigate('/visits')}
-                action={hasPermission('visits.write') ? () => navigate('/visits/new') : null}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>

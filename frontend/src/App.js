@@ -17,14 +17,10 @@ import PatientsPageNew from './pages/PatientsPageNew';
 import PatientDetailPage from './pages/PatientDetailPage';
 import PatientFormPage from './pages/PatientFormPage';
 import UsersPageNew from './pages/UsersPageNew';
-import VisitsPageNew from './pages/VisitsPageNew';
-import CalendarPage from './pages/CalendarPage';
 import GroupsPageNew from './pages/GroupsPageNew';
 import GroupDetailPage from './pages/GroupDetailPage';
 import GroupFormPage from './pages/GroupFormPage';
-import VisitFormPage from './pages/VisitFormPage';
 import UserFormPage from './pages/UserFormPage';
-import VisitDetailPage from './pages/VisitDetailPage';
 import UserDetailPage from './pages/UserDetailPage';
 import BillingPageNew from './pages/BillingPageNew';
 import CreateInvoicePage from './pages/CreateInvoicePage';
@@ -107,27 +103,6 @@ const AppContent = () => {
         element={
           <ProtectedRoute requiredPermission="patients.update">
             <PatientFormPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/visits" 
-        element={
-          <ProtectedRoute requiredPermission="clinical.read">
-            <VisitsPageNew />
-          </ProtectedRoute>
-        } 
-      />
-      {/* TODO: Route visits disabilitate - feature in revisione
-      <Route path="/visits/:id" element={<ProtectedRoute requiredPermission="visits.read"><VisitDetailPage /></ProtectedRoute>} />
-      <Route path="/visits/new" element={<ProtectedRoute requiredPermission="visits.write"><VisitFormPage /></ProtectedRoute>} />
-      <Route path="/visits/:id/edit" element={<ProtectedRoute requiredPermission="visits.update"><VisitFormPage /></ProtectedRoute>} />
-      */}
-      <Route 
-        path="/calendar" 
-        element={
-          <ProtectedRoute requiredPermission="clinical.read">
-            <CalendarPage />
           </ProtectedRoute>
         } 
       />
