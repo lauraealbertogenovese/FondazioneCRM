@@ -50,10 +50,12 @@ export const GRANULAR_PERMISSION_TEMPLATE = {
   features: {
     documents: {
       label: "Gestione Documenti",
-      description: "Upload, download e gestione documenti pazienti/gruppi",
-      upload: false,
-      download: false,
-      delete: false
+      description: "Upload, download e gestione documenti pazienti/gruppi/cartelle",
+      upload: false,           // Upload generale
+      download: false,         // Download generale  
+      delete: false,          // Eliminazione documenti
+      upload_sensitive: false, // Upload documenti sensibili
+      manage_versions: false  // Gestione versioni documenti
     },
   },
 

@@ -345,16 +345,6 @@ const DashboardPage = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <StatCard
-                title="Cartelle Cliniche"
-                value={stats.totalClinicalRecords}
-                icon={AssignmentIcon}
-                color="info"
-                onClick={() => navigate('/clinical-records')}
-                action={hasPermission('clinical.write') ? () => navigate('/clinical-records/new') : null}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard
                 title="Visite Programmate"
                 value={stats.upcomingVisits}
                 icon={CalendarIcon}

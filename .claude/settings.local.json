@@ -47,7 +47,11 @@
       "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"SELECT u.id, u.username, u.first_name, u.last_name, r.name as role_name FROM auth.users u LEFT JOIN auth.roles r ON u.role_id = r.id WHERE u.id = 26;\")",
       "Bash(winpty docker exec -it fondazione-crm-postgres psql -U fondazione_user -d fondazione_crm -c \"\\d patient.patients\")",
       "Bash(docker start:*)",
-      "Bash(winpty docker exec:*)"
+      "Bash(winpty docker exec:*)",
+      "Bash(dir:*)",
+      "Bash(start http://localhost:3007/patients/1)",
+      "Bash(echo:*)",
+      "Bash(docker:*)"
     ],
     "deny": [],
     "ask": []

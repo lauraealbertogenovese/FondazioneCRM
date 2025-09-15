@@ -109,7 +109,7 @@ router.get('/records/patient/:patientId', async (req, res) => {
 });
 
 // POST /clinical/records - Crea nuova cartella clinica
-router.post('/records', requirePermission('clinical:create'), async (req, res) => {
+router.post('/records', requirePermission('clinical.write'), async (req, res) => {
   try {
     const {
       patient_id,
@@ -155,7 +155,7 @@ router.post('/records', requirePermission('clinical:create'), async (req, res) =
 });
 
 // PUT /clinical/records/:id - Aggiorna cartella clinica
-router.put('/records/:id', requirePermission('clinical:update'), async (req, res) => {
+router.put('/records/:id', requirePermission('clinical.update'), async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -180,7 +180,7 @@ router.put('/records/:id', requirePermission('clinical:update'), async (req, res
 });
 
 // DELETE /clinical/records/:id - Elimina cartella clinica
-router.delete('/records/:id', requirePermission('clinical:delete'), async (req, res) => {
+router.delete('/records/:id', requirePermission('clinical.delete'), async (req, res) => {
   try {
     const { id } = req.params;
 

@@ -35,9 +35,189 @@ import {
   MoreVert as MoreVertIcon,
   Add as AddIcon,
   DragIndicator as DragIcon,
+  Visibility as PreviewIcon,
+  Fullscreen as FullscreenIcon,
+  ZoomIn as ZoomInIcon,
+  ZoomOut as ZoomOutIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { documentService, patientService, clinicalService } from '../services/api';
+
+// Componente separato per il preview di file di testo
+const TextPreview = ({ previewUrl, setError }) => {
+  const [textContent, setTextContent] = useState('');
+  
+  useEffect(() => {
+    if (previewUrl) {
+      fetch(previewUrl)
+        .then(response => response.text())
+        .then(setTextContent)
+        .catch(err => setError('Errore nel caricamento del testo'));
+    }
+  }, [previewUrl, setError]);
+
+  return (
+    <Box sx={{ p: 3, height: '100%', overflow: 'auto' }}>
+      <Typography component="pre" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+        {textContent}
+      </Typography>
+    </Box>
+  );
+};
+
+// Componente per il preview del contenuto
+const PreviewContent = ({ document }) => {
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadPreview = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Per ora usiamo il download endpoint e creiamo un blob URL
+        // In futuro si potrebbe creare un endpoint dedicato per il preview
+        let blob;
+        if (document.clinical_record_id) {
+          blob = await clinicalService.downloadClinicalDocument(document.id);
+        } else {
+          blob = await documentService.downloadDocument(document.id);
+        }
+        
+        const url = window.URL.createObjectURL(blob);
+        setPreviewUrl(url);
+      } catch (err) {
+        console.error('Error loading preview:', err);
+        setError('Errore nel caricamento dell\'anteprima');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (document) {
+      loadPreview();
+    }
+
+    return () => {
+      if (previewUrl) {
+        window.URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [document]);
+
+  if (loading) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100%',
+        flexDirection: 'column',
+        gap: 2
+      }}>
+        <CircularProgress />
+        <Typography>Caricamento anteprima...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
+
+  if (!previewUrl) return null;
+
+  const mimeType = document.mime_type;
+
+  // Preview per immagini
+  if (mimeType.startsWith('image/')) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100%',
+        p: 2,
+        overflow: 'auto'
+      }}>
+        <img 
+          src={previewUrl} 
+          alt={document.original_filename}
+          style={{ 
+            maxWidth: '100%', 
+            maxHeight: '100%',
+            objectFit: 'contain'
+          }}
+        />
+      </Box>
+    );
+  }
+
+  // Preview per PDF
+  if (mimeType === 'application/pdf') {
+    return (
+      <Box sx={{ height: '100%' }}>
+        <iframe
+          src={previewUrl}
+          width="100%"
+          height="100%"
+          style={{ border: 'none' }}
+          title={document.original_filename}
+        />
+      </Box>
+    );
+  }
+
+  // Preview per documenti Office via Office Online
+  if (mimeType.includes('officedocument') || mimeType.includes('openxmlformats')) {
+    const officeUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`;
+    return (
+      <Box sx={{ height: '100%' }}>
+        <iframe
+          src={officeUrl}
+          width="100%"
+          height="100%"
+          style={{ border: 'none' }}
+          title={document.original_filename}
+        />
+      </Box>
+    );
+  }
+
+  // Preview per testo
+  if (mimeType === 'text/plain') {
+    return <TextPreview previewUrl={previewUrl} setError={setError} />;
+  }
+
+  // Fallback per tipi non supportati
+  return (
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100%',
+      gap: 2,
+      p: 3
+    }}>
+      <DocumentIcon sx={{ fontSize: 64, color: 'text.disabled' }} />
+      <Typography variant="h6" color="text.secondary">
+        Anteprima non disponibile
+      </Typography>
+      <Typography variant="body2" color="text.disabled" textAlign="center">
+        Questo tipo di file non può essere visualizzato in anteprima. <br/>
+        Usa il pulsante "Scarica" per aprire il file.
+      </Typography>
+    </Box>
+  );
+};
 
 const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButton = true }) => {
   const theme = useTheme();
@@ -51,6 +231,9 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [newDocument, setNewDocument] = useState({
@@ -261,6 +444,41 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const isPreviewable = (document) => {
+    const previewableTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'text/plain',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ];
+    return previewableTypes.includes(document.mime_type);
+  };
+
+  const handlePreviewDocument = async (document) => {
+    try {
+      setPreviewLoading(true);
+      setPreviewDocument(document);
+      setPreviewOpen(true);
+      handleMenuClose();
+    } catch (error) {
+      console.error('Error opening preview:', error);
+      setError('Errore nell\'apertura del preview');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleClosePreview = () => {
+    setPreviewOpen(false);
+    setPreviewDocument(null);
   };
 
   const getFileIcon = (mimeType, category) => {
@@ -574,6 +792,12 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
+        {selectedDocument && isPreviewable(selectedDocument) && (
+          <MenuItem onClick={() => handlePreviewDocument(selectedDocument)}>
+            <PreviewIcon sx={{ mr: 1 }} fontSize="small" />
+            Anteprima
+          </MenuItem>
+        )}
         <MenuItem onClick={() => {
           handleDownloadDocument(selectedDocument);
           handleMenuClose();
@@ -595,6 +819,65 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
           </MenuItem>
         )}
       </Menu>
+
+      {/* Preview Modal */}
+      <Dialog
+        open={previewOpen}
+        onClose={handleClosePreview}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxHeight: '90vh',
+            height: '90vh',
+            m: 2
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          borderBottom: 1,
+          borderColor: 'divider'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {previewDocument && (
+              <>
+                {React.createElement(getFileIcon(previewDocument.mime_type), { 
+                  sx: { fontSize: 24, color: 'primary.main' } 
+                })}
+                <Box>
+                  <Typography variant="h6" component="div">
+                    {previewDocument.original_filename || previewDocument.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatFileSize(previewDocument.file_size)} • {previewDocument.mime_type}
+                  </Typography>
+                </Box>
+              </>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton 
+              onClick={() => handleDownloadDocument(previewDocument)}
+              size="small"
+              title="Scarica"
+            >
+              <DownloadIcon />
+            </IconButton>
+            <IconButton onClick={handleClosePreview} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+          {previewDocument && (
+            <PreviewContent document={previewDocument} />
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

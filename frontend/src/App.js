@@ -17,9 +17,6 @@ import PatientsPageNew from './pages/PatientsPageNew';
 import PatientDetailPage from './pages/PatientDetailPage';
 import PatientFormPage from './pages/PatientFormPage';
 import UsersPageNew from './pages/UsersPageNew';
-import ClinicalRecordsPageNew from './pages/ClinicalRecordsPageNew';
-import ClinicalRecordFormPage from './pages/ClinicalRecordFormPage';
-import ClinicalRecordDetailPage from './pages/ClinicalRecordDetailPage';
 import VisitsPageNew from './pages/VisitsPageNew';
 import CalendarPage from './pages/CalendarPage';
 import GroupsPageNew from './pages/GroupsPageNew';
@@ -61,11 +58,8 @@ const ProtectedRoute = ({ children, requiredPermission = null }) => {
 // App con React Router
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  
-  console.log('🔍 DEBUG AppContent:', { isAuthenticated, isLoading });
 
   if (isLoading) {
-    console.log('🔍 DEBUG AppContent: Showing LoadingSpinner');
     return <LoadingSpinner />;
   }
 
@@ -116,38 +110,6 @@ const AppContent = () => {
         } 
       />
       <Route 
-        path="/clinical-records" 
-        element={
-          <ProtectedRoute requiredPermission="clinical.read">
-            <ClinicalRecordsPageNew />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/clinical-records/new" 
-        element={
-          <ProtectedRoute requiredPermission="clinical.write">
-            <ClinicalRecordFormPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/clinical-records/:id" 
-        element={
-          <ProtectedRoute requiredPermission="clinical.read">
-            <ClinicalRecordDetailPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/clinical-records/:id/edit" 
-        element={
-          <ProtectedRoute requiredPermission="clinical.write">
-            <ClinicalRecordFormPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
         path="/visits" 
         element={
           <ProtectedRoute requiredPermission="clinical.read">
@@ -155,30 +117,11 @@ const AppContent = () => {
           </ProtectedRoute>
         } 
       />
-      <Route 
-        path="/visits/:id" 
-        element={
-          <ProtectedRoute requiredPermission="visits.read">
-            <VisitDetailPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/visits/new" 
-        element={
-          <ProtectedRoute requiredPermission="visits.write">
-            <VisitFormPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/visits/:id/edit" 
-        element={
-          <ProtectedRoute requiredPermission="visits.update">
-            <VisitFormPage />
-          </ProtectedRoute>
-        } 
-      />
+      {/* TODO: Route visits disabilitate - feature in revisione
+      <Route path="/visits/:id" element={<ProtectedRoute requiredPermission="visits.read"><VisitDetailPage /></ProtectedRoute>} />
+      <Route path="/visits/new" element={<ProtectedRoute requiredPermission="visits.write"><VisitFormPage /></ProtectedRoute>} />
+      <Route path="/visits/:id/edit" element={<ProtectedRoute requiredPermission="visits.update"><VisitFormPage /></ProtectedRoute>} />
+      */}
       <Route 
         path="/calendar" 
         element={
@@ -254,7 +197,7 @@ const AppContent = () => {
       <Route 
         path="/billing/new" 
         element={
-          <ProtectedRoute requiredPermission="billing.create">
+          <ProtectedRoute requiredPermission="billing.write">
             <CreateInvoicePage />
           </ProtectedRoute>
         } 
@@ -286,7 +229,7 @@ const AppContent = () => {
       <Route 
         path="/admin" 
         element={
-          <ProtectedRoute requiredPermission="admin">
+          <ProtectedRoute requiredPermission="administration.system.access">
             <AdminSettingsPage />
           </ProtectedRoute>
         } 
@@ -294,7 +237,7 @@ const AppContent = () => {
       <Route 
         path="/admin/roles" 
         element={
-          <ProtectedRoute requiredPermission="admin">
+          <ProtectedRoute requiredPermission="administration.system.access">
             <RoleManagementPage />
           </ProtectedRoute>
         } 

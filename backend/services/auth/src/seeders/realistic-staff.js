@@ -217,16 +217,16 @@ const foundationRoles = [
     description: 'Accesso completo al sistema, gestione utenti e configurazioni',
     permissions: {
       pages: {
-        patients: { access: true, create: true, edit: true, delete: true, view_sensitive: true },
-        clinical: { access: true, create_records: true, edit_own_records: true, edit_all_records: true },
-        groups: { access: true, create: true, edit: true, delete: true },
-        billing: { access: true, create: true, edit: true, delete: true }
+        patients: { access: true, create: true, edit_own: true, edit_all: true, delete: true, view_sensitive: true },
+        clinical: { access: true, create_records: true, edit_own_records: true, edit_all_records: true, create_notes: true, edit_own_notes: true, edit_all_notes: true, delete_notes: true, view_all_records: true },
+        groups: { access: true, create: true, edit_own: true, edit_all: true, manage_members: true, delete: true },
+        billing: { access: true, create_invoices: true, edit_invoices: true, view_financial_data: true, export_data: true }
       },
       features: {
-        documents: { access: true, upload: true, download: true, delete: true }
+        documents: { upload: true, download: true, delete: true, upload_sensitive: true, manage_versions: true }
       },
       administration: {
-        users: { access: true, create: true, edit: true, delete: true },
+        users: { access: true, create: true, edit: true, delete: true, view_permissions: true, edit_permissions: true },
         roles: { access: true, create: true, edit: true, delete: true },
         system: { access: true, email_config: true, audit_logs: true }
       }
@@ -238,16 +238,16 @@ const foundationRoles = [
     description: 'Operatore sanitario di supporto - ruolo base personalizzabile',
     permissions: {
       pages: {
-        patients: { access: true, create: true, edit: true, delete: false, view_sensitive: true },
-        clinical: { access: true, create_records: true, edit_own_records: true, edit_all_records: false },
-        groups: { access: true, create: true, edit: true, delete: false },
-        billing: { access: false, create: false, edit: false, delete: false }
+        patients: { access: true, create: true, edit_own: true, edit_all: false, delete: false, view_sensitive: true },
+        clinical: { access: true, create_records: true, edit_own_records: true, edit_all_records: false, create_notes: true, edit_own_notes: true, edit_all_notes: false, delete_notes: false, view_all_records: false },
+        groups: { access: true, create: true, edit_own: true, edit_all: false, manage_members: false, delete: false },
+        billing: { access: false, create_invoices: false, edit_invoices: false, view_financial_data: false, export_data: false }
       },
       features: {
-        documents: { access: true, upload: true, download: true, delete: false }
+        documents: { upload: true, download: true, delete: false, upload_sensitive: false, manage_versions: false }
       },
       administration: {
-        users: { access: false, create: false, edit: false, delete: false },
+        users: { access: false, create: false, edit: false, delete: false, view_permissions: false, edit_permissions: false },
         roles: { access: false, create: false, edit: false, delete: false },
         system: { access: false, email_config: false, audit_logs: false }
       }

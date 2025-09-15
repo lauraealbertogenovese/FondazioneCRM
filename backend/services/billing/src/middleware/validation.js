@@ -45,9 +45,9 @@ const createInvoiceSchema = Joi.object({
       'number.positive': 'Importo deve essere positivo'
     }),
     
-  payment_method: Joi.string().valid('contanti', 'bonifico', 'pos').default('contanti')
+  payment_method: Joi.string().valid('contanti', 'tracciabile').default('contanti')
     .messages({
-      'any.only': 'Modalità di pagamento deve essere "contanti", "bonifico" o "pos"'
+      'any.only': 'Modalità di pagamento deve essere "contanti" o "tracciabile"'
     }),
     
   due_days: Joi.number().integer().min(1).max(365).default(30)

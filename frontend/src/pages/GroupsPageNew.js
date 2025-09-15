@@ -8,8 +8,6 @@ import {
   InputAdornment,
   Stack,
   IconButton,
-  Menu,
-  MenuItem,
   Alert,
   Dialog,
   DialogTitle,
@@ -24,7 +22,6 @@ import {
 import {
   Search as SearchIcon,
   Add as AddIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
@@ -53,7 +50,6 @@ const GroupsPageNew = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [anchorEl, setAnchorEl] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState(null);
@@ -82,30 +78,6 @@ const GroupsPageNew = () => {
     setSearchTerm(event.target.value);
   };
 
-  const handleMenuOpen = (event, group) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedGroup(group);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedGroup(null);
-  };
-
-  const handleView = () => {
-    navigate(`/groups/${selectedGroup.id}`);
-    handleMenuClose();
-  };
-
-  const handleEdit = () => {
-    navigate(`/groups/${selectedGroup.id}/edit`);
-    handleMenuClose();
-  };
-
-  const handleDelete = () => {
-    setDeleteDialogOpen(true);
-    setAnchorEl(null); // Chiude solo il menu, mantiene selectedGroup
-  };
 
   const confirmDelete = async () => {
     try {
@@ -298,16 +270,48 @@ const GroupsPageNew = () => {
                     </TableCell>
                     
                     <TableCell align="center">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMenuOpen(e, group);
-                        }}
-                        sx={{ color: 'text.disabled' }}
-                      >
-                        <MoreVertIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
+                      <Stack direction="row" spacing={0.5} justifyContent="center">
+                        {hasPermission('groups.read') && (
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/groups/${group.id}`);
+                            }}
+                            sx={{ color: 'primary.main' }}
+                            title="Visualizza Gruppo"
+                          >
+                            <VisibilityIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        )}
+                        {hasPermission('groups.update') && (
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/groups/${group.id}/edit`);
+                            }}
+                            sx={{ color: 'secondary.main' }}
+                            title="Modifica Gruppo"
+                          >
+                            <EditIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        )}
+                        {hasPermission('groups.delete') && (
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedGroup(group);
+                              setDeleteDialogOpen(true);
+                            }}
+                            sx={{ color: 'error.main' }}
+                            title="Elimina Gruppo"
+                          >
+                            <DeleteIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        )}
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -373,33 +377,6 @@ const GroupsPageNew = () => {
         </Box>
       )}
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        elevation={2}
-        sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
-      >
-        {hasPermission('groups.read') && (
-          <MenuItem onClick={handleView} sx={{ fontSize: '0.875rem' }}>
-            <VisibilityIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Visualizza Gruppo
-          </MenuItem>
-        )}
-        {hasPermission('groups.write') && (
-          <MenuItem onClick={handleEdit} sx={{ fontSize: '0.875rem' }}>
-            <EditIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Modifica Gruppo
-          </MenuItem>
-        )}
-        {hasPermission('groups.delete') && (
-          <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
-            <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Elimina Gruppo
-          </MenuItem>
-        )}
-      </Menu>
 
       {/* Delete Dialog */}
       <Dialog

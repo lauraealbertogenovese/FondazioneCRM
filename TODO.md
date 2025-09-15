@@ -266,6 +266,80 @@ Il sistema calendario multi-medico può essere implementato in fase successiva c
 
 ---
 
-*Last Updated: 2025-09-07*  
-*Status: **MVP CORE COMPLETE** - Sistema gestione ruoli 100% funzionale*  
+## 💭 **BRAINSTORMING & CONSIDERAZIONI FUTURE**
+
+### 🏥 **Gestione Clinico di Riferimento - Permessi Granulari**
+*Data Analisi: 2025-09-14*
+
+#### **Situazione Attuale**
+- Operatori possono modificare solo propri pazienti (`edit_own: true`)
+- Non è chiaro chi può assegnare il "Clinico di Riferimento" 
+- Dropdown mostra tutti i clinici disponibili (potenziale problema privacy)
+
+#### **Scenari Possibili Identificati**
+
+**SCENARIO A: Assegnazione Libera** (Attuale)
+- ✅ Pro: Flessibilità organizzativa
+- ❌ Contro: Rischio privacy, conflitti di competenza
+
+**SCENARIO B: Solo Auto-Assegnazione** 
+- ✅ Pro: Sicurezza, responsabilità chiara  
+- ❌ Contro: Rigidità, problema per tirocinanti
+
+**SCENARIO C: Assegnazione Gerarchica**
+- ✅ Pro: Controllo supervisione
+- ❌ Contro: Complessità ruoli
+
+**SCENARIO D: Ibrido Configurabile** (Raccomandato)
+- ✅ Pro: Massima flessibilità + Sicurezza configurabile
+
+#### **Permessi Granulari Proposti**
+```javascript
+patients: {
+  // ... existing permissions
+  assign_clinician_self: false,        // Può assegnarsi come clinico
+  assign_clinician_any: false,         // Può assegnare qualsiasi clinico  
+  assign_clinician_supervised: false,  // Solo sotto supervisione
+  reassign_clinician: false,           // Può riassegnare clinici esistenti
+  view_all_clinicians: false           // Vede tutti i clinici in dropdown
+}
+```
+
+#### **Configurazione Suggerita**
+```javascript
+// Operatore Base
+patients: {
+  assign_clinician_self: true,     // Auto-assegnazione OK
+  assign_clinician_any: false,     // NO assegnazione altri
+  view_all_clinicians: false,      // Vede solo sé stesso
+  reassign_clinician: false        // NO riassegnazione
+}
+
+// Supervisore (ruolo futuro?)
+patients: {
+  assign_clinician_any: true,      // Può assegnare chiunque
+  view_all_clinicians: true,       // Vede tutti i clinici  
+  reassign_clinician: true         // Può riassegnare
+}
+```
+
+#### **Domande Aperte per Implementazione Futura**
+1. Chi crea i pazienti tipicamente? (Accoglienza → Psicologo?)
+2. Chi decide l'assegnazione? (Auto-assegnazione vs Supervisione?) 
+3. Come gestire emergenze? (Sostituzione temporanea?)
+4. Serve ruolo "Supervisore" differenziato?
+
+#### **Considerazioni GDPR & Privacy**
+- Un Operatore dovrebbe accedere solo ai pazienti di sua competenza
+- Il Clinico di Riferimento ha responsabilità legale specifica
+- Tracciabilità assegnazioni per audit
+
+#### **Status**: 🟡 **In Analisi** - Decisione rimandata, sistema attuale funzionante
+#### **Priorità**: 🟨 **Media** - Miglioramento futuro workflow clinico
+#### **Impact**: 🏥 **Alto** - Workflow organizzativo e privacy dati sensibili
+
+---
+
+*Last Updated: 2025-09-14*  
+*Status: **MVP CORE COMPLETE** - Sistema gestione ruoli 100% funzionale + Permessi granulari implementati*  
 *Next Priority: Billing Service per completare ruolo Amministrativo*

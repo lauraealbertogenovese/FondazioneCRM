@@ -62,7 +62,6 @@ const BillingPageNew = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [statusFilter, setStatusFilter] = useState('all');
 
   // Check permissions
   useEffect(() => {
@@ -81,8 +80,7 @@ const BillingPageNew = () => {
       setError(null);
       const response = await billingService.getInvoices({
         limit: 100,
-        patient: searchTerm,
-        status: statusFilter !== 'all' ? statusFilter : undefined
+        patient: searchTerm
       });
       setBillings(response.data || []);
     } catch (error) {
@@ -107,19 +105,6 @@ const BillingPageNew = () => {
     setSelectedBilling(null);
   };
 
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      await billingService.updateInvoiceStatus(id, { 
-        status: newStatus,
-        payment_date: newStatus === 'paid' ? new Date().toISOString() : null
-      });
-      await fetchBillings();
-      handleMenuClose();
-    } catch (error) {
-      console.error('Error updating billing status:', error);
-      setError('Errore nell\'aggiornamento dello stato');
-    }
-  };
 
   const getStatusLabel = (status) => {
     const labels = {
@@ -164,8 +149,7 @@ const BillingPageNew = () => {
     const matchesSearch = !searchTerm || 
       billing.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       billing.invoice_number.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || billing.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const paginatedBillings = filteredBillings.slice(
@@ -210,27 +194,6 @@ const BillingPageNew = () => {
             }}
           />
           
-          <TextField
-            select
-            label="Stato"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            size="medium"
-            sx={{ 
-              minWidth: 150,
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                backgroundColor: alpha(theme.palette.grey[50], 0.8),
-                border: `1px solid ${alpha(theme.palette.grey[300], 0.5)}`,
-              }
-            }}
-          >
-            <MenuItem value="all">Tutti</MenuItem>
-            <MenuItem value="paid">Pagato</MenuItem>
-            <MenuItem value="pending">In attesa</MenuItem>
-            <MenuItem value="overdue">Scaduto</MenuItem>
-          </TextField>
-          
           {hasPermission('billing.create') && (
             <Button
               variant="contained"
@@ -255,69 +218,6 @@ const BillingPageNew = () => {
           )}
         </Stack>
       </Box>
-
-      {/* Stats Cards */}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
-        <Paper sx={{ p: 2, flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ 
-            p: 1.5, 
-            borderRadius: 2, 
-            backgroundColor: 'success.light',
-            color: 'success.contrastText',
-            display: 'flex'
-          }}>
-            <PaidIcon />
-          </Box>
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {formatAmount(billings.filter(b => b.status === 'paid').reduce((sum, b) => sum + parseFloat(b.amount || 0), 0))}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Incassi totali
-            </Typography>
-          </Box>
-        </Paper>
-        
-        <Paper sx={{ p: 2, flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ 
-            p: 1.5, 
-            borderRadius: 2, 
-            backgroundColor: 'warning.light',
-            color: 'warning.contrastText',
-            display: 'flex'
-          }}>
-            <PendingIcon />
-          </Box>
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {formatAmount(billings.filter(b => b.status === 'pending').reduce((sum, b) => sum + parseFloat(b.amount || 0), 0))}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              In attesa di pagamento
-            </Typography>
-          </Box>
-        </Paper>
-        
-        <Paper sx={{ p: 2, flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ 
-            p: 1.5, 
-            borderRadius: 2, 
-            backgroundColor: 'error.light',
-            color: 'error.contrastText',
-            display: 'flex'
-          }}>
-            <OverdueIcon />
-          </Box>
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {formatAmount(billings.filter(b => b.status === 'overdue').reduce((sum, b) => sum + parseFloat(b.amount || 0), 0))}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Fatture scadute
-            </Typography>
-          </Box>
-        </Paper>
-      </Stack>
 
 
       {/* Error Alert */}
@@ -463,52 +363,6 @@ const BillingPageNew = () => {
           <MenuItem onClick={() => navigate(`/billing/${selectedBilling?.id}/edit`)}>
             <EditIcon sx={{ mr: 1 }} />
             Modifica
-          </MenuItem>
-        )}
-        <Divider />
-        {selectedBilling?.status === 'pending' && (
-          <MenuItem 
-            onClick={() => handleStatusChange(selectedBilling.id, 'paid')}
-            sx={{ color: 'success.main' }}
-          >
-            <PaidIcon sx={{ mr: 1 }} />
-            Marca come Pagato
-          </MenuItem>
-        )}
-        {selectedBilling?.status === 'paid' && (
-          <MenuItem 
-            onClick={() => handleStatusChange(selectedBilling.id, 'pending')}
-            sx={{ color: 'warning.main' }}
-          >
-            <PendingIcon sx={{ mr: 1 }} />
-            Marca come In Attesa
-          </MenuItem>
-        )}
-        {selectedBilling?.status === 'overdue' && (
-          <>
-            <MenuItem 
-              onClick={() => handleStatusChange(selectedBilling.id, 'paid')}
-              sx={{ color: 'success.main' }}
-            >
-              <PaidIcon sx={{ mr: 1 }} />
-              Marca come Pagato
-            </MenuItem>
-            <MenuItem 
-              onClick={() => handleStatusChange(selectedBilling.id, 'pending')}
-              sx={{ color: 'warning.main' }}
-            >
-              <PendingIcon sx={{ mr: 1 }} />
-              Marca come In Attesa
-            </MenuItem>
-          </>
-        )}
-        {selectedBilling?.status !== 'overdue' && (
-          <MenuItem 
-            onClick={() => handleStatusChange(selectedBilling.id, 'overdue')}
-            sx={{ color: 'error.main' }}
-          >
-            <OverdueIcon sx={{ mr: 1 }} />
-            Marca come Scaduto
           </MenuItem>
         )}
       </Menu>

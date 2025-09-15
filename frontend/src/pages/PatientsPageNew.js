@@ -27,7 +27,6 @@ import {
 import {
   Search as SearchIcon,
   Add as AddIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
@@ -57,7 +56,6 @@ const PatientsPageNew = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [anchorEl, setAnchorEl] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [error, setError] = useState(null);
@@ -91,32 +89,13 @@ const PatientsPageNew = () => {
     setSearchTerm(event.target.value);
   };
 
-  const handleMenuOpen = (event, patient) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPatient(patient);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedPatient(null);
-  };
-
-  const handleView = () => {
-    navigate(`/patients/${selectedPatient.id}`);
-    handleMenuClose();
-  };
-
-  const handleEdit = () => {
-    navigate(`/patients/${selectedPatient.id}/edit`);
-    handleMenuClose();
-  };
-
-  const handleDelete = () => {
-    setDeleteDialogOpen(true);
-    handleMenuClose();
-  };
 
   const confirmDelete = async () => {
+    if (!selectedPatient || !selectedPatient.id) {
+      console.error('selectedPatient is null or missing ID');
+      return;
+    }
+    
     try {
       await patientService.deletePatient(selectedPatient.id);
       await fetchPatients();
@@ -597,16 +576,48 @@ const PatientsPageNew = () => {
                   </TableCell>
                   
                   <TableCell align="center">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMenuOpen(e, patient);
-                      }}
-                      sx={{ color: 'text.disabled' }}
-                    >
-                      <MoreVertIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
+                    <Stack direction="row" spacing={0.5} justifyContent="center">
+                      {hasPermission('patients.read') && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/patients/${patient.id}`);
+                          }}
+                          sx={{ color: 'primary.main' }}
+                          title="Visualizza Profilo"
+                        >
+                          <VisibilityIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      )}
+                      {hasPermission('patients.update') && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/patients/${patient.id}/edit`);
+                          }}
+                          sx={{ color: 'secondary.main' }}
+                          title="Modifica Dati"
+                        >
+                          <EditIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      )}
+                      {hasPermission('patients.delete') && (
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPatient(patient);
+                            setDeleteDialogOpen(true);
+                          }}
+                          sx={{ color: 'error.main' }}
+                          title="Elimina Paziente"
+                        >
+                          <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
+                      )}
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -672,51 +683,30 @@ const PatientsPageNew = () => {
         </Box>
       )}
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        elevation={2}
-        sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
-      >
-        {hasPermission('patients.read') && (
-          <MenuItem onClick={handleView} sx={{ fontSize: '0.875rem' }}>
-            <VisibilityIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Visualizza Profilo
-          </MenuItem>
-        )}
-        {hasPermission('patients.update') && (
-          <MenuItem onClick={handleEdit} sx={{ fontSize: '0.875rem' }}>
-            <EditIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Modifica Dati
-          </MenuItem>
-        )}
-        {hasPermission('patients.delete') && (
-          <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
-            <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Archivia Paziente
-          </MenuItem>
-        )}
-      </Menu>
 
       {/* Delete Dialog */}
       <Dialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setSelectedPatient(null);
+        }}
         maxWidth="xs"
         sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
       >
-        <DialogTitle sx={{ pb: 1 }}>Archivia paziente</DialogTitle>
+        <DialogTitle sx={{ pb: 1 }}>Elimina paziente</DialogTitle>
         <DialogContent>
           <Typography variant="body2">
-            Sei sicuro di voler archiviare {selectedPatient?.nome} {selectedPatient?.cognome}?
-            Il paziente verrà spostato nell'archivio ma i dati rimarranno disponibili.
+            Sei sicuro di voler eliminare {selectedPatient?.nome} {selectedPatient?.cognome}?
+            Questa azione rimuoverà definitivamente il paziente e tutti i suoi dati associati.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button 
-            onClick={() => setDeleteDialogOpen(false)} 
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              setSelectedPatient(null);
+            }} 
             size="small"
             sx={{
               borderColor: '#6b7280',
@@ -735,22 +725,22 @@ const PatientsPageNew = () => {
           </Button>
           <Button 
             onClick={confirmDelete} 
-            color="warning" 
+            color="error" 
             variant="contained" 
             size="small"
             sx={{
-              backgroundColor: '#f59e0b',
+              backgroundColor: '#dc2626',
               color: '#ffffff',
               fontWeight: 600,
               px: 2,
               py: 0.5,
               '&:hover': {
-                backgroundColor: '#d97706',
+                backgroundColor: '#b91c1c',
                 color: '#ffffff',
               }
             }}
           >
-            Archivia
+            Elimina
           </Button>
         </DialogActions>
       </Dialog>

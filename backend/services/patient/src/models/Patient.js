@@ -329,20 +329,15 @@ class Patient {
     return this;
   }
 
-  // Soft delete patient
+  // Hard delete patient and all related data
   async delete() {
     const queryText = `
-      UPDATE patient.patients 
-      SET is_active = false, updated_at = CURRENT_TIMESTAMP
+      DELETE FROM patient.patients 
       WHERE id = $1
-      RETURNING *
     `;
     
-    const result = await query(queryText, [this.id]);
-    const deletedPatient = result.rows[0];
-    
-    this.is_active = deletedPatient.is_active;
-    this.updated_at = deletedPatient.updated_at;
+    await query(queryText, [this.id]);
+    // Patient and all related data (clinical records, visits, documents) are automatically deleted due to CASCADE constraints
     return this;
   }
 

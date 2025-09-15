@@ -8,8 +8,6 @@ import {
   Divider,
   Alert,
   IconButton,
-  Menu,
-  MenuItem,
   Container,
   useTheme,
   alpha,
@@ -27,7 +25,6 @@ import {
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  MoreVert as MoreVertIcon,
   Person as PersonIcon,
   Phone as PhoneIcon,
   Email as EmailIcon,
@@ -48,6 +45,7 @@ import { patientService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import ClinicalDiary from '../components/ClinicalDiary';
 import DocumentManager from '../components/DocumentManager';
+import PatientClinicalRecords from '../components/PatientClinicalRecords';
 import GDPRCompliance from '../components/GDPRCompliance';
 import AuditLog from '../components/AuditLog';
 
@@ -59,7 +57,6 @@ const PatientDetailPage = () => {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
@@ -80,18 +77,6 @@ const PatientDetailPage = () => {
     }
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleEdit = () => {
-    navigate(`/patients/${id}/edit`);
-    handleMenuClose();
-  };
 
   const getSessoColor = (sesso) => {
     switch (sesso) {
@@ -198,6 +183,7 @@ const PatientDetailPage = () => {
     { label: 'Informazioni', icon: <PersonIcon />, content: 'info' },
     { label: 'Contatti', icon: <PhoneIcon />, content: 'contacts' },
     { label: 'Clinico', icon: <MedicalIcon />, content: 'medical' },
+    { label: 'Cartella Clinica', icon: <HistoryIcon />, content: 'clinical' },
     { label: 'Documenti', icon: <DocumentIcon />, content: 'documents' },
     { label: 'Note Cliniche', icon: <AssignmentIcon />, content: 'notes' },
   ];
@@ -435,7 +421,20 @@ const PatientDetailPage = () => {
           </Box>
         );
       
-      case 3: // Documenti
+      case 3: // Cartella Clinica
+        return (
+          <Box>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
+              Cartella Clinica Completa
+            </Typography>
+            <PatientClinicalRecords 
+              patientId={patient.id}
+              patientName={`${patient.nome} ${patient.cognome}`}
+            />
+          </Box>
+        );
+
+      case 4: // Documenti
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
@@ -448,7 +447,7 @@ const PatientDetailPage = () => {
           </Box>
         );
       
-      case 4: // Note Cliniche
+      case 5: // Note Cliniche
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: 'text.primary' }}>
@@ -521,7 +520,7 @@ const PatientDetailPage = () => {
                 <Button
                   variant="contained"
                   startIcon={<EditIcon />}
-                  onClick={handleEdit}
+                  onClick={() => navigate(`/patients/${id}/edit`)}
                   size="small"
                   sx={{ 
                     backgroundColor: '#3b82f6',
@@ -538,18 +537,6 @@ const PatientDetailPage = () => {
                 </Button>
               )}
               
-              <IconButton 
-                onClick={handleMenuOpen}
-                size="small"
-                sx={{ 
-                  color: 'text.secondary',
-                  '&:hover': { 
-                    backgroundColor: alpha(theme.palette.grey[500], 0.1),
-                  }
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
             </Stack>
           </Stack>
         </Box>
@@ -599,21 +586,6 @@ const PatientDetailPage = () => {
           </Box>
         </Paper>
 
-        {/* Action Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          elevation={2}
-          sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
-        >
-          {hasPermission('patients.write') && (
-            <MenuItem onClick={handleEdit} sx={{ fontSize: '0.875rem' }}>
-              <EditIcon sx={{ fontSize: 18, mr: 1.5 }} />
-              Modifica Paziente
-            </MenuItem>
-          )}
-        </Menu>
       </Container>
     </Fade>
   );

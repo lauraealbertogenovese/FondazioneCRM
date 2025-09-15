@@ -158,7 +158,7 @@ router.get('/visits/:id', async (req, res) => {
 
 
 // PUT /clinical/visits/:id/reschedule - Riprogramma visita (per drag & drop)
-router.put('/visits/:id/reschedule', requirePermission('clinical:update'), async (req, res) => {
+router.put('/visits/:id/reschedule', requirePermission('clinical.update'), async (req, res) => {
   try {
     const { id } = req.params;
     const { new_date, duration_minutes } = req.body;
@@ -211,7 +211,7 @@ function getEventColor(status) {
 }
 
 // POST /clinical/visits - Crea nuova visita
-router.post('/visits', requirePermission('clinical:create'), async (req, res) => {
+router.post('/visits', requirePermission('clinical.write'), async (req, res) => {
   try {
     const {
       patient_id,
@@ -257,7 +257,7 @@ router.post('/visits', requirePermission('clinical:create'), async (req, res) =>
 });
 
 // PUT /clinical/visits/:id - Aggiorna visita
-router.put('/visits/:id', requirePermission('clinical:update'), async (req, res) => {
+router.put('/visits/:id', requirePermission('clinical.update'), async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -282,7 +282,7 @@ router.put('/visits/:id', requirePermission('clinical:update'), async (req, res)
 });
 
 // DELETE /clinical/visits/:id - Elimina visita
-router.delete('/visits/:id', requirePermission('clinical:delete'), async (req, res) => {
+router.delete('/visits/:id', requirePermission('clinical.delete'), async (req, res) => {
   try {
     const { id } = req.params;
 

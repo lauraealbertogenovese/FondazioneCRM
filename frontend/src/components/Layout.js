@@ -51,14 +51,6 @@ const menuItems = [
     subtitle: 'Visualizza e gestisci tutti i pazienti del sistema',
   },
   {
-    text: 'Profili Clinici',
-    icon: <MedicalIcon />,
-    path: '/clinical-records',
-    permission: 'clinical.read',
-    title: 'Profili Clinici',
-    subtitle: 'Gestisci le cartelle cliniche e i profili clinici',
-  },
-  {
     text: 'Gruppi di Supporto',
     icon: <GroupIcon />,
     path: '/groups',
@@ -317,18 +309,6 @@ const Layout = ({ children }) => {
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#059669', fontWeight: 500 }}>
                     • {patientStats.active_patients} in cura attiva
-                  </Typography>
-                </Box>
-              </Box>
-            )}
-            {location.pathname === '/clinical-records' && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#3b82f6' }}>
-                  Cartelle Cliniche
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography variant="body2" sx={{ color: '#374151' }}>
-                    Gestione documentazione clinica
                   </Typography>
                 </Box>
               </Box>

@@ -206,12 +206,14 @@ const InvoiceDetailPage = () => {
         </Box>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Chip
-            icon={getStatusIcon(invoice.status)}
-            label={getStatusLabel(invoice.status)}
-            color={getStatusColor(invoice.status)}
-            size="medium"
-          />
+          {invoice.status !== 'pending' && (
+            <Chip
+              icon={getStatusIcon(invoice.status)}
+              label={getStatusLabel(invoice.status)}
+              color={getStatusColor(invoice.status)}
+              size="medium"
+            />
+          )}
           
           {hasPermission('billing.update') && (
             <IconButton onClick={handleMenuOpen}>

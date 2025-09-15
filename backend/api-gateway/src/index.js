@@ -66,7 +66,7 @@ app.get('/health', (req, res) => {
 // Proxy routes
 
 const patientServiceProxy = createProxyMiddleware({
-  target: process.env.PATIENT_SERVICE_URL || 'http://patient-service:3003',
+  target: process.env.PATIENT_SERVICE_URL || 'http://fondazione-crm-patient-service:3003',
   changeOrigin: true,
   timeout: 30000,
   proxyTimeout: 30000,
@@ -175,7 +175,7 @@ const groupServiceProxy = createProxyMiddleware({
 });
 
 const billingServiceProxy = createProxyMiddleware({
-  target: process.env.BILLING_SERVICE_URL || 'http://billing-service:3006',
+  target: process.env.BILLING_SERVICE_URL || 'http://fondazione-crm-billing-service:3006',
   changeOrigin: true,
   timeout: 30000,
   proxyTimeout: 30000,
@@ -359,10 +359,10 @@ app.get('/system/health', async (req, res) => {
     const services = [
       { name: 'API Gateway', status: 'OK', responseTime: 0 },
       { name: 'Auth Service', url: process.env.AUTH_SERVICE_URL || 'http://auth-service:3002' },
-      { name: 'Patient Service', url: process.env.PATIENT_SERVICE_URL || 'http://patient-service:3003' },
+      { name: 'Patient Service', url: process.env.PATIENT_SERVICE_URL || 'http://fondazione-crm-patient-service:3003' },
       { name: 'Clinical Service', url: process.env.CLINICAL_SERVICE_URL || 'http://clinical-service:3004' },
       { name: 'Group Service', url: process.env.GROUP_SERVICE_URL || 'http://group-service:3005' },
-      { name: 'Billing Service', url: process.env.BILLING_SERVICE_URL || 'http://billing-service:3006' },
+      { name: 'Billing Service', url: process.env.BILLING_SERVICE_URL || 'http://fondazione-crm-billing-service:3006' },
       { name: 'Audit Service', url: process.env.AUDIT_SERVICE_URL || 'http://audit-service:3006' }
     ];
 

@@ -294,6 +294,22 @@ class User {
     return current === true ? true : null;
   }
 
+  // Get combined permissions (role + user-specific)
+  getCombinedPermissions() {
+    // Start with role permissions
+    let combinedPermissions = {};
+    if (this.role && this.role.permissions) {
+      combinedPermissions = { ...this.role.permissions };
+    }
+    
+    // Override with user-specific permissions if they exist
+    if (this.permissions && typeof this.permissions === 'object') {
+      combinedPermissions = { ...combinedPermissions, ...this.permissions };
+    }
+    
+    return combinedPermissions;
+  }
+
   // Get public user data
   getPublicData() {
     return {
@@ -305,7 +321,7 @@ class User {
       role_id: this.role_id,
       role_name: this.role_name,
       role: this.role, // Include full role object with permissions
-      permissions: this.permissions, // User-specific permissions
+      permissions: this.getCombinedPermissions(), // Combined permissions (role + user)
       last_login: this.last_login,
       created_at: this.created_at
     };

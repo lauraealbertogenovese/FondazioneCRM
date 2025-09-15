@@ -22,7 +22,7 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   doc.setFontSize(12);
   
   // Fattura numero e data (in alto a destra)
-  const invoiceNumber = `GS${new Date().getFullYear()}/${String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0')}`;
+  const invoiceNumber = invoiceData.invoice_number || `TEMP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`;
   const issueDate = new Date(invoiceData.issue_date).toLocaleDateString('it-IT');
   
   doc.text(`FATTURA: ${invoiceNumber}`, 150, yPosition);
@@ -67,16 +67,6 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
     yPosition += 5;
   }
   doc.text(`CF: ${patientData.codice_fiscale}`, 20, yPosition);
-  
-  yPosition += 20;
-  
-  // === TIPO DOCUMENTO ===
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'bold');
-  doc.text('Tipo Documento', 20, yPosition);
-  yPosition += 6;
-  doc.setFont(undefined, 'normal');
-  doc.text('TD06', 20, yPosition);
   
   yPosition += 20;
   

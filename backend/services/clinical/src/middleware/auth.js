@@ -30,6 +30,42 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
+// Helper function to check if user has a specific permission
+const hasPermission = (userPermissions, permission) => {
+  // If permissions is an array (legacy format)
+  if (Array.isArray(userPermissions)) {
+    return userPermissions.includes(permission) || userPermissions.includes('*');
+  }
+  
+  // If permissions is an object (granular format)
+  if (typeof userPermissions === 'object' && userPermissions !== null) {
+    // Check for wildcard (different possible formats)
+    if (userPermissions['*'] || 
+        Object.values(userPermissions).includes('*')) {
+      return true;
+    }
+    
+    // Check direct permission
+    if (userPermissions[permission]) return true;
+    
+    // Check nested permissions (e.g., clinical.read)
+    const parts = permission.split('.');
+    let current = userPermissions;
+    
+    for (const part of parts) {
+      if (current && typeof current === 'object' && current[part]) {
+        current = current[part];
+      } else {
+        return false;
+      }
+    }
+    
+    return current === true;
+  }
+  
+  return false;
+};
+
 // Middleware per verificare i permessi
 const requirePermission = (permission) => {
   return (req, res, next) => {
@@ -38,13 +74,9 @@ const requirePermission = (permission) => {
     }
 
     // Verifica se l'utente ha il permesso richiesto
-    if (req.user.permissions && (
-      req.user.permissions.includes(permission) || 
-      req.user.permissions.includes('*')  // Wildcard permission
-    )) {
+    if (req.user.permissions && hasPermission(req.user.permissions, permission)) {
       next();
     } else {
-      console.log(`Permission denied: user permissions ${JSON.stringify(req.user.permissions)}, required: ${permission}`);
       return res.status(403).json({ error: 'Insufficient permissions' });
     }
   };

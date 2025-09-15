@@ -131,9 +131,10 @@ const CreateInvoicePage = () => {
     try {
       const response = await billingService.createInvoice(invoiceData);
       
-      // Genera PDF della fattura
+      // Genera PDF della fattura usando i dati restituiti dal backend
       try {
-        const pdfResult = generateInvoicePDF(invoiceData, selectedPatient);
+        const createdInvoice = response.data;
+        const pdfResult = generateInvoicePDF(createdInvoice, selectedPatient);
         console.log('PDF generato:', pdfResult.fileName);
       } catch (pdfError) {
         console.error('Errore nella generazione PDF:', pdfError);

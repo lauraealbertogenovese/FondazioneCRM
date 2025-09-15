@@ -37,6 +37,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import roleService from '../services/roleService';
 import PermissionEditor from '../components/PermissionEditor';
+import { GRANULAR_PERMISSION_TEMPLATE } from '../utils/permissionTemplates';
 
 const RoleManagementPage = ({ embedded = false }) => {
   const { user, hasPermission } = useAuth();
@@ -57,14 +58,8 @@ const RoleManagementPage = ({ embedded = false }) => {
     permissions: {}
   });
 
-  // Permission structure template
-  const permissionTemplate = {
-    patients: { read: false, write: false, delete: false },
-    clinical: { read: false, write: false, delete: false },
-    groups: { read: false, write: false, delete: false },
-    users: { read: false, write: false, delete: false },
-    billing: { read: false, write: false, delete: false }
-  };
+  // Permission structure template - using complete granular template
+  const permissionTemplate = JSON.parse(JSON.stringify(GRANULAR_PERMISSION_TEMPLATE));
 
   useEffect(() => {
     if (hasPermission('admin')) {
@@ -99,7 +94,7 @@ const RoleManagementPage = ({ embedded = false }) => {
   };
 
   const handleCreateRole = () => {
-    setRoleForm({ name: '', description: '', permissions: { ...permissionTemplate } });
+    setRoleForm({ name: '', description: '', permissions: JSON.parse(JSON.stringify(permissionTemplate)) });
     setSelectedRole(null);
     setRoleDialogOpen(true);
   };
@@ -109,7 +104,7 @@ const RoleManagementPage = ({ embedded = false }) => {
       setRoleForm({
         name: selectedRole.name,
         description: selectedRole.description,
-        permissions: selectedRole.permissions || { ...permissionTemplate }
+        permissions: selectedRole.permissions || JSON.parse(JSON.stringify(permissionTemplate))
       });
       setRoleDialogOpen(true);
     }
@@ -416,7 +411,7 @@ const RoleManagementPage = ({ embedded = false }) => {
       </Menu>
 
       {/* Role Dialog */}
-      <Dialog open={roleDialogOpen} onClose={() => setRoleDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={roleDialogOpen} onClose={() => setRoleDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           {selectedRole ? 'Modifica Ruolo' : 'Nuovo Ruolo'}
         </DialogTitle>
@@ -435,6 +430,10 @@ const RoleManagementPage = ({ embedded = false }) => {
               multiline
               rows={3}
               fullWidth
+            />
+            <PermissionEditor
+              permissions={roleForm.permissions}
+              onChange={(permissions) => setRoleForm({ ...roleForm, permissions })}
             />
           </Stack>
         </DialogContent>
