@@ -49,11 +49,14 @@ const GroupFormPage = () => {
   // Multi-select states
   const [selectedConductors, setSelectedConductors] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
-  
+
   // Options
   const [conductors, setConductors] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
+
+  // Group data for syncing after options load
+  const [groupData, setGroupData] = useState(null);
 
   useEffect(() => {
     fetchOptions();
@@ -67,6 +70,43 @@ const GroupFormPage = () => {
       navigate('/groups');
     }
   }, [hasPermission, navigate]);
+
+  // Sync existing group members with loaded options
+  useEffect(() => {
+    if (groupData && conductors.length > 0 && patients.length > 0) {
+      if (groupData.members) {
+        console.log('Syncing members with options...');
+        console.log('Group members:', groupData.members);
+        console.log('Available conductors:', conductors);
+        console.log('Available patients:', patients);
+        
+        // Match existing conductors with loaded conductor options
+        const existingConductorIds = groupData.members
+          .filter(member => member.member_type === 'conductor')
+          .map(member => member.user_id);
+
+        console.log('Existing conductor IDs:', existingConductorIds);
+
+        const matchedConductors = conductors.filter(conductor =>
+          existingConductorIds.includes(conductor.id)
+        );
+
+        console.log('Matched conductors:', matchedConductors);
+
+        // Match existing members with loaded patient options
+        const existingMemberIds = groupData.members
+          .filter(member => member.member_type === 'patient')
+          .map(member => member.patient_id);
+
+        const matchedMembers = patients.filter(patient =>
+          existingMemberIds.includes(patient.id)
+        );
+
+        setSelectedConductors(matchedConductors);
+        setSelectedMembers(matchedMembers);
+      }
+    }
+  }, [groupData, conductors, patients]);
 
   const fetchOptions = async () => {
     try {
@@ -94,22 +134,37 @@ const GroupFormPage = () => {
       const response = await groupService.getGroup(id);
       if (response.success) {
         const group = response.data;
+        console.log('Group data from backend:', group);
+        console.log('Group members:', group.members);
+        
         setFormData({
           name: group.name || '',
           description: group.description || '',
           meeting_frequency: group.meeting_frequency || ''
         });
         
+        // Store group data for later processing when options are loaded
+        setGroupData(group);
+
         // Load existing members and conductors
         if (group.members) {
           const existingConductors = group.members
-            .filter(member => member.member_type === 'psychologist')
-            .map(member => ({ id: member.user_id, first_name: member.nome, last_name: member.cognome }));
-          
+            .filter(member => member.member_type === 'conductor')
+            .map(member => ({
+              id: member.user_id,
+              first_name: member.nome,
+              last_name: member.cognome,
+              role: member.role || 'Staff'
+            }));
+
           const existingMembers = group.members
             .filter(member => member.member_type === 'patient')
-            .map(member => ({ id: member.patient_id, nome: member.nome, cognome: member.cognome }));
-            
+            .map(member => ({
+              id: member.patient_id,
+              nome: member.nome,
+              cognome: member.cognome
+            }));
+
           setSelectedConductors(existingConductors);
           setSelectedMembers(existingMembers);
         }
@@ -333,6 +388,7 @@ const GroupFormPage = () => {
                       setFormErrors(prev => ({ ...prev, conductors: null }));
                     }
                   }}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   getOptionLabel={(option) => `${option.first_name || option.nome || ''} ${option.last_name || option.cognome || ''} (${option.role || option.ruolo || option.job_title || 'Staff'})`}
                   renderInput={(params) => (
                     <TextField
@@ -373,6 +429,7 @@ const GroupFormPage = () => {
                   onChange={(event, newValue) => {
                     setSelectedMembers(newValue);
                   }}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   getOptionLabel={(option) => `${option.nome || ''} ${option.cognome || ''}`}
                   renderInput={(params) => (
                     <TextField

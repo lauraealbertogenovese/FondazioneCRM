@@ -261,6 +261,7 @@ const RoleManagementPage = ({ embedded = false }) => {
 
   const handleSavePermissions = async () => {
     try {
+      // Invia solo i permessi, non l'intero oggetto selectedRole
       await roleService.updateRole(selectedRole.id, { permissions: selectedRole.permissions });
       showSnackbar('Permessi aggiornati con successo');
       setPermissionDialogOpen(false);

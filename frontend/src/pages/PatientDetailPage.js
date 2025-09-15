@@ -199,15 +199,15 @@ const PatientDetailPage = () => {
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Nome Completo
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.nome} {patient.cognome}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Status
                   </Typography>
                   <Chip
@@ -215,35 +215,35 @@ const PatientDetailPage = () => {
                     color={patient.is_active ? 'success' : 'warning'}
                     size="small"
                     variant="outlined"
-                    sx={{ fontWeight: 500 }}
+                    sx={{ fontWeight: 400 }}
                   />
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Età
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {calculateAge(patient.data_nascita)} anni
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Codice Fiscale
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.codice_fiscale || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Data di Nascita
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.data_nascita ? new Date(patient.data_nascita).toLocaleDateString('it-IT') : 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Sesso
                   </Typography>
                   <Chip
@@ -251,32 +251,32 @@ const PatientDetailPage = () => {
                     color={getSessoColor(patient.sesso)}
                     size="small"
                     variant="outlined"
-                    sx={{ fontWeight: 500 }}
+                    sx={{ fontWeight: 400 }}
                   />
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Telefono
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.telefono || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Email
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.email || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Clinico di Riferimento
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.medico_curante_first_name && patient.medico_curante_last_name 
                       ? `${patient.medico_curante_first_name} ${patient.medico_curante_last_name}${patient.medico_curante_role ? ` (${patient.medico_curante_role})` : ''}`
                       : 'Non assegnato'
@@ -284,34 +284,34 @@ const PatientDetailPage = () => {
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Tessera Sanitaria
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.numero_tessera_sanitaria || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Luogo di Nascita
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.luogo_nascita || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Stato Civile
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {getMaritalStatusLabel(patient.stato_civile)}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Professione
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.professione || 'Non specificata'}
                   </Typography>
                 </Box>
@@ -329,36 +329,36 @@ const PatientDetailPage = () => {
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Telefono
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.telefono || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Email
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.email || 'Non disponibile'}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Indirizzo
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.indirizzo || 'Non disponibile'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Città
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.citta || 'Non disponibile'}
                   </Typography>
                 </Box>
@@ -376,10 +376,10 @@ const PatientDetailPage = () => {
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Clinico di Riferimento
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.medico_curante_first_name && patient.medico_curante_last_name 
                       ? `${patient.medico_curante_first_name} ${patient.medico_curante_last_name}${patient.medico_curante_role ? ` (${patient.medico_curante_role})` : ''}`
                       : 'Non assegnato'
@@ -387,28 +387,28 @@ const PatientDetailPage = () => {
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Professione
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.professione || 'Non specificata'}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Sostanza di Abuso
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.sostanza_abuso || 'Non specificata'}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Abusi Secondari
                   </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.abusi_secondari && patient.abusi_secondari.length > 0 
                       ? patient.abusi_secondari.join(', ')
                       : 'Nessuno'

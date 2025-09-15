@@ -15,6 +15,7 @@ class GroupMember {
         COALESCE(p.cognome, staff.last_name) as cognome,
         COALESCE(p.email, staff.email) as email,
         COALESCE(p.telefono, '') as telefono,
+        staff.role,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
@@ -36,6 +37,7 @@ class GroupMember {
         COALESCE(p.cognome, staff.last_name) as cognome,
         COALESCE(p.email, staff.email) as email,
         COALESCE(p.telefono, '') as telefono,
+        staff.role,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
