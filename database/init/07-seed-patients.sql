@@ -2,29 +2,30 @@
 -- Inserimento pazienti di esempio
 
 INSERT INTO patient.patients (
-    nome, cognome, data_nascita, sesso, telefono, email, 
-    indirizzo, citta, cap, contatto_emergenza_nome, contatto_emergenza_telefono,
-    codice_fiscale, created_by
+    nome, cognome, data_nascita, luogo_nascita, sesso, telefono, email,
+    indirizzo, citta, cap, provincia, codice_fiscale, numero_tessera_sanitaria,
+    consenso_trattamento_dati, medico_curante, sostanza_abuso, professione,
+    stato_civile, note, created_by
 ) VALUES
-('Mario', 'Rossi', '1985-03-15', 'M', '+39 320 1234567', 'mario.rossi@email.com', 
- 'Via Roma 123', 'Milano', '20100', 'Anna Rossi', '+39 320 7654321',
- 'RSSMRA85C15F205X', 1),
+('Mario', 'Rossi', '1985-03-15', 'Milano', 'M', '+39 320 1234567', 'mario.rossi@email.com',
+ 'Via Roma 123', 'Milano', '20100', 'MI', 'RSSMRA85C15F205X', '80380800301',
+ true, 2, 'Alcol', 'Operaio', 'married', 'Paziente molto collaborativo', 1),
 
-('Lucia', 'Bianchi', '1990-07-22', 'F', '+39 335 9876543', 'lucia.bianchi@email.com',
- 'Corso Italia 45', 'Roma', '00100', 'Giovanni Bianchi', '+39 335 1122334',
- 'BNCLCU90L62H501Y', 1),
+('Lucia', 'Bianchi', '1990-07-22', 'Roma', 'F', '+39 335 9876543', 'lucia.bianchi@email.com',
+ 'Corso Italia 45', 'Roma', '00100', 'RM', 'BNCLCU90L62H501Y', '80380800302',
+ true, 2, 'Cocaina', 'Impiegata', 'single', 'Prima volta in terapia', 1),
 
-('Andrea', 'Verdi', '1978-11-08', 'M', '+39 347 5555666', 'andrea.verdi@email.com',
- 'Piazza Garibaldi 12', 'Napoli', '80100', 'Maria Verdi', '+39 347 7777888',
- 'VRDNDR78S08F839Z', 1),
+('Andrea', 'Verdi', '1978-11-08', 'Napoli', 'M', '+39 347 5555666', 'andrea.verdi@email.com',
+ 'Piazza Garibaldi 12', 'Napoli', '80100', 'NA', 'VRDNDR78S08F839Z', '80380800303',
+ false, 2, 'Eroina', 'Muratore', 'divorced', 'Necessita supporto familiare', 1),
 
-('Sofia', 'Neri', '1995-01-30', 'F', '+39 368 3333444', 'sofia.neri@email.com',
- 'Via Dante 67', 'Torino', '10100', 'Paolo Neri', '+39 368 5555666',
- 'NRISFO95A70L219W', 1),
+('Sofia', 'Neri', '1995-01-30', 'Torino', 'F', '+39 368 3333444', 'sofia.neri@email.com',
+ 'Via Dante 67', 'Torino', '10100', 'TO', 'NRISFO95A70L219W', '80380800304',
+ true, 2, 'Cannabis', 'Studentessa', 'single', 'Molto motivata al cambiamento', 1),
 
-('Francesco', 'Gialli', '1988-09-12', 'M', '+39 349 9999000', 'francesco.gialli@email.com',
- 'Viale Europa 89', 'Firenze', '50100', 'Elena Gialli', '+39 349 1111222',
- 'GLLFNC88P12D612Q', 1);
+('Francesco', 'Gialli', '1988-09-12', 'Firenze', 'M', '+39 349 9999000', 'francesco.gialli@email.com',
+ 'Viale Europa 89', 'Firenze', '50100', 'FI', 'GLLFNC88P12D612Q', '80380800305',
+ true, 2, 'Metadone', 'Cameriere', 'cohabiting', 'In programma di mantenimento', 1);
 
 -- Inserimento cartelle cliniche per i pazienti
 INSERT INTO clinical.clinical_records (

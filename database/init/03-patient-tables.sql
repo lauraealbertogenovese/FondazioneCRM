@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS patient.patients (
     nome VARCHAR(50) NOT NULL,
     cognome VARCHAR(50) NOT NULL,
     data_nascita DATE NOT NULL,
+    luogo_nascita VARCHAR(100),
     sesso CHAR(1) CHECK (sesso IN ('M', 'F')),
     indirizzo TEXT,
     citta VARCHAR(100),
@@ -16,7 +17,13 @@ CREATE TABLE IF NOT EXISTS patient.patients (
     provincia VARCHAR(2),
     telefono VARCHAR(20),
     email VARCHAR(100),
+    consenso_trattamento_dati BOOLEAN DEFAULT false,
     note TEXT,
+    medico_curante INTEGER REFERENCES auth.users(id),
+    sostanza_abuso VARCHAR(255),
+    abusi_secondari TEXT[],
+    professione VARCHAR(255),
+    stato_civile VARCHAR(100),
     is_active BOOLEAN DEFAULT true,
     created_by INTEGER REFERENCES auth.users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -56,6 +63,12 @@ CREATE INDEX IF NOT EXISTS idx_patients_tessera_sanitaria ON patient.patients(nu
 CREATE INDEX IF NOT EXISTS idx_patients_nome_cognome ON patient.patients(nome, cognome);
 CREATE INDEX IF NOT EXISTS idx_patients_data_nascita ON patient.patients(data_nascita);
 CREATE INDEX IF NOT EXISTS idx_patients_created_by ON patient.patients(created_by);
+CREATE INDEX IF NOT EXISTS idx_patients_medico_curante ON patient.patients(medico_curante);
+CREATE INDEX IF NOT EXISTS idx_patients_sostanza_abuso ON patient.patients(sostanza_abuso);
+CREATE INDEX IF NOT EXISTS idx_patients_professione ON patient.patients(professione);
+CREATE INDEX IF NOT EXISTS idx_patients_stato_civile ON patient.patients(stato_civile);
+CREATE INDEX IF NOT EXISTS idx_patients_is_active ON patient.patients(is_active);
+CREATE INDEX IF NOT EXISTS idx_patients_consenso ON patient.patients(consenso_trattamento_dati);
 CREATE INDEX IF NOT EXISTS idx_documents_patient_id ON patient.patient_documents(patient_id);
 CREATE INDEX IF NOT EXISTS idx_documents_file_type ON patient.patient_documents(file_type);
 CREATE INDEX IF NOT EXISTS idx_history_patient_id ON patient.patient_history(patient_id);

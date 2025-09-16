@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS auth.users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
+    phone VARCHAR(20),
     role_id INTEGER REFERENCES auth.roles(id),
     is_active BOOLEAN DEFAULT true,
     last_login TIMESTAMP,

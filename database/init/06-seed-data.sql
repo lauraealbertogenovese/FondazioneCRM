@@ -12,9 +12,10 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Inserimento utenti di default
 -- Password per entrambi: password123 (hash bcryptjs)
-INSERT INTO auth.users (username, email, password_hash, first_name, last_name, role_id) VALUES
-('admin', 'admin@fondazione-crm.it', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Admin', 'Sistema', 1),
-('testuser', 'test@example.com', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Test', 'User', 5)
+INSERT INTO auth.users (username, email, password_hash, first_name, last_name, phone, role_id) VALUES
+('admin', 'admin@fondazione-crm.it', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Admin', 'Sistema', '+39 320 0000001', 1),
+('dott.bianchi', 'dott.bianchi@fondazione-crm.it', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Marco', 'Bianchi', '+39 320 0000002', 3),
+('testuser', 'test@example.com', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Test', 'User', '+39 320 0000003', 5)
 ON CONFLICT (username) DO NOTHING;
 
 -- Inserimento tipi di gruppi di esempio
