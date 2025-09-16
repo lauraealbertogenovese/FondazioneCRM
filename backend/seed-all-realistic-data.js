@@ -50,15 +50,6 @@ async function seedAllRealisticData() {
       await seedRealisticPatients();
     });
     
-    // Seed Clinical Service
-    console.log('\n📁 Seeding Clinical Service (Clinical Records)...');
-    const clinicalServicePath = path.join(__dirname, 'services', 'clinical');
-    const clinicalSeederPath = path.join(clinicalServicePath, 'src', 'seeders', 'realistic-clinical-records');
-    await runSeederInService(clinicalServicePath, async () => {
-      const { seedRealisticClinicalRecords } = require(clinicalSeederPath);
-      await seedRealisticClinicalRecords();
-    });
-    
     // Seed Group Service
     console.log('\n📁 Seeding Group Service (Support Groups)...');
     const groupServicePath = path.join(__dirname, 'services', 'group');
@@ -68,28 +59,17 @@ async function seedAllRealisticData() {
       await seedRealisticSupportGroups();
     });
     
-    // Seed Clinical Service - Therapeutic Visits
-    console.log('\n📁 Seeding Clinical Service (Therapeutic Visits)...');
-    const visitsSeederPath = path.join(clinicalServicePath, 'src', 'seeders', 'realistic-visits');
-    await runSeederInService(clinicalServicePath, async () => {
-      const { seedRealisticTherapeuticVisits } = require(visitsSeederPath);
-      await seedRealisticTherapeuticVisits();
-    });
-    
     console.log('\n✅ All realistic data seeding completed successfully!');
     console.log('==============================================================================');
-    console.log('🏥 Your Addiction Recovery Foundation CRM now has:');
-    console.log('   • 16 Realistic patients (alcohol, drugs, gambling addictions)');
-    console.log('   • 15 Professional staff members (all with Operatore role - customizable)');
-    console.log('   • 16 Clinical records with appropriate diagnoses and treatment plans');
+    console.log('🏥 Your Foundation CRM now has:');
+    console.log('   • 10 Patients (alcohol and drug addictions only)');
+    console.log('   • 2 Staff members (Admin + Operatore)');
     console.log('   • 15 Support groups (AA, NA, therapy groups, family support)');
-    console.log('   • 20+ Therapeutic sessions (individual, group, family, medical)');
     console.log('   • Simplified role system: admin + Operatore (others created dynamically)');
     console.log('');
     console.log('🔐 Default login credentials:');
     console.log('   • Admin: admin.fondazione / SecurePass123!');
-    console.log('   • Clinical Director: dr.direzione / ClinicalDir456!');
-    console.log('   • Senior Psychologist: psy.addiction1 / Psychology789!');
+    console.log('   • Operator: operatore1 / Operator123!');
     console.log('');
     console.log('🎯 Ready for production use!');
     

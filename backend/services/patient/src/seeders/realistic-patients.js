@@ -86,33 +86,7 @@ const realisticPatients = [
     note: 'Dipendenza da MDMA e cannabis. Prima volta in trattamento, buona collaborazione.'
   },
 
-  // Gambling Addiction Patients
-  {
-    nome: 'Andrea',
-    cognome: 'Lombardi',
-    data_nascita: new Date('1983-12-05'),
-    codice_fiscale: 'LMBNDR83T05F205R',
-    sesso: 'M',
-    telefono: '3377890123',
-    email: 'andrea.lombardi@email.com',
-    indirizzo: 'Via San Marco 78, Milano',
-    status: 'active',
-    note: 'Dipendenza da gioco d\'azzardo. Debiti significativi, sostegno per reinserimento lavorativo.'
-  },
-  {
-    nome: 'Silvia',
-    cognome: 'Galli',
-    data_nascita: new Date('1988-04-12'),
-    codice_fiscale: 'GLLSLV88D52H501P',
-    sesso: 'F',
-    telefono: '3388901234',
-    email: 'silvia.galli@email.com',
-    indirizzo: 'Corso Buenos Aires 156, Milano',
-    status: 'active',
-    note: 'Ludopatia online e slot machine. Terapia cognitivo-comportamentale.'
-  },
-
-  // Mixed Addictions and Complex Cases
+  // Mixed Addictions (alcol + droghe only)
   {
     nome: 'Davide',
     cognome: 'Ricci',
@@ -123,7 +97,7 @@ const realisticPatients = [
     email: 'davide.ricci@email.com',
     indirizzo: 'Via Torino 89, Milano',
     status: 'active',
-    note: 'Poli-dipendenze: alcol, cocaina, gioco. Storia di ricadute multiple. Supporto intensivo.'
+    note: 'Poli-dipendenze: alcol e cocaina. Storia di ricadute multiple. Supporto intensivo.'
   },
   {
     nome: 'Chiara',
@@ -138,45 +112,7 @@ const realisticPatients = [
     note: 'Dipendenza da alcol con disturbi dell\'alimentazione. Approccio multidisciplinare.'
   },
 
-  // Recovery Success Stories
-  {
-    nome: 'Matteo',
-    cognome: 'Romano',
-    data_nascita: new Date('1982-02-28'),
-    codice_fiscale: 'RMNMTT82B28F205C',
-    sesso: 'M',
-    telefono: '3421234567',
-    email: 'matteo.romano@email.com',
-    indirizzo: 'Piazza Repubblica 45, Milano',
-    status: 'discharged',
-    note: 'Completato programma di recupero da dipendenza da alcol. Follow-up mensile.'
-  },
-  {
-    nome: 'Valentina',
-    cognome: 'Costa',
-    data_nascita: new Date('1989-10-10'),
-    codice_fiscale: 'CSTVNT89R50F205H',
-    sesso: 'F',
-    telefono: '3432345678',
-    email: 'valentina.costa@email.com',
-    indirizzo: 'Via Dante 67, Milano',
-    status: 'discharged',
-    note: 'Recupero completo da dipendenza da cocaina. Ora peer counselor nel programma.'
-  },
-
-  // Patients Needing Intensive Support
-  {
-    nome: 'Luca',
-    cognome: 'Fontana',
-    data_nascita: new Date('1993-09-05'),
-    codice_fiscale: 'FNTLCU93P05H501B',
-    sesso: 'M',
-    telefono: '3443456789',
-    email: 'luca.fontana@email.com',
-    indirizzo: 'Via Porta Nuova 12, Milano',
-    status: 'inactive',
-    note: 'Sospensione temporanea per violazione del contratto terapeutico. Rivalutazione prevista.'
-  },
+  // Current active treatments
   {
     nome: 'Sara',
     cognome: 'Moretti',
@@ -242,7 +178,7 @@ const seedRealisticPatients = async () => {
       }
     }
     
-    console.log(`🎉 Successfully seeded ${createdPatients.length} realistic patients for addiction recovery foundation`);
+    console.log(`🎉 Successfully seeded ${createdPatients.length} patients (alcohol and drug addictions only)`);
     return createdPatients;
     
   } catch (error) {

@@ -14,7 +14,8 @@ database/
 │   ├── 05-add-user-permissions.sql
 │   ├── 06-add-patient-clinical-fields.sql
 │   ├── 07-cleanup-roles-and-permissions.sql
-│   ├── 08-update-group-schema-final.sql ✨ NUOVO
+│   ├── 08-update-group-schema-final.sql
+│   ├── 09-cleanup-unused-columns.sql ✨ NUOVO
 │   └── README.md
 └── apply-migrations.js
 ```
@@ -147,6 +148,34 @@ docker cp database/migrations/07-cleanup-roles-and-permissions.sql fondazione-cr
 
 # Esegui la migration
 docker exec -i fondazione-crm-postgres psql -U crm_user -d fondazione_crm -f /tmp/07-cleanup-roles-and-permissions.sql
+```
+
+## 📋 Migration `09-cleanup-unused-columns.sql` ✨ NUOVO
+
+### Cosa Fa:
+- ✅ **Aggiunge phone a users**: Colonna `phone` in `auth.users` con indice
+- ✅ **Rimuove colonne non utilizzate**: `allergie`, `farmaci_assunti`, `contatto_emergenza_*`, `consenso_marketing`
+- ✅ **Mantiene solo colonne utilizzate**: `consenso_trattamento_dati` (usata nel frontend)
+- ✅ **Verifica integrità**: Controlli completi su schema e dati
+
+### Modifiche Schema:
+- **Aggiunta**: `auth.users.phone` (VARCHAR(20)) con indice `idx_users_phone`
+- **Rimozione**: 6 colonne non utilizzate da `patient.patients`
+- **Mantenimento**: Solo colonne effettivamente utilizzate nel frontend/backend
+
+### Ottimizzazione:
+- ✅ **Database più pulito**: Solo colonne necessarie
+- ✅ **Performance migliorate**: Meno colonne = query più veloci
+- ✅ **Manutenzione semplificata**: Meno codice da mantenere
+
+## 🔄 Applicare Migration 09
+
+```bash
+# Copia la migration nel container
+docker cp database/migrations/09-cleanup-unused-columns.sql fondazione-crm-postgres:/tmp/
+
+# Esegui la migration
+docker exec -i fondazione-crm-postgres psql -U crm_user -d fondazione_crm -f /tmp/09-cleanup-unused-columns.sql
 ```
 
 ---

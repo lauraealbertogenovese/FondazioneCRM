@@ -17,13 +17,7 @@ class Patient {
     this.telefono = data.telefono;
     this.email = data.email;
     this.anamnesi_medica = data.anamnesi_medica;
-    this.allergie = data.allergie;
-    this.farmaci_assunti = data.farmaci_assunti;
-    this.contatto_emergenza_nome = data.contatto_emergenza_nome;
-    this.contatto_emergenza_telefono = data.contatto_emergenza_telefono;
-    this.contatto_emergenza_relazione = data.contatto_emergenza_relazione;
     this.consenso_trattamento_dati = data.consenso_trattamento_dati;
-    this.consenso_marketing = data.consenso_marketing;
     this.note = data.note;
     this.medico_curante = data.medico_curante;
     this.sostanza_abuso = data.sostanza_abuso;
@@ -58,13 +52,7 @@ class Patient {
       telefono,
       email,
       anamnesi_medica,
-      allergie,
-      farmaci_assunti,
-      contatto_emergenza_nome,
-      contatto_emergenza_telefono,
-      contatto_emergenza_relazione,
       consenso_trattamento_dati,
-      consenso_marketing,
       note,
       medico_curante,
       sostanza_abuso,
@@ -78,14 +66,12 @@ class Patient {
       INSERT INTO patient.patients (
         codice_fiscale, numero_tessera_sanitaria, nome, cognome, data_nascita,
         luogo_nascita, sesso, indirizzo, citta, cap, provincia, telefono, email,
-        anamnesi_medica, allergie, farmaci_assunti, contatto_emergenza_nome,
-        contatto_emergenza_telefono, contatto_emergenza_relazione,
-        consenso_trattamento_dati, consenso_marketing, note, medico_curante, 
+        anamnesi_medica, consenso_trattamento_dati, note, medico_curante, 
         sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28
+        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
       )
       RETURNING *
     `;
@@ -93,9 +79,7 @@ class Patient {
     const values = [
       codice_fiscale, numero_tessera_sanitaria, nome, cognome, data_nascita,
       luogo_nascita, sesso, indirizzo, citta, cap, provincia, telefono, email,
-      anamnesi_medica, allergie, farmaci_assunti, contatto_emergenza_nome,
-      contatto_emergenza_telefono, contatto_emergenza_relazione,
-      consenso_trattamento_dati, consenso_marketing, note, medico_curante, 
+      anamnesi_medica, consenso_trattamento_dati, note, medico_curante, 
       sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
     ];
     
@@ -291,9 +275,7 @@ class Patient {
       'codice_fiscale', 'numero_tessera_sanitaria', 'nome', 'cognome',
       'data_nascita', 'luogo_nascita', 'sesso', 'indirizzo', 'citta',
       'cap', 'provincia', 'telefono', 'email', 'anamnesi_medica',
-      'allergie', 'farmaci_assunti', 'contatto_emergenza_nome',
-      'contatto_emergenza_telefono', 'contatto_emergenza_relazione',
-      'consenso_trattamento_dati', 'consenso_marketing', 'note', 'medico_curante', 
+      'consenso_trattamento_dati', 'note', 'medico_curante', 
       'sostanza_abuso', 'abusi_secondari', 'professione', 'stato_civile', 'is_active'
     ];
     
@@ -359,13 +341,7 @@ class Patient {
       telefono: this.telefono,
       email: this.email,
       anamnesi_medica: this.anamnesi_medica,
-      allergie: this.allergie,
-      farmaci_assunti: this.farmaci_assunti,
-      contatto_emergenza_nome: this.contatto_emergenza_nome,
-      contatto_emergenza_telefono: this.contatto_emergenza_telefono,
-      contatto_emergenza_relazione: this.contatto_emergenza_relazione,
       consenso_trattamento_dati: this.consenso_trattamento_dati,
-      consenso_marketing: this.consenso_marketing,
       note: this.note,
       is_active: this.is_active,
       created_by: this.created_by,
@@ -416,13 +392,7 @@ class Patient {
       telefono: this.telefono,
       email: this.email,
       anamnesi_medica: this.anamnesi_medica,
-      allergie: this.allergie,
-      farmaci_assunti: this.farmaci_assunti,
-      contatto_emergenza_nome: this.contatto_emergenza_nome,
-      contatto_emergenza_telefono: this.contatto_emergenza_telefono,
-      contatto_emergenza_relazione: this.contatto_emergenza_relazione,
       consenso_trattamento_dati: this.consenso_trattamento_dati,
-      consenso_marketing: this.consenso_marketing,
       note: this.note,
       medico_curante: this.medico_curante,
       medico_curante_username: this.medico_curante_username,

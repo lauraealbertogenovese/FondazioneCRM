@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
 const { User, Role } = require('../models');
 
 const realisticStaff = [
-  // Administrative Staff
+  // Only Admin and basic Operator
   {
     username: 'admin.fondazione',
     email: 'admin@fondazionecura.it',
@@ -25,185 +25,14 @@ const realisticStaff = [
     updated_at: new Date()
   },
   
-  // Clinical Director
   {
-    username: 'dr.direzione',
-    email: 'direttore.clinico@fondazionecura.it',
-    password: 'ClinicalDir456!',
-    first_name: 'Giuseppe',
-    last_name: 'Marchetti',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Senior Psychologists specializing in addiction
-  {
-    username: 'psy.addiction1',
-    email: 'l.ferrari@fondazionecura.it',
-    password: 'Psychology789!',
-    first_name: 'Laura',
-    last_name: 'Ferrari',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'psy.addiction2',
-    email: 'a.conti@fondazionecura.it',
-    password: 'Therapy321!',
-    first_name: 'Alessandro',
-    last_name: 'Conti',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'psy.groups',
-    email: 'g.bianchi@fondazionecura.it',
-    password: 'GroupTherapy654!',
-    first_name: 'Giulia',
+    username: 'operatore1',
+    email: 'operatore1@fondazionecura.it',
+    password: 'Operator123!',
+    first_name: 'Mario',
     last_name: 'Bianchi',
     role: 'Operatore',
     is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Medical Doctor for detox and medical management
-  {
-    username: 'md.detox',
-    email: 'm.verdi@fondazionecura.it',
-    password: 'Medical987!',
-    first_name: 'Marco',
-    last_name: 'Verdi',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Addiction Counselors
-  {
-    username: 'counselor.aa',
-    email: 'r.galli@fondazionecura.it',
-    password: 'Counseling579!',
-    first_name: 'Roberto',
-    last_name: 'Galli',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'counselor.na',
-    email: 'f.costa@fondazionecura.it',
-    password: 'Recovery468!',
-    first_name: 'Francesca',
-    last_name: 'Costa',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Healthcare Operators (now using 'Operatore' role)
-  {
-    username: 'op.accoglienza',
-    email: 'c.ricci@fondazionecura.it',
-    password: 'Operator357!',
-    first_name: 'Chiara',
-    last_name: 'Ricci',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'op.supporto',
-    email: 'd.fontana@fondazionecura.it',
-    password: 'Support802!',
-    first_name: 'Davide',
-    last_name: 'Fontana',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Peer Counselors (now using 'Operatore' role)
-  {
-    username: 'peer.recovery1',
-    email: 'a.lombardi@fondazionecura.it',
-    password: 'PeerHelp913!',
-    first_name: 'Andrea',
-    last_name: 'Lombardi',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'peer.recovery2',
-    email: 'v.esposito@fondazionecura.it',
-    password: 'SharedExperience624!',
-    first_name: 'Valentina',
-    last_name: 'Esposito',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Support Staff (now using 'Operatore' role)
-  {
-    username: 'vol.supporto1',
-    email: 'l.moretti@fondazionecura.it',
-    password: 'Volunteer147!',
-    first_name: 'Luca',
-    last_name: 'Moretti',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-  {
-    username: 'vol.supporto2',
-    email: 't.giuliani@fondazionecura.it',
-    password: 'VolunteerHelp258!',
-    first_name: 'Tommaso',
-    last_name: 'Giuliani',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Trainee (now using 'Operatore' role with limited permissions)
-  {
-    username: 'trainee.psy',
-    email: 'm.pellegrini@fondazionecura.it',
-    password: 'Learning369!',
-    first_name: 'Martina',
-    last_name: 'Pellegrini',
-    role: 'Operatore',
-    is_active: true,
-    created_at: new Date(),
-    updated_at: new Date()
-  },
-
-  // Temporarily inactive staff
-  {
-    username: 'ex.staff',
-    email: 'ex.staff@fondazionecura.it',
-    password: 'Inactive000!',
-    first_name: 'Paolo',
-    last_name: 'Inattivo',
-    role: 'Operatore',
-    is_active: false,
     created_at: new Date(),
     updated_at: new Date()
   }
@@ -331,9 +160,10 @@ const seedRealisticStaff = async () => {
       }
     }
     
-    console.log(`🎉 Successfully seeded ${createdUsers.length} staff members for addiction recovery foundation`);
+    console.log(`🎉 Successfully seeded ${createdUsers.length} staff members`);
     console.log('🔐 Admin login: admin.fondazione / SecurePass123!');
-    console.log('📝 Note: All staff use "Operatore" role - customize permissions via admin panel');
+    console.log('🔐 Operator login: operatore1 / Operator123!');
+    console.log('📝 Note: Only Admin and Operatore roles - customize permissions via admin panel');
     return createdUsers;
     
   } catch (error) {
