@@ -8,7 +8,6 @@ class Patient {
     this.nome = data.nome;
     this.cognome = data.cognome;
     this.data_nascita = data.data_nascita;
-    this.luogo_nascita = data.luogo_nascita;
     this.sesso = data.sesso;
     this.indirizzo = data.indirizzo;
     this.citta = data.citta;
@@ -16,7 +15,6 @@ class Patient {
     this.provincia = data.provincia;
     this.telefono = data.telefono;
     this.email = data.email;
-    this.anamnesi_medica = data.anamnesi_medica;
     this.consenso_trattamento_dati = data.consenso_trattamento_dati;
     this.note = data.note;
     this.medico_curante = data.medico_curante;
@@ -43,7 +41,6 @@ class Patient {
       nome,
       cognome,
       data_nascita,
-      luogo_nascita,
       sesso,
       indirizzo,
       citta,
@@ -51,7 +48,6 @@ class Patient {
       provincia,
       telefono,
       email,
-      anamnesi_medica,
       consenso_trattamento_dati,
       note,
       medico_curante,
@@ -65,21 +61,21 @@ class Patient {
     const queryText = `
       INSERT INTO patient.patients (
         codice_fiscale, numero_tessera_sanitaria, nome, cognome, data_nascita,
-        luogo_nascita, sesso, indirizzo, citta, cap, provincia, telefono, email,
-        anamnesi_medica, consenso_trattamento_dati, note, medico_curante, 
+        sesso, indirizzo, citta, cap, provincia, telefono, email,
+        consenso_trattamento_dati, note, medico_curante, 
         sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
       )
       VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+        $16, $17, $18, $19, $20, $21, $22
       )
       RETURNING *
     `;
     
     const values = [
       codice_fiscale, numero_tessera_sanitaria, nome, cognome, data_nascita,
-      luogo_nascita, sesso, indirizzo, citta, cap, provincia, telefono, email,
-      anamnesi_medica, consenso_trattamento_dati, note, medico_curante, 
+      sesso, indirizzo, citta, cap, provincia, telefono, email,
+      consenso_trattamento_dati, note, medico_curante, 
       sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
     ];
     

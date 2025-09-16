@@ -293,14 +293,6 @@ const PatientDetailPage = () => {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
-                    Luogo di Nascita
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 400 }}>
-                    {patient.luogo_nascita || 'Non disponibile'}
-                  </Typography>
-                </Box>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                     Stato Civile
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 400 }}>
