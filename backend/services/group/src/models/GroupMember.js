@@ -15,11 +15,12 @@ class GroupMember {
         COALESCE(p.cognome, staff.last_name) as cognome,
         COALESCE(p.email, staff.email) as email,
         COALESCE(p.telefono, '') as telefono,
-        staff.role,
+        r.name as role,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
       LEFT JOIN auth.users staff ON gm.user_id = staff.id
+      LEFT JOIN auth.roles r ON staff.role_id = r.id
       LEFT JOIN auth.users u ON gm.created_by = u.id
       WHERE gm.group_id = $1
       ORDER BY gm.joined_date DESC
@@ -37,11 +38,12 @@ class GroupMember {
         COALESCE(p.cognome, staff.last_name) as cognome,
         COALESCE(p.email, staff.email) as email,
         COALESCE(p.telefono, '') as telefono,
-        staff.role,
+        r.name as role,
         u.username as created_by_username
       FROM "group".group_members gm
       LEFT JOIN patient.patients p ON gm.patient_id = p.id
       LEFT JOIN auth.users staff ON gm.user_id = staff.id
+      LEFT JOIN auth.roles r ON staff.role_id = r.id
       LEFT JOIN auth.users u ON gm.created_by = u.id
       WHERE gm.group_id = $1 AND gm.is_active = true
       ORDER BY gm.joined_date DESC
