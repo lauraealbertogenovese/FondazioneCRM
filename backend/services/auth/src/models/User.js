@@ -229,14 +229,49 @@ class User {
   async updatePassword(newPassword) {
     const saltRounds = 12;
     this.password_hash = await bcrypt.hash(newPassword, saltRounds);
-    
+
     const queryText = `
-      UPDATE auth.users 
+      UPDATE auth.users
       SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
     `;
-    
+
     await query(queryText, [this.password_hash, this.id]);
+  }
+
+  // Update user instance
+  async update(updateData) {
+    const allowedFields = ['first_name', 'last_name', 'email', 'username', 'phone', 'role_id'];
+    const updateFields = [];
+    const values = [];
+    let paramCount = 1;
+
+    for (const [key, value] of Object.entries(updateData)) {
+      if (allowedFields.includes(key) && value !== undefined) {
+        updateFields.push(`${key} = $${paramCount}`);
+        values.push(value);
+        paramCount++;
+      }
+    }
+
+    if (updateFields.length === 0) {
+      throw new Error('No valid fields to update');
+    }
+
+    values.push(this.id);
+    const queryText = `
+      UPDATE auth.users
+      SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $${paramCount}
+      RETURNING *
+    `;
+
+    const result = await query(queryText, values);
+    const updatedUser = result.rows[0];
+
+    // Update current instance with new data
+    Object.assign(this, updatedUser);
+    return this;
   }
 
   // Deactivate user (soft delete)
