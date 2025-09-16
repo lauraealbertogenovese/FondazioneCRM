@@ -1,5 +1,10 @@
 -- Dati iniziali per Fondazione CRM
 -- Inserimento di ruoli e utente amministratore di default
+--
+-- IMPORTANTE: SuperAdmin è l'utenza principale per il deployment online
+-- Username: SuperAdmin
+-- Password: SecurePass123!
+-- Mantieni queste credenziali per l'accesso in produzione
 
 -- Inserimento ruoli
 INSERT INTO auth.roles (name, description, permissions) VALUES
@@ -11,9 +16,10 @@ INSERT INTO auth.roles (name, description, permissions) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- Inserimento utenti di default
--- Password per entrambi: password123 (hash bcryptjs)
+-- SuperAdmin: username=SuperAdmin, password=SecurePass123!
+-- Altri utenti: password=password123
 INSERT INTO auth.users (username, email, password_hash, first_name, last_name, phone, role_id) VALUES
-('admin', 'admin@fondazione-crm.it', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Admin', 'Sistema', '+39 320 0000001', 1),
+('SuperAdmin', 'admin@fondazione-crm.it', '$2a$10$9sqoSOu1yX9fusHqdObUyeLjk/oF09vS0UKtq5X5CJMJ/kQC.bYay', 'Super', 'Admin', '+39 320 0000001', 1),
 ('dott.bianchi', 'dott.bianchi@fondazione-crm.it', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Marco', 'Bianchi', '+39 320 0000002', 3),
 ('testuser', 'test@example.com', '$2a$10$9k2G.9kfku1JkhKqHX7h9u9YudgDjb6KHpKoF660g5ebvZC4NcWnu', 'Test', 'User', '+39 320 0000003', 5)
 ON CONFLICT (username) DO NOTHING;
