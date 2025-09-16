@@ -218,35 +218,65 @@ export const AuthProvider = ({ children }) => {
       
       // Mappa permessi legacy a permessi granulari
       const permissionMap = {
+        // Pazienti
         'patients.read': 'pages.patients.access',
+        'patients.create': 'pages.patients.create',
         'patients.write': 'pages.patients.create',
-        'patients.update': 'pages.patients.edit',
+        'patients.update': 'pages.patients.edit_all',
         'patients.delete': 'pages.patients.delete',
-        'clinical.read': 'pages.clinical.access',
-        'clinical.write': 'pages.clinical.create_records',
-        'clinical.update': 'pages.clinical.edit_own_records',
+        
+        // Note cliniche (sostituisce clinical)
+        'clinical_notes.read': 'pages.clinical_notes.access',
+        'clinical_notes.create': 'pages.clinical_notes.create',
+        'clinical_notes.update': 'pages.clinical_notes.edit_own',
+        'clinical_notes.delete': 'pages.clinical_notes.delete',
+        'clinical.read': 'pages.clinical_notes.access',
+        'clinical.write': 'pages.clinical_notes.create',
+        'clinical.update': 'pages.clinical_notes.edit_own',
+        'clinical.delete': 'pages.clinical_notes.delete',
+        
+        // Gruppi
         'groups.read': 'pages.groups.access',
+        'groups.create': 'pages.groups.create',
         'groups.write': 'pages.groups.create',
-        'groups.update': 'pages.groups.edit',
+        'groups.update': 'pages.groups.edit_own',
         'groups.delete': 'pages.groups.delete',
         'groups.assign': 'pages.groups.manage_members',
+        
+        // Fatturazione
         'billing.read': 'pages.billing.access',
-        'billing.write': 'pages.billing.create',
-        'billing.update': 'pages.billing.edit',
-        'billing.delete': 'pages.billing.delete',
+        'billing.create': 'pages.billing.create_invoices',
+        'billing.write': 'pages.billing.create_invoices',
+        'billing.update': 'pages.billing.edit_invoices',
+        'billing.delete': 'pages.billing.delete_invoices',
+        
+        // Utenti
         'users.read': 'administration.users.access',
+        'users.create': 'administration.users.create',
         'users.write': 'administration.users.create',
         'users.update': 'administration.users.edit',
         'users.delete': 'administration.users.delete',
+        'users.view_permissions': 'administration.users.view_permissions',
+        'users.edit_permissions': 'administration.users.edit_permissions',
+        
+        // Ruoli
         'roles.read': 'administration.roles.access',
+        'roles.create': 'administration.roles.create',
         'roles.write': 'administration.roles.create',
         'roles.update': 'administration.roles.edit',
         'roles.delete': 'administration.roles.delete',
+        'roles.assign': 'administration.roles.assign',
+        'roles.manage_permissions': 'administration.roles.manage_permissions',
+        
+        // Documenti
         'documents.create': 'features.documents.upload',
-        'documents.delete': 'features.documents.delete',
+        'documents.read': 'features.documents.download',
         'documents.download': 'features.documents.download',
-        'documents.upload_sensitive': 'features.documents.upload_sensitive',
+        'documents.delete': 'features.documents.delete',
         'documents.manage_versions': 'features.documents.manage_versions',
+        
+        // Amministrazione
+        'admin': 'administration.system.access',
         'administration.system.access': 'administration.system.access'
       };
       

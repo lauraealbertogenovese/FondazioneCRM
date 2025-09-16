@@ -46,15 +46,12 @@ const translatePermissionKey = (key) => {
     'edit_all': 'Modifica Tutti',
     'view_sensitive': 'Visualizza Dati Sensibili',
     
-    // Permessi specifici cartelle cliniche
-    'create_records': 'Crea Cartelle',
-    'edit_own_records': 'Modifica Proprie Cartelle',
-    'edit_all_records': 'Modifica Tutte le Cartelle',
-    'create_notes': 'Crea Note',
-    'edit_own_notes': 'Modifica Proprie Note',
-    'edit_all_notes': 'Modifica Tutte le Note',
-    'delete_notes': 'Elimina Note',
-    'view_all_records': 'Visualizza Tutte le Cartelle',
+    // Permessi specifici note cliniche
+    'create': 'Crea',
+    'edit_own': 'Modifica Propri',
+    'edit_all': 'Modifica Tutti',
+    'delete': 'Elimina',
+    'view_all': 'Visualizza Tutte',
     
     // Permessi specifici gruppi
     'manage_members': 'Gestisci Membri',
@@ -63,13 +60,14 @@ const translatePermissionKey = (key) => {
     'create_invoices': 'Crea Fatture',
     'edit_invoices': 'Modifica Fatture',
     'view_financial_data': 'Visualizza Dati Finanziari',
-    'export_data': 'Esporta Dati',
     
     // Permessi funzionalità
     
     // Permessi amministrazione
     'view_permissions': 'Visualizza Permessi',
     'edit_permissions': 'Modifica Permessi',
+    'assign': 'Assegna Ruoli',
+    'manage_permissions': 'Gestisci Permessi',
     'email_config': 'Configurazione Email',
     'audit_logs': 'Log Accessi e Azioni'
   };
