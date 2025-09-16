@@ -281,8 +281,14 @@ class Patient {
 
     for (const [key, value] of Object.entries(updateData)) {
       if (allowedFields.includes(key) && value !== undefined) {
+        // Convert empty strings to null for integer fields
+        let processedValue = value;
+        if (key === 'medico_curante' && value === '') {
+          processedValue = null;
+        }
+
         updates.push(`${key} = $${paramCount}`);
-        values.push(value);
+        values.push(processedValue);
         paramCount++;
       }
     }
