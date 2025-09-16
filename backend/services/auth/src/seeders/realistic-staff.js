@@ -14,6 +14,17 @@ const { User, Role } = require('../models');
 const realisticStaff = [
   // Only Admin and basic Operator
   {
+    username: 'SuperAdmin',
+    email: 'superadmin@fondazionecura.it',
+    password: 'SecurePass123!', // Will be hashed
+    first_name: 'Super',
+    last_name: 'Admin',
+    role: 'admin',
+    is_active: true,
+    created_at: new Date(),
+    updated_at: new Date()
+  },
+  {
     username: 'admin.fondazione',
     email: 'admin@fondazionecura.it',
     password: 'SecurePass123!', // Will be hashed
@@ -161,6 +172,7 @@ const seedRealisticStaff = async () => {
     }
     
     console.log(`🎉 Successfully seeded ${createdUsers.length} staff members`);
+    console.log('🔐 Super Admin login: SuperAdmin / SecurePass123!');
     console.log('🔐 Admin login: admin.fondazione / SecurePass123!');
     console.log('🔐 Operator login: operatore1 / Operator123!');
     console.log('📝 Note: Only Admin and Operatore roles - customize permissions via admin panel');

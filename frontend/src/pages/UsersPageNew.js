@@ -7,8 +7,6 @@ import {
   InputAdornment,
   Stack,
   IconButton,
-  Menu,
-  MenuItem,
   Alert,
   Dialog,
   DialogTitle,
@@ -22,22 +20,17 @@ import {
   Fade,
   Skeleton,
   Select,
+  MenuItem,
   FormControl,
   InputLabel,
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Add as AddIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
-  Filter as FilterIcon,
   Person as PersonIcon,
-  AdminPanelSettings as AdminIcon,
-  MedicalServices as DoctorIcon,
-  Psychology as PsychologyIcon,
-  Work as OperatorIcon,
   Email as EmailIcon,
   Security as SecurityIcon,
   SwapHoriz as TransferIcon,
@@ -60,10 +53,13 @@ const UsersPageNew = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { user, hasPermission } = useAuth();
+  
+  // Debug log per verificare l'utente corrente
+  console.log('🔍 DEBUG UsersPageNew - Current user:', user);
+  console.log('🔍 DEBUG UsersPageNew - User permissions:', user?.role?.permissions);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [transferOwnershipDialogOpen, setTransferOwnershipDialogOpen] = useState(false);
@@ -99,35 +95,24 @@ const UsersPageNew = () => {
     setSearchTerm(event.target.value);
   };
 
-  const handleMenuOpen = (event, selectedUser) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedUser(selectedUser);
+
+  const handleView = (userItem) => {
+    navigate(`/users/${userItem.id}`);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedUser(null);
+  const handleEdit = (userItem) => {
+    navigate(`/users/${userItem.id}/edit`);
   };
 
-  const handleView = () => {
-    navigate(`/users/${selectedUser.id}`);
-    handleMenuClose();
-  };
-
-  const handleEdit = () => {
-    navigate(`/users/${selectedUser.id}/edit`);
-    handleMenuClose();
-  };
-
-  const handleDelete = () => {
+  const handleDelete = (userItem) => {
+    setSelectedUser(userItem);
     setDeleteDialogOpen(true);
-    setAnchorEl(null); // Chiudi solo il menu, mantieni selectedUser
   };
 
-  const handlePermissions = () => {
-    setUserPermissions(selectedUser.permissions || {});
+  const handlePermissions = (userItem) => {
+    setSelectedUser(userItem);
+    setUserPermissions(userItem.permissions || {});
     setPermissionDialogOpen(true);
-    handleMenuClose();
   };
 
   const confirmDelete = async () => {
@@ -215,9 +200,6 @@ const UsersPageNew = () => {
   };
 
 
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -398,8 +380,8 @@ const UsersPageNew = () => {
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                   Ultimo Accesso
                 </TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600, fontSize: '0.875rem', width: 60 }}>
-                  
+                <TableCell align="center" sx={{ fontWeight: 600, fontSize: '0.875rem', width: 200 }}>
+                  Azioni
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -419,30 +401,14 @@ const UsersPageNew = () => {
                       onClick={() => navigate(`/users/${userItem.id}`)}
                     >
                       <TableCell>
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Box sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.primary.main,
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.875rem',
-                            fontWeight: 600
-                          }}>
-                            {getInitials(userItem.first_name, userItem.last_name)}
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
-                              {userItem.first_name} {userItem.last_name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                              @{userItem.username}
-                            </Typography>
-                          </Box>
-                        </Stack>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                            {userItem.first_name} {userItem.last_name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            @{userItem.username}
+                          </Typography>
+                        </Box>
                       </TableCell>
                       
                       <TableCell>
@@ -475,16 +441,83 @@ const UsersPageNew = () => {
                       </TableCell>
                       
                       <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMenuOpen(e, userItem);
-                          }}
-                          sx={{ color: 'text.disabled' }}
-                        >
-                          <MoreVertIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
+                        <Stack direction="row" spacing={0.5} justifyContent="center">
+                          {hasPermission('users.read') && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleView(userItem);
+                              }}
+                              sx={{ color: 'primary.main' }}
+                              title="Visualizza Profilo"
+                            >
+                              <VisibilityIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          )}
+                          {hasPermission('users.update') && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(userItem);
+                              }}
+                              sx={{ color: 'warning.main' }}
+                              title="Modifica Dati"
+                            >
+                              <EditIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          )}
+                          {user?.role === 'admin' && userItem?.role !== 'admin' && (
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePermissions(userItem);
+                              }}
+                              sx={{ color: 'info.main' }}
+                              title="Modifica Permessi"
+                            >
+                              <SecurityIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          )}
+                          {(() => {
+                            const canDelete = hasPermission('users.delete') && 
+                                            userItem?.id !== user?.id && 
+                                            (user?.username === 'SuperAdmin' || userItem?.role_name !== 'admin');
+                            
+                            console.log('🔍 DEBUG Delete button visibility:', {
+                              userItem: userItem?.username,
+                              currentUser: user?.username,
+                              targetRole: userItem?.role_name,
+                              hasPermission: hasPermission('users.delete'),
+                              notSelf: userItem?.id !== user?.id,
+                              isSuperAdmin: user?.username === 'SuperAdmin',
+                              notAdmin: userItem?.role_name !== 'admin',
+                              canDelete: canDelete
+                            });
+                            
+                            return canDelete && (
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  console.log('🔍 DEBUG Delete button clicked:', {
+                                    currentUser: user?.username,
+                                    targetUser: userItem?.username,
+                                    targetRole: userItem?.role_name,
+                                    canDelete: user?.username === 'SuperAdmin' || userItem?.role_name !== 'admin'
+                                  });
+                                  handleDelete(userItem);
+                                }}
+                                sx={{ color: 'error.main' }}
+                                title="Cancella Utente"
+                              >
+                                <DeleteIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            );
+                          })()}
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   );
@@ -551,39 +584,6 @@ const UsersPageNew = () => {
         </Box>
       )}
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        elevation={2}
-        sx={{ '& .MuiPaper-root': { borderRadius: 2 } }}
-      >
-        {hasPermission('users.read') && (
-          <MenuItem onClick={handleView} sx={{ fontSize: '0.875rem' }}>
-            <VisibilityIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Visualizza Profilo
-          </MenuItem>
-        )}
-        {hasPermission('users.update') && (
-          <MenuItem onClick={handleEdit} sx={{ fontSize: '0.875rem' }}>
-            <EditIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Modifica Dati
-          </MenuItem>
-        )}
-        {user?.role === 'admin' && selectedUser?.role !== 'admin' && (
-          <MenuItem onClick={handlePermissions} sx={{ fontSize: '0.875rem' }}>
-            <SecurityIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Modifica Permessi
-          </MenuItem>
-        )}
-        {hasPermission('users.delete') && selectedUser?.id !== user?.id && selectedUser?.role_name !== 'admin' && (
-          <MenuItem onClick={handleDelete} sx={{ color: 'error.main', fontSize: '0.875rem' }}>
-            <DeleteIcon sx={{ fontSize: 18, mr: 1.5 }} />
-            Cancella Utente
-          </MenuItem>
-        )}
-      </Menu>
 
       {/* Delete Dialog */}
       <Dialog
