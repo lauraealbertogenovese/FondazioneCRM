@@ -251,6 +251,17 @@ class User {
     this.is_active = false;
   }
 
+  // Delete user (permanent delete)
+  static async delete(userId) {
+    const queryText = `
+      DELETE FROM auth.users 
+      WHERE id = $1
+    `;
+    
+    const result = await query(queryText, [userId]);
+    return result.rowCount > 0;
+  }
+
   // Activate user
   async activate() {
     const queryText = `

@@ -107,8 +107,8 @@ const RoleManagementPage = ({ embedded = false }) => {
         permissions: selectedRole.permissions || JSON.parse(JSON.stringify(permissionTemplate))
       });
       setRoleDialogOpen(true);
+      setAnchorEl(null); // Chiudi solo il menu, mantieni selectedRole
     }
-    handleMenuClose();
   };
 
   const handleEditPermissions = () => {
@@ -146,6 +146,7 @@ const RoleManagementPage = ({ embedded = false }) => {
         showSnackbar('Ruolo creato con successo');
       }
       setRoleDialogOpen(false);
+      setSelectedRole(null);
       loadRoles();
     } catch (error) {
       showSnackbar(error.response?.data?.error || 'Errore nel salvataggio del ruolo', 'error');
@@ -154,7 +155,6 @@ const RoleManagementPage = ({ embedded = false }) => {
 
   const handleConfirmDelete = async () => {
     try {
-      console.log('Eliminando ruolo:', selectedRole);
       await roleService.deleteRole(selectedRole.id);
       showSnackbar('Ruolo eliminato con successo');
       setDeleteDialogOpen(false);
@@ -412,7 +412,10 @@ const RoleManagementPage = ({ embedded = false }) => {
       </Menu>
 
       {/* Role Dialog */}
-      <Dialog open={roleDialogOpen} onClose={() => setRoleDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog open={roleDialogOpen} onClose={() => {
+        setRoleDialogOpen(false);
+        setSelectedRole(null);
+      }} maxWidth="md" fullWidth>
         <DialogTitle>
           {selectedRole ? 'Modifica Ruolo' : 'Nuovo Ruolo'}
         </DialogTitle>
@@ -440,7 +443,10 @@ const RoleManagementPage = ({ embedded = false }) => {
         </DialogContent>
         <DialogActions>
           <Button 
-            onClick={() => setRoleDialogOpen(false)}
+            onClick={() => {
+              setRoleDialogOpen(false);
+              setSelectedRole(null);
+            }}
             variant="outlined"
             color="inherit"
             sx={{

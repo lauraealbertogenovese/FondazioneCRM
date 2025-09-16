@@ -54,9 +54,6 @@ const UsersPageNew = () => {
   const navigate = useNavigate();
   const { user, hasPermission } = useAuth();
   
-  // Debug log per verificare l'utente corrente
-  console.log('🔍 DEBUG UsersPageNew - Current user:', user);
-  console.log('🔍 DEBUG UsersPageNew - User permissions:', user?.role?.permissions);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -226,6 +223,7 @@ const UsersPageNew = () => {
     userItem.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     userItem.role_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
 
   const LoadingSkeleton = () => (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -482,32 +480,19 @@ const UsersPageNew = () => {
                             </IconButton>
                           )}
                           {(() => {
-                            const canDelete = hasPermission('users.delete') && 
-                                            userItem?.id !== user?.id && 
-                                            (user?.username === 'SuperAdmin' || userItem?.role_name !== 'admin');
+                            const hasDeletePermission = hasPermission('users.delete');
+                            const notSelf = userItem?.id !== user?.id;
+                            const isSuperAdmin = user?.username === 'SuperAdmin';
+                            const notAdmin = userItem?.role_name !== 'admin';
                             
-                            console.log('🔍 DEBUG Delete button visibility:', {
-                              userItem: userItem?.username,
-                              currentUser: user?.username,
-                              targetRole: userItem?.role_name,
-                              hasPermission: hasPermission('users.delete'),
-                              notSelf: userItem?.id !== user?.id,
-                              isSuperAdmin: user?.username === 'SuperAdmin',
-                              notAdmin: userItem?.role_name !== 'admin',
-                              canDelete: canDelete
-                            });
+                            // Forza la visualizzazione per SuperAdmin
+                            const canDelete = isSuperAdmin ? notSelf : (hasDeletePermission && notSelf && notAdmin);
                             
                             return canDelete && (
                               <IconButton
                                 size="small"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  console.log('🔍 DEBUG Delete button clicked:', {
-                                    currentUser: user?.username,
-                                    targetUser: userItem?.username,
-                                    targetRole: userItem?.role_name,
-                                    canDelete: user?.username === 'SuperAdmin' || userItem?.role_name !== 'admin'
-                                  });
                                   handleDelete(userItem);
                                 }}
                                 sx={{ color: 'error.main' }}

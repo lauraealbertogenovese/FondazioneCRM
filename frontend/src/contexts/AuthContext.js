@@ -129,8 +129,8 @@ export const AuthProvider = ({ children }) => {
         payload: { user: response.user },
       });
       
-      // Redirect to patients page after successful login
-      window.location.href = '/patients';
+      // Redirect to dashboard after successful login
+      window.location.href = '/dashboard';
       
       return response;
     } catch (error) {

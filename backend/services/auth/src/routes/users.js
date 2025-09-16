@@ -265,9 +265,28 @@ router.post('/:id/transfer-ownership', AuthMiddleware.verifyToken, AuthMiddlewar
       
       // Transfer ownership in each table that references users
       const transferOperations = [
+        // Patient schema
         { table: 'patient.patients', column: 'created_by', description: 'Pazienti creati' },
         { table: 'patient.patients', column: 'medico_curante', description: 'Pazienti come medico curante' },
-        { table: 'clinical.clinical_records', column: 'created_by', description: 'Cartelle cliniche' }
+        { table: 'patient.patient_documents', column: 'uploaded_by', description: 'Documenti pazienti' },
+        { table: 'patient.patient_history', column: 'changed_by', description: 'Storico pazienti' },
+        
+        // Clinical schema
+        { table: 'clinical.clinical_records', column: 'created_by', description: 'Cartelle cliniche' },
+        { table: 'clinical.visits', column: 'created_by', description: 'Visite' },
+        { table: 'clinical.clinical_documents', column: 'uploaded_by', description: 'Documenti clinici' },
+        { table: 'clinical.notes', column: 'created_by', description: 'Note cliniche' },
+        
+        // Group schema
+        { table: '"group".groups', column: 'created_by', description: 'Gruppi creati' },
+        { table: '"group".group_members', column: 'created_by', description: 'Membri gruppi' },
+        { table: '"group".group_documents', column: 'uploaded_by', description: 'Documenti gruppi' },
+        { table: '"group".group_events', column: 'created_by', description: 'Eventi gruppi' },
+        
+        // Billing schema
+        { table: 'billing.invoices', column: 'created_by', description: 'Fatture' },
+        { table: 'billing.payments', column: 'recorded_by', description: 'Pagamenti' },
+        { table: 'billing.billing_settings', column: 'updated_by', description: 'Impostazioni fatturazione' }
       ];
       
       for (const operation of transferOperations) {
@@ -297,7 +316,10 @@ router.post('/:id/transfer-ownership', AuthMiddleware.verifyToken, AuthMiddlewar
       
       // Now delete the user - this should work since ownership has been transferred
       console.log(`Deleting user ${id} after REAL ownership transfer`);
-      await user.delete();
+      const deleted = await User.delete(id);
+      if (!deleted) {
+        throw new Error('Failed to delete user after ownership transfer');
+      }
       
       // Commit transaction
       await query('COMMIT');
@@ -456,7 +478,12 @@ router.delete('/:id', AuthMiddleware.verifyToken, AuthMiddleware.requireAdmin, a
 
     // Hard delete user
     console.log('About to delete user from database...');
-    await user.delete();
+    const deleted = await User.delete(id);
+    if (!deleted) {
+      return res.status(404).json({
+        error: 'User not found'
+      });
+    }
     console.log('User deleted from database successfully');
 
     res.json({

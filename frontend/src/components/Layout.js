@@ -43,6 +43,14 @@ const drawerWidth = 240;
 
 const menuItems = [
   {
+    text: 'Dashboard',
+    icon: <DashboardIcon />,
+    path: '/dashboard',
+    permission: null,
+    title: 'Dashboard',
+    subtitle: 'Panoramica generale del sistema e statistiche',
+  },
+  {
     text: 'Pazienti',
     icon: <PeopleIcon />,
     path: '/patients',

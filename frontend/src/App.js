@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 // Componenti
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
 import PatientsPageNew from './pages/PatientsPageNew';
 import PatientDetailPage from './pages/PatientDetailPage';
 import PatientFormPage from './pages/PatientFormPage';
@@ -46,7 +47,7 @@ const ProtectedRoute = ({ children, requiredPermission = null }) => {
   }
 
   if (requiredPermission && !hasPermission(requiredPermission)) {
-    return <Navigate to="/patients" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <Layout>{children}</Layout>;
@@ -67,13 +68,21 @@ const AppContent = () => {
         path="/login" 
         element={
           isAuthenticated ? 
-            <Navigate to="/patients" replace /> : 
+            <Navigate to="/dashboard" replace /> : 
             <LoginPage />
         } 
       />
       
       {/* Protected routes */}
-      <Route path="/" element={<Navigate to="/patients" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route 
         path="/patients" 
         element={

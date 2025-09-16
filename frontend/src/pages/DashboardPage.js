@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -6,543 +6,313 @@ import {
   Card,
   CardContent,
   Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  ListItemAvatar,
-  Chip,
-  Avatar,
-  Stack,
-  Button,
-  LinearProgress,
   Container,
   useTheme,
-  alpha,
+  Stack,
   Divider,
-  IconButton,
-  Badge,
-  Skeleton,
-  Fade,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Button,
+  Chip,
 } from '@mui/material';
 import {
   People as PeopleIcon,
   PersonAdd as PersonAddIcon,
-  Assignment as AssignmentIcon,
-  TrendingUp as TrendingUpIcon,
-  Person as PersonIcon,
-  CalendarToday as CalendarIcon,
-  MedicalServices as MedicalIcon,
-  Schedule as ScheduleIcon,
-  CheckCircle as CompletedIcon,
-  AccessTime as TimeIcon,
-  Notifications as NotificationsIcon,
-  ArrowUpward as ArrowUpIcon,
-  ArrowForward as ArrowForwardIcon,
-  Dashboard as DashboardIcon,
   Groups as GroupsIcon,
-  LocalHospital as HospitalIcon,
+  Receipt as ReceiptIcon,
+  AdminPanelSettings as AdminIcon,
+  MedicalServices as MedicalIcon,
+  Description as DocumentIcon,
+  Security as SecurityIcon,
+  Assignment as AssignmentIcon,
   Psychology as PsychologyIcon,
-  EventAvailable as EventIcon,
-  Add as AddIcon,
-  Refresh as RefreshIcon,
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { patientService, clinicalService, userService, groupService } from '../services/api';
 
 const DashboardPage = () => {
-  const { user, hasPermission } = useAuth();
-  const navigate = useNavigate();
   const theme = useTheme();
-  
-  const [stats, setStats] = useState({
-    totalPatients: 0,
-    totalUsers: 0,
-    totalGroups: 0,
-    activePatients: 0,
-    recentPatients: [],
-    upcomingAppointments: [],
-    recentActivity: [],
-  });
-  
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const navigate = useNavigate();
+  const { user, hasPermission } = useAuth();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async (isRefresh = false) => {
-    try {
-      if (isRefresh) setRefreshing(true);
-      else setIsLoading(true);
-      
-      const requests = [];
-      
-      // Richieste base sempre disponibili
-      if (hasPermission('patients.read')) {
-        requests.push(patientService.getPatients({ limit: 5 }));
-      } else {
-        requests.push(Promise.resolve({ patients: [], pagination: { total: 0 } }));
-      }
-
-      if (hasPermission('clinical.read')) {
-        requests.push(
-          clinicalService.getRecords({ limit: 10 })
-        );
-      } else {
-        requests.push(
-          Promise.resolve({ records: [] })
-        );
-      }
-
-      if (hasPermission('users.read')) {
-        requests.push(userService.getUsers({ limit: 1 }));
-      } else {
-        requests.push(Promise.resolve({ users: [] }));
-      }
-
-      if (hasPermission('groups.read')) {
-        requests.push(groupService.getGroups({ limit: 5 }));
-      } else {
-        requests.push(Promise.resolve({ groups: [] }));
-      }
-
-      const [
-        patientsResponse,
-        clinicalResponse,
-        usersResponse,
-        groupsResponse
-      ] = await Promise.all(requests);
-
-      setStats({
-        totalPatients: patientsResponse.pagination?.total || patientsResponse.patients?.length || 0,
-        totalUsers: usersResponse.pagination?.total || usersResponse.users?.length || 0,
-        totalGroups: groupsResponse.pagination?.total || groupsResponse.groups?.length || 0,
-        activePatients: patientsResponse.patients?.filter(p => p.is_active).length || 0,
-        recentPatients: patientsResponse.patients || [],
-        upcomingAppointments: [],
-        recentActivity: [
-          ...((patientsResponse.patients || []).slice(0, 3).map(p => ({
-            type: 'patient',
-            title: `Nuovo paziente: ${p.nome} ${p.cognome}`,
-            time: p.created_at,
-            icon: PersonIcon,
-            color: 'primary'
-          }))),
-          ...((upcomingResponse.visits || []).slice(0, 3).map(v => ({
-            type: 'visit',
-            title: `Visita programmata: ${v.visit_type}`,
-            time: v.visit_date,
-            icon: CalendarIcon,
-            color: 'info'
-          })))
-        ].sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 5)
-      });
-    } catch (error) {
-      console.error('Errore nel caricamento dei dati della dashboard:', error);
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
+  const sections = [
+    {
+      title: "👥 Gestione Pazienti",
+      path: "/patients",
+      permission: "patients.read",
+      icon: <PeopleIcon color="primary" />,
+      description: "Il cuore della piattaforma per la gestione dei pazienti in cura per dipendenze.",
+      features: [
+        "Registrazione completa dati anagrafici e sanitari",
+        "Gestione sostanze di abuso primarie e secondarie",
+        "Assegnazione clinico di riferimento",
+        "Ricerca avanzata per nome, codice fiscale, email",
+        "Visualizzazione dettagliata profilo paziente",
+        "Note cliniche integrate per ogni paziente"
+      ]
+    },
+    {
+      title: "🧠 Note Cliniche", 
+      path: "/patients",
+      permission: "clinical_notes.read",
+      icon: <MedicalIcon color="secondary" />,
+      description: "Sistema di documentazione clinica per il monitoraggio dei progressi terapeutici.",
+      features: [
+        "Creazione note cliniche dettagliate",
+        "Cronologia completa per ogni paziente",
+        "Categorie di note personalizzabili",
+        "Sistema di permessi per accesso controllato",
+        "Integrazione con profilo paziente",
+        "Ricerca e filtri nelle note"
+      ]
+    },
+    {
+      title: "👫 Gruppi di Supporto",
+      path: "/groups", 
+      permission: "groups.read",
+      icon: <GroupsIcon color="success" />,
+      description: "Organizzazione e gestione dei gruppi di supporto psicologico per il recupero.",
+      features: [
+        "Creazione gruppi tematici di supporto",
+        "Assegnazione conduttori e membri",
+        "Gestione calendario attività di gruppo",
+        "Monitoraggio partecipazione pazienti",
+        "Documentazione sessioni di gruppo",
+        "Comunicazione interna al gruppo"
+      ]
+    },
+    {
+      title: "💰 Fatturazione",
+      path: "/billing",
+      permission: "billing.read", 
+      icon: <ReceiptIcon color="warning" />,
+      description: "Sistema completo per la gestione economica e fatturazione dei servizi.",
+      features: [
+        "Creazione fatture automatiche",
+        "Gestione pagamenti e scadenze",
+        "Storico finanziario per paziente",
+        "Report economici e statistiche",
+        "Integrazione con sistemi contabili",
+        "Gestione metodi di pagamento"
+      ]
+    },
+    {
+      title: "👨‍💼 Gestione Utenti",
+      path: "/users",
+      permission: "users.read",
+      icon: <AdminIcon color="info" />,
+      description: "Amministrazione del personale e gestione accessi alla piattaforma.",
+      features: [
+        "Registrazione staff medico e amministrativo", 
+        "Sistema ruoli e permessi granulari",
+        "Profili personalizzabili per tipologia utente",
+        "Gestione credenziali e sicurezza",
+        "Permessi specifici per funzionalità",
+        "Audit log delle attività utenti"
+      ]
+    },
+    {
+      title: "🔐 Amministrazione",
+      path: "/admin",
+      permission: "admin",
+      icon: <SecurityIcon color="error" />,
+      description: "Pannello di controllo avanzato per la configurazione del sistema.",
+      features: [
+        "Configurazione ruoli e permessi sistema",
+        "Gestione template permessi predefiniti",
+        "Impostazioni sicurezza e privacy",
+        "Configurazione sistema notifiche", 
+        "Backup e manutenzione dati",
+        "Monitoraggio performance sistema"
+      ]
     }
-  };
+  ];
 
-  const handleRefresh = () => {
-    fetchDashboardData(true);
-  };
-
-  const getInitials = (firstName, lastName) => {
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('it-IT');
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return `${date.toLocaleDateString('it-IT')} ${date.toLocaleTimeString('it-IT', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })}`;
-  };
-
-  const formatRelativeTime = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.abs(now - date) / (1000 * 60 * 60);
-    
-    if (diffInHours < 1) return 'Ora';
-    if (diffInHours < 24) return `${Math.floor(diffInHours)} ore fa`;
-    if (diffInHours < 48) return 'Ieri';
-    return formatDate(dateString);
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Buongiorno';
-    if (hour < 18) return 'Buon pomeriggio';
-    return 'Buonasera';
-  };
-
-  const StatCard = ({ title, value, icon: Icon, color, trend, onClick, action }) => (
-    <Card 
-      sx={{ 
-        height: '100%',
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'all 0.3s ease-in-out',
-        '&:hover': onClick ? {
-          transform: 'translateY(-4px)',
-          boxShadow: theme.shadows[8],
-        } : {},
-        background: `linear-gradient(135deg, ${alpha(theme.palette[color].main, 0.1)} 0%, ${alpha(theme.palette[color].main, 0.05)} 100%)`,
-        border: `1px solid ${alpha(theme.palette[color].main, 0.1)}`,
-      }}
-      onClick={onClick}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack spacing={1}>
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              {title}
-            </Typography>
-            <Typography variant="h3" fontWeight="bold" color={`${color}.main`}>
-              {isLoading ? <Skeleton width={60} /> : value}
-            </Typography>
-            {trend && (
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <ArrowUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                <Typography variant="caption" color="success.main" fontWeight={600}>
-                  {trend}
-                </Typography>
-              </Stack>
-            )}
-          </Stack>
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 3,
-              background: `linear-gradient(135deg, ${theme.palette[color].main} 0%, ${theme.palette[color].dark} 100%)`,
-              color: 'white',
-            }}
-          >
-            <Icon sx={{ fontSize: 32 }} />
-          </Box>
-        </Stack>
-        {action && (
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<AddIcon />}
-            sx={{ 
-              mt: 2,
-              borderColor: alpha(theme.palette[color].main, 0.3),
-              color: `${color}.main`,
-              '&:hover': {
-                borderColor: `${color}.main`,
-                background: alpha(theme.palette[color].main, 0.1),
-              }
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              action();
-            }}
-          >
-            {action.label || 'Aggiungi'}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  if (isLoading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4].map((i) => (
-            <Grid item xs={12} sm={6} md={3} key={i}>
-              <Skeleton variant="rectangular" height={180} sx={{ borderRadius: 2 }} />
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    );
-  }
+  const quickActions = [
+    {
+      title: "Nuovo Paziente",
+      path: "/patients/new",
+      permission: "patients.write", 
+      icon: <PersonAddIcon />,
+      color: "primary",
+      description: "Registra un nuovo paziente nel sistema"
+    },
+    {
+      title: "Nuovo Gruppo",
+      path: "/groups/new",
+      permission: "groups.create",
+      icon: <GroupsIcon />, 
+      color: "success",
+      description: "Crea un nuovo gruppo di supporto"
+    },
+    {
+      title: "Nuovo Utente",
+      path: "/users/new",
+      permission: "users.write",
+      icon: <AdminIcon />,
+      color: "info", 
+      description: "Aggiungi un nuovo membro dello staff"
+    }
+  ];
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Fade in timeout={800}>
-        <Box>
-          {/* Header */}
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mb={4}>
-            <Box>
-              <Typography variant="h3" fontWeight="bold" color="primary.main" gutterBottom>
-                {getGreeting()}, {(user?.first_name || 'Utente').replace(/[^\w\s]/g, '').replace(/\s*!.*$/, '')}
-              </Typography>
-              <Typography variant="h6" color="text.secondary">
-                Benvenuto nel sistema di gestione della Fondazione per il Recovery
-              </Typography>
-            </Box>
-            <Stack direction="row" spacing={1}>
-              <IconButton
-                onClick={handleRefresh}
-                disabled={refreshing}
-                sx={{
-                  background: alpha(theme.palette.primary.main, 0.1),
-                  '&:hover': { background: alpha(theme.palette.primary.main, 0.2) }
-                }}
-              >
-                <RefreshIcon sx={{ 
-                  animation: refreshing ? 'spin 1s linear infinite' : 'none',
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  }
-                }} />
-              </IconButton>
-              <IconButton
-                sx={{
-                  background: alpha(theme.palette.info.main, 0.1),
-                  '&:hover': { background: alpha(theme.palette.info.main, 0.2) }
-                }}
-              >
-                <NotificationsIcon />
-              </IconButton>
-            </Stack>
-          </Stack>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{ 
+          fontWeight: 700,
+          background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>
+          Benvenuto nella Piattaforma CRM
+        </Typography>
+        <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+          Sistema di gestione per fondazioni di assistenza psicologica e recupero dipendenze
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Ciao <strong>{user?.first_name} {user?.last_name}</strong>, 
+          sei connesso come <Chip label={user?.role_name || 'Utente'} size="small" color="primary" sx={{ ml: 1 }} />
+        </Typography>
+      </Box>
 
-          {/* Stats Cards */}
-          <Grid container spacing={3} mb={4}>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard
-                title="Pazienti Totali"
-                value={stats.totalPatients}
-                icon={PeopleIcon}
-                color="primary"
-                onClick={() => navigate('/patients')}
-                action={hasPermission('patients.write') ? () => navigate('/patients/new') : null}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <StatCard
-                title="Gruppi di Supporto"
-                value={stats.totalGroups}
-                icon={GroupsIcon}
-                color="success"
-                onClick={() => navigate('/groups')}
-                action={hasPermission('groups.write') ? () => navigate('/groups/new') : null}
-              />
-            </Grid>
-          </Grid>
-
-          {/* Main Content */}
-          <Grid container spacing={3}>
-            {/* Recent Patients */}
-            {hasPermission('patients.read') && (
-              <Grid item xs={12} md={6}>
-                <Card sx={{ height: 400 }}>
-                  <CardContent sx={{ p: 0 }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" p={3} pb={1}>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <PeopleIcon color="primary" />
-                        <Typography variant="h6" fontWeight="bold">
-                          Pazienti Recenti
-                        </Typography>
-                      </Stack>
-                      <Button
-                        size="small"
-                        endIcon={<ArrowForwardIcon />}
-                        onClick={() => navigate('/patients')}
-                      >
-                        Vedi tutti
-                      </Button>
-                    </Stack>
-                    <Divider />
-                    <List sx={{ maxHeight: 300, overflow: 'auto' }}>
-                      {stats.recentPatients.map((patient, index) => (
-                        <ListItem
-                          key={patient.id}
-                          button
-                          onClick={() => navigate(`/patients/${patient.id}`)}
-                          sx={{
-                            '&:hover': { background: alpha(theme.palette.primary.main, 0.05) }
-                          }}
-                        >
-                          <ListItemAvatar>
-                            <Avatar
-                              sx={{
-                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                color: 'white'
-                              }}
-                            >
-                              {getInitials(patient.nome, patient.cognome)}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={
-                              <Typography fontWeight={600}>
-                                {patient.nome} {patient.cognome}
-                              </Typography>
-                            }
-                            secondary={
-                              <Typography variant="caption" color="text.secondary">
-                                {formatDate(patient.created_at)}
-                              </Typography>
-                            }
-                          />
-                          <Chip
-                            label={patient.is_active ? 'Attivo' : 'Inattivo'}
-                            size="small"
-                            color={patient.is_active ? 'success' : 'default'}
-                            variant="outlined"
-                          />
-                        </ListItem>
-                      ))}
-                      {stats.recentPatients.length === 0 && (
-                        <ListItem>
-                          <ListItemText
-                            primary="Nessun paziente recente"
-                            secondary="I nuovi pazienti appariranno qui"
-                          />
-                        </ListItem>
-                      )}
-                    </List>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Upcoming Appointments */}
-            {hasPermission('clinical.read') && (
-              <Grid item xs={12} md={6}>
-                <Card sx={{ height: 400 }}>
-                  <CardContent sx={{ p: 0 }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" p={3} pb={1}>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <CalendarIcon color="info" />
-                        <Typography variant="h6" fontWeight="bold">
-                          Appuntamenti Prossimi
-                        </Typography>
-                      </Stack>
-                      <Button
-                        size="small"
-                        endIcon={<ArrowForwardIcon />}
-                        onClick={() => navigate('/calendar')}
-                      >
-                        Calendario
-                      </Button>
-                    </Stack>
-                    <Divider />
-                    <List sx={{ maxHeight: 300, overflow: 'auto' }}>
-                      {stats.upcomingAppointments.map((visit, index) => (
-                        <ListItem
-                          key={visit.id}
-                          sx={{
-                            '&:hover': { background: alpha(theme.palette.info.main, 0.05) }
-                          }}
-                        >
-                          <ListItemAvatar>
-                            <Avatar
-                              sx={{
-                                background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.dark} 100%)`,
-                                color: 'white'
-                              }}
-                            >
-                              <EventIcon />
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={
-                              <Typography fontWeight={600}>
-                                {visit.visit_type || 'Visita'}
-                              </Typography>
-                            }
-                            secondary={
-                              <Stack spacing={0.5}>
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatDateTime(visit.visit_date)}
-                                </Typography>
-                                <Typography variant="caption" color="info.main">
-                                  {visit.doctor_name || 'Clinico non specificato'}
-                                </Typography>
-                              </Stack>
-                            }
-                          />
-                          <Chip
-                            label={visit.status}
-                            size="small"
-                            color={visit.status === 'scheduled' ? 'warning' : 'default'}
-                            variant="outlined"
-                          />
-                        </ListItem>
-                      ))}
-                      {stats.upcomingAppointments.length === 0 && (
-                        <ListItem>
-                          <ListItemText
-                            primary="Nessun appuntamento programmato"
-                            secondary="Gli appuntamenti futuri appariranno qui"
-                          />
-                        </ListItem>
-                      )}
-                    </List>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
-
-            {/* Recent Activity */}
-            <Grid item xs={12}>
-              <Card>
-                <CardContent sx={{ p: 0 }}>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between" p={3} pb={1}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <TrendingUpIcon color="success" />
-                      <Typography variant="h6" fontWeight="bold">
-                        Attività Recente
+      {/* Quick Actions */}
+      {quickActions.some(action => !action.permission || hasPermission(action.permission)) && (
+        <Card sx={{ mb: 4 }}>
+          <CardContent>
+            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <ArrowForwardIcon sx={{ mr: 1 }} />
+              Azioni Rapide
+            </Typography>
+            <Grid container spacing={2}>
+              {quickActions
+                .filter(action => !action.permission || hasPermission(action.permission))
+                .map((action, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    size="large"
+                    startIcon={action.icon}
+                    onClick={() => navigate(action.path)}
+                    sx={{ 
+                      py: 2,
+                      textAlign: 'left',
+                      justifyContent: 'flex-start',
+                      '&:hover': {
+                        backgroundColor: `${theme.palette[action.color].main}10`
+                      }
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'left' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        {action.title}
                       </Typography>
-                    </Stack>
-                  </Stack>
-                  <Divider />
-                  <List>
-                    {stats.recentActivity.map((activity, index) => (
-                      <ListItem key={index}>
-                        <ListItemAvatar>
-                          <Avatar
-                            sx={{
-                              background: `linear-gradient(135deg, ${theme.palette[activity.color].main} 0%, ${theme.palette[activity.color].dark} 100%)`,
-                              color: 'white',
-                              width: 36,
-                              height: 36
-                            }}
-                          >
-                            <activity.icon sx={{ fontSize: 20 }} />
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={activity.title}
-                          secondary={formatRelativeTime(activity.time)}
-                        />
-                      </ListItem>
-                    ))}
-                    {stats.recentActivity.length === 0 && (
-                      <ListItem>
-                        <ListItemText
-                          primary="Nessuna attività recente"
-                          secondary="Le attività recenti appariranno qui"
-                        />
-                      </ListItem>
-                    )}
-                  </List>
-                </CardContent>
-              </Card>
+                      <Typography variant="body2" color="text.secondary">
+                        {action.description}
+                      </Typography>
+                    </Box>
+                  </Button>
+                </Grid>
+              ))}
             </Grid>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Main Sections */}
+      <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
+        📚 Guida alle Funzionalità
+      </Typography>
+      
+      <Grid container spacing={3}>
+        {sections
+          .filter(section => !section.permission || hasPermission(section.permission))
+          .map((section, index) => (
+          <Grid item xs={12} md={6} key={index}>
+            <Card 
+              sx={{ 
+                height: '100%',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: theme.shadows[4]
+                }
+              }}
+            >
+              <CardContent sx={{ height: '100%', p: 3 }}>
+                <Stack spacing={2} sx={{ height: '100%' }}>
+                  {/* Header */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    {section.icon}
+                    <Typography variant="h6" sx={{ ml: 2, fontWeight: 600 }}>
+                      {section.title}
+                    </Typography>
+                  </Box>
+
+                  {/* Description */}
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                    {section.description}
+                  </Typography>
+
+                  <Divider />
+
+                  {/* Features List */}
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                      Funzionalità principali:
+                    </Typography>
+                    <List dense sx={{ py: 0 }}>
+                      {section.features.map((feature, idx) => (
+                        <ListItem key={idx} sx={{ py: 0.5, pl: 0 }}>
+                          <ListItemIcon sx={{ minWidth: 32 }}>
+                            <AssignmentIcon fontSize="small" color="action" />
+                          </ListItemIcon>
+                          <ListItemText 
+                            primary={feature}
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              color: 'text.secondary'
+                            }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+
+                  {/* Action Button */}
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    endIcon={<ArrowForwardIcon />}
+                    onClick={() => navigate(section.path)}
+                    sx={{ mt: 'auto' }}
+                  >
+                    Accedi alla sezione
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
           </Grid>
-        </Box>
-      </Fade>
+        ))}
+      </Grid>
+
+      {/* Footer Info */}
+      <Card sx={{ mt: 4, backgroundColor: theme.palette.grey[50] }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            🎯 Informazioni sulla Piattaforma
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Questa piattaforma è stata progettata specificatamente per fondazioni e centri di assistenza 
+            psicologica che si occupano di recupero dalle dipendenze. Il sistema integra gestione pazienti, 
+            documentazione clinica, supporto di gruppo e amministrazione in un'unica soluzione sicura e completa.
+          </Typography>
+        </CardContent>
+      </Card>
     </Container>
   );
 };
