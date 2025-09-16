@@ -234,12 +234,9 @@ const GroupsPageNew = () => {
                     onClick={() => navigate(`/groups/${group.id}`)}
                   >
                     <TableCell>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <PsychologyIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
-                          {group.name}
-                        </Typography>
-                      </Stack>
+                      <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1.2 }}>
+                        {group.name}
+                      </Typography>
                     </TableCell>
                     
                     <TableCell>

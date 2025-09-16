@@ -349,9 +349,6 @@ const PatientFormPage = () => {
         <IconButton onClick={() => navigate('/patients')} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
-        <Avatar sx={{ backgroundColor: theme.palette.primary.main }}>
-          {isEdit ? <EditIcon /> : <PersonIcon />}
-        </Avatar>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
             {isEdit ? 'Modifica Paziente' : 'Nuovo Paziente'}

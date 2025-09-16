@@ -232,10 +232,6 @@ const PatientsPageNew = () => {
     patient.telefono?.includes(searchTerm)
   );
 
-  const getInitials = (nome, cognome) => {
-    return `${nome?.charAt(0) || ''}${cognome?.charAt(0) || ''}`.toUpperCase();
-  };
-
   const LoadingSkeleton = () => (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header Skeleton */}
@@ -466,10 +462,6 @@ const PatientsPageNew = () => {
                   sx={{
                     '&:hover': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                      '& .patient-avatar': {
-                        transform: 'scale(1.1)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                      }
                     },
                     cursor: 'pointer',
                     borderBottom: `1px solid ${alpha(theme.palette.grey[300], 0.3)}`,
@@ -490,26 +482,6 @@ const PatientsPageNew = () => {
                 >
                   <TableCell sx={{ py: 2 }}>
                     <Stack direction="row" alignItems="center" spacing={2.5}>
-                      <Box 
-                        className="patient-avatar"
-                        sx={{
-                          width: 42,
-                          height: 42,
-                          borderRadius: '50%',
-                          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                          color: 'white',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.9rem',
-                          fontWeight: 700,
-                          border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          transition: 'all 0.3s ease-in-out',
-                          boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
-                        }}
-                      >
-                        {getInitials(patient.nome, patient.cognome)}
-                      </Box>
                       <Box>
                         <Typography variant="body2" sx={{ 
                           fontWeight: 600, 
