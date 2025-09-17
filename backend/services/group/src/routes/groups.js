@@ -175,8 +175,8 @@ router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
 
     const { conductors = [], members = [], ...updateData } = req.body;
     console.log(`[PUT /groups/${id}] About to update with data:`, updateData);
-    console.log(`[PUT /groups/${id}] Conductors:`, conductors);
-    console.log(`[PUT /groups/${id}] Members:`, members);
+    console.log(`[PUT /groups/${id}] Extracted conductors:`, conductors);
+    console.log(`[PUT /groups/${id}] Extracted members:`, members);
 
     const updatedGroup = await Group.update(id, updateData);
     console.log(`[PUT /groups/${id}] Update completed:`, updatedGroup);
