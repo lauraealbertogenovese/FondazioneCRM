@@ -40,7 +40,8 @@ const hasPermission = (userPermissions, permission) => {
   // If permissions is an object (granular format)
   if (typeof userPermissions === 'object' && userPermissions !== null) {
     // Check for wildcard (different possible formats)
-    if (userPermissions['*'] || 
+    if (userPermissions['*'] ||
+        userPermissions['all'] === true ||
         Object.values(userPermissions).includes('*')) {
       return true;
     }
