@@ -97,9 +97,29 @@ const groupSchema = Joi.object({
 
 // Schema per l'aggiornamento dei gruppi (tutti i campi opzionali tranne validazioni)
 const groupUpdateSchema = groupSchema.fork(
-  ['name', 'group_type'], 
+  ['name', 'group_type'],
   (schema) => schema.optional()
-);
+).keys({
+  conductors: Joi.array()
+    .items(Joi.number().integer().positive())
+    .optional()
+    .messages({
+      'array.base': 'I conduttori devono essere un array',
+      'number.base': 'Gli ID dei conduttori devono essere numeri',
+      'number.integer': 'Gli ID dei conduttori devono essere numeri interi',
+      'number.positive': 'Gli ID dei conduttori devono essere positivi'
+    }),
+
+  members: Joi.array()
+    .items(Joi.number().integer().positive())
+    .optional()
+    .messages({
+      'array.base': 'I membri devono essere un array',
+      'number.base': 'Gli ID dei membri devono essere numeri',
+      'number.integer': 'Gli ID dei membri devono essere numeri interi',
+      'number.positive': 'Gli ID dei membri devono essere positivi'
+    })
+});
 
 // Schema per la creazione di gruppi con conduttori e membri
 const groupCreateSchema = Joi.object({
