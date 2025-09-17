@@ -41,7 +41,9 @@ const GroupFormPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    meeting_frequency: ''
+    meeting_frequency: '',
+    max_members: 8,
+    status: 'active'
   });
 
   const [formErrors, setFormErrors] = useState({});
@@ -140,7 +142,9 @@ const GroupFormPage = () => {
         setFormData({
           name: group.name || '',
           description: group.description || '',
-          meeting_frequency: group.meeting_frequency || ''
+          meeting_frequency: group.meeting_frequency || '',
+          max_members: group.max_members || 8,
+          status: group.status || 'active'
         });
         
         // Store group data for later processing when options are loaded
