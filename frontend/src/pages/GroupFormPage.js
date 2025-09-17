@@ -233,7 +233,34 @@ const GroupFormPage = () => {
         conductors: selectedConductors.map(c => c.id),
         members: selectedMembers.map(m => m.id)
       };
-      
+
+      console.log('=== FORM SUBMISSION DEBUG ===');
+      console.log('selectedConductors:', selectedConductors);
+      console.log('selectedConductors.length:', selectedConductors.length);
+      console.log('selectedMembers:', selectedMembers);
+      console.log('selectedMembers.length:', selectedMembers.length);
+      console.log('submitData before API call:', submitData);
+      console.log('conductors array:', submitData.conductors);
+      console.log('conductors array length:', submitData.conductors.length);
+      console.log('members array:', submitData.members);
+      console.log('members array length:', submitData.members.length);
+      console.log('Array.isArray(submitData.conductors):', Array.isArray(submitData.conductors));
+      console.log('Array.isArray(submitData.members):', Array.isArray(submitData.members));
+
+      // Test each conductor mapping
+      selectedConductors.forEach((conductor, index) => {
+        console.log(`conductor[${index}]:`, conductor);
+        console.log(`conductor[${index}].id:`, conductor.id);
+      });
+
+      // Test each member mapping
+      selectedMembers.forEach((member, index) => {
+        console.log(`member[${index}]:`, member);
+        console.log(`member[${index}].id:`, member.id);
+      });
+
+      console.log('==============================');
+
       let response;
       if (isEdit) {
         response = await groupService.updateGroup(id, submitData);

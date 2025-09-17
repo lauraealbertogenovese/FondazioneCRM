@@ -49,6 +49,22 @@ createAuthInterceptor(patientApi, API_BASE_URL);
 createAuthInterceptor(clinicalApi, API_BASE_URL);
 createAuthInterceptor(groupApi, API_BASE_URL);
 
+// Add specific debugging interceptor for group API
+groupApi.interceptors.request.use(
+  (config) => {
+    console.log('=== GROUP API REQUEST INTERCEPTOR ===');
+    console.log('Method:', config.method);
+    console.log('URL:', config.url);
+    console.log('Headers:', config.headers);
+    console.log('Data (raw):', config.data);
+    console.log('Data type:', typeof config.data);
+    console.log('Data stringified:', JSON.stringify(config.data));
+    console.log('====================================');
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Interceptors are now handled by the centralized createAuthInterceptor utility
 
 // All token refresh logic is now centralized in createAuthInterceptor utility
@@ -347,11 +363,22 @@ export const groupService = {
   },
 
   createGroup: async (groupData) => {
+    console.log('=== API SERVICE DEBUG - CREATE GROUP ===');
+    console.log('Group data being sent:', groupData);
+    console.log('Conductors array:', groupData.conductors);
+    console.log('Members array:', groupData.members);
+    console.log('=======================================');
     const response = await groupApi.post('/groups', groupData);
     return response.data;
   },
 
   updateGroup: async (id, groupData) => {
+    console.log('=== API SERVICE DEBUG - UPDATE GROUP ===');
+    console.log('Group ID:', id);
+    console.log('Group data being sent:', groupData);
+    console.log('Conductors array:', groupData.conductors);
+    console.log('Members array:', groupData.members);
+    console.log('=======================================');
     const response = await groupApi.put(`/groups/${id}`, groupData);
     return response.data;
   },
