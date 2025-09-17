@@ -22,6 +22,29 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(express.json());
 
+// Debug middleware to log all incoming requests
+app.use((req, res, next) => {
+  if (req.method === 'PUT' && req.path.includes('/groups/')) {
+    console.log(`[DEBUG MIDDLEWARE] ${req.method} ${req.path}`);
+    console.log(`[DEBUG MIDDLEWARE] Headers:`, req.headers);
+    console.log(`[DEBUG MIDDLEWARE] Raw body:`, req.body);
+    console.log(`[DEBUG MIDDLEWARE] Body type:`, typeof req.body);
+    console.log(`[DEBUG MIDDLEWARE] Body keys:`, Object.keys(req.body || {}));
+    if (req.body && req.body.conductors) {
+      console.log(`[DEBUG MIDDLEWARE] Conductors found:`, req.body.conductors);
+    } else {
+      console.log(`[DEBUG MIDDLEWARE] No conductors in body`);
+    }
+    if (req.body && req.body.members) {
+      console.log(`[DEBUG MIDDLEWARE] Members found:`, req.body.members);
+    } else {
+      console.log(`[DEBUG MIDDLEWARE] No members in body`);
+    }
+    console.log(`[DEBUG MIDDLEWARE] ===========================`);
+  }
+  next();
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 
