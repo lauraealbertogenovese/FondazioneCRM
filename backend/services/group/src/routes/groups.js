@@ -188,38 +188,62 @@ router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
       });
     }
 
+    console.log(`[PUT /groups/${id}] Starting member management...`);
+    console.log(`[PUT /groups/${id}] Conductors array:`, conductors);
+    console.log(`[PUT /groups/${id}] Members array:`, members);
+
     // Update group members
-    await GroupMember.deleteByGroupId(id);
+    console.log(`[PUT /groups/${id}] Deleting existing members...`);
+    const deletedCount = await GroupMember.deleteByGroupId(id);
+    console.log(`[PUT /groups/${id}] Deleted ${deletedCount} existing members`);
 
     // Add conductors (users)
-    if (conductors.length > 0) {
+    if (conductors && conductors.length > 0) {
+      console.log(`[PUT /groups/${id}] Adding ${conductors.length} conductors...`);
       for (const conductorId of conductors) {
-        const conductorData = {
-          group_id: id,
-          user_id: conductorId,
-          member_type: 'conductor',
-          is_active: true,
-          created_by: 1 // TODO: get from JWT
-        };
-        await GroupMember.addMember(conductorData);
-        console.log(`[PUT /groups/${id}] Added conductor:`, conductorId);
+        try {
+          const conductorData = {
+            group_id: parseInt(id, 10),
+            user_id: parseInt(conductorId, 10),
+            member_type: 'conductor',
+            is_active: true,
+            created_by: 1 // TODO: get from JWT
+          };
+          console.log(`[PUT /groups/${id}] Adding conductor with data:`, conductorData);
+          const result = await GroupMember.addMember(conductorData);
+          console.log(`[PUT /groups/${id}] Added conductor ${conductorId} successfully:`, result);
+        } catch (error) {
+          console.error(`[PUT /groups/${id}] Error adding conductor ${conductorId}:`, error);
+        }
       }
+    } else {
+      console.log(`[PUT /groups/${id}] No conductors to add`);
     }
 
     // Add patient members
-    if (members.length > 0) {
+    if (members && members.length > 0) {
+      console.log(`[PUT /groups/${id}] Adding ${members.length} members...`);
       for (const memberId of members) {
-        const memberData = {
-          group_id: id,
-          patient_id: memberId,
-          member_type: 'patient',
-          is_active: true,
-          created_by: 1 // TODO: get from JWT
-        };
-        await GroupMember.addMember(memberData);
-        console.log(`[PUT /groups/${id}] Added member:`, memberId);
+        try {
+          const memberData = {
+            group_id: parseInt(id, 10),
+            patient_id: parseInt(memberId, 10),
+            member_type: 'patient',
+            is_active: true,
+            created_by: 1 // TODO: get from JWT
+          };
+          console.log(`[PUT /groups/${id}] Adding member with data:`, memberData);
+          const result = await GroupMember.addMember(memberData);
+          console.log(`[PUT /groups/${id}] Added member ${memberId} successfully:`, result);
+        } catch (error) {
+          console.error(`[PUT /groups/${id}] Error adding member ${memberId}:`, error);
+        }
       }
+    } else {
+      console.log(`[PUT /groups/${id}] No members to add`);
     }
+
+    console.log(`[PUT /groups/${id}] Member management completed`);
 
     res.json({
       success: true,
