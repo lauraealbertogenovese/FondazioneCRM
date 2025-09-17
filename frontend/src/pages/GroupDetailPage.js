@@ -300,7 +300,7 @@ const GroupDetailPage = () => {
           <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
             <PeopleIcon color="action" />
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Membri del Gruppo ({members.filter(m => m.is_active).length}{group?.max_members ? `/${group.max_members}` : ''})
+              Membri del Gruppo ({members.filter(m => m.is_active).length})
             </Typography>
           </Stack>
 

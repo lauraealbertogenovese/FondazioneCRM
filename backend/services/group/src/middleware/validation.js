@@ -34,17 +34,6 @@ const groupSchema = Joi.object({
       'any.required': 'Il tipo di gruppo è obbligatorio'
     }),
 
-  max_members: Joi.number()
-    .integer()
-    .min(1)
-    .max(100)
-    .default(10)
-    .messages({
-      'number.base': 'Il numero massimo di membri deve essere un numero',
-      'number.integer': 'Il numero massimo di membri deve essere un numero intero',
-      'number.min': 'Il numero massimo di membri deve essere almeno 1',
-      'number.max': 'Il numero massimo di membri non può superare 100'
-    }),
 
   status: Joi.string()
     .valid('active', 'inactive', 'archived')

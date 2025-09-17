@@ -562,6 +562,7 @@ const GroupsPage = () => {
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Nome Gruppo</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Tipo</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Conduttori</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Membri</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Data Inizio</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Frequenza</TableCell>
@@ -630,9 +631,34 @@ const GroupsPage = () => {
                         }}
                       />
                     </TableCell>
+                    <TableCell>
+                      <Box>
+                        {group.conductors && group.conductors.length > 0 ? (
+                          group.conductors.map((conductor, index) => (
+                            <Chip
+                              key={index}
+                              label={conductor}
+                              size="small"
+                              sx={{
+                                mr: 0.5,
+                                mb: 0.5,
+                                fontWeight: 500,
+                                backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                                color: theme.palette.secondary.main,
+                                border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                              }}
+                            />
+                          ))
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            Nessun conduttore
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {group.member_count || 0} / {group.max_members || 0}
+                      {group.member_count || 0} membri
                     </Typography>
                   </TableCell>
                   <TableCell>{formatDate(group.start_date)}</TableCell>

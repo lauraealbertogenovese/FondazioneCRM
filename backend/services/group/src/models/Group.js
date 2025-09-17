@@ -59,17 +59,24 @@ class Group {
 
   static async findById(id) {
     const query = `
-      SELECT 
+      SELECT
         g.*,
         u.username as created_by_username,
-        COUNT(DISTINCT gm.patient_id) as member_count
+        COUNT(DISTINCT CASE WHEN gm.member_type = 'patient' THEN gm.patient_id END) as member_count,
+        ARRAY_AGG(
+          DISTINCT CASE
+            WHEN gm.member_type = 'conductor' AND gm.is_active = true
+            THEN CONCAT(staff.first_name, ' ', staff.last_name)
+          END
+        ) FILTER (WHERE gm.member_type = 'conductor' AND gm.is_active = true) as conductors
       FROM "group".groups g
       LEFT JOIN auth.users u ON g.created_by = u.id
       LEFT JOIN "group".group_members gm ON g.id = gm.group_id AND gm.is_active = true
+      LEFT JOIN auth.users staff ON gm.user_id = staff.id
       WHERE g.id = $1
       GROUP BY g.id, u.username
     `;
-    
+
     const result = await pool.query(query, [id]);
     return result.rows[0];
   }
@@ -96,7 +103,6 @@ class Group {
       name,
       description,
       group_type,
-      max_members = 10,
       start_date,
       end_date,
       meeting_frequency,
@@ -105,10 +111,10 @@ class Group {
     } = groupData;
 
     const query = `
-      INSERT INTO "group".groups 
-      (name, description, group_type, max_members, start_date, end_date, 
+      INSERT INTO "group".groups
+      (name, description, group_type, start_date, end_date,
        meeting_frequency, meeting_location, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -116,7 +122,6 @@ class Group {
       name,
       description,
       group_type,
-      max_members,
       start_date,
       end_date,
       meeting_frequency,
@@ -131,9 +136,8 @@ class Group {
   static async update(id, groupData) {
     const allowedFields = [
       'name',
-      'description', 
+      'description',
       'group_type',
-      'max_members',
       'status',
       'start_date',
       'end_date',

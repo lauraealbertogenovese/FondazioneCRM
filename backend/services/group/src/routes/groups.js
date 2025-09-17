@@ -113,7 +113,6 @@ router.post('/', validateGroupCreate, async (req, res) => {
       name,
       description,
       group_type: 'support', // Default type
-      max_members: 50, // Default max members
       meeting_frequency,
       status: 'active',
       created_by

@@ -42,7 +42,6 @@ const GroupFormPage = () => {
     name: '',
     description: '',
     meeting_frequency: '',
-    max_members: 8,
     status: 'active'
   });
 
@@ -143,7 +142,6 @@ const GroupFormPage = () => {
           name: group.name || '',
           description: group.description || '',
           meeting_frequency: group.meeting_frequency || '',
-          max_members: group.max_members || 8,
           status: group.status || 'active'
         });
         
