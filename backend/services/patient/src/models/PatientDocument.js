@@ -4,14 +4,14 @@ class PatientDocument {
   constructor(data) {
     this.id = data.id;
     this.patient_id = data.patient_id;
-    this.filename = data.nome_file || data.filename;
-    this.original_filename = data.nome_originale || data.original_filename;
-    this.file_path = data.percorso_file || data.file_path;
-    this.file_type = data.tipo_documento || data.file_type;
-    this.file_size = data.dimensione_file || data.file_size;
+    this.filename = data.filename;
+    this.original_filename = data.original_filename;
+    this.file_path = data.file_path;
+    this.file_type = data.file_type;
+    this.file_size = data.file_size;
     this.mime_type = data.mime_type;
     this.document_type = data.document_type;
-    this.description = data.descrizione || data.description;
+    this.description = data.description;
     this.uploaded_by = data.uploaded_by;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
@@ -34,8 +34,8 @@ class PatientDocument {
     
     const queryText = `
       INSERT INTO patient.patient_documents (
-        patient_id, nome_file, nome_originale, percorso_file, tipo_documento,
-        dimensione_file, mime_type, document_type, descrizione, uploaded_by
+        patient_id, filename, original_filename, file_path, file_type,
+        file_size, mime_type, document_type, description, uploaded_by
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
