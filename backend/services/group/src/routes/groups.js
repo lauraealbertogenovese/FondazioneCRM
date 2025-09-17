@@ -1,13 +1,14 @@
 const express = require('express');
 const Group = require('../models/Group');
 const GroupMember = require('../models/GroupMember');
-const { 
-  validateGroup, 
+const {
+  validateGroup,
   validateGroupCreate,
-  validateGroupUpdate, 
-  validateGroupFilters, 
-  validateId 
+  validateGroupUpdate,
+  validateGroupFilters,
+  validateId
 } = require('../middleware/validation');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -94,7 +95,7 @@ router.get('/:id', validateId, async (req, res) => {
 });
 
 // POST /groups - Crea nuovo gruppo
-router.post('/', validateGroupCreate, async (req, res) => {
+router.post('/', authenticateToken, validateGroupCreate, async (req, res) => {
   try {
     const {
       name,
@@ -106,8 +107,9 @@ router.post('/', validateGroupCreate, async (req, res) => {
 
     console.log(`[POST /groups] Creating group with:`, { name, description, meeting_frequency, conductors, members });
 
-    // TODO: Ottieni created_by dal token JWT
-    const created_by = 1; // Placeholder - da implementare con autenticazione
+    // Get user ID from JWT token
+    const created_by = req.user.id;
+    console.log(`[POST /groups] Creating group for user ID:`, created_by);
 
     const groupData = {
       name,
@@ -167,7 +169,7 @@ router.post('/', validateGroupCreate, async (req, res) => {
 });
 
 // PUT /groups/:id - Aggiorna gruppo
-router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
+router.put('/:id', authenticateToken, validateId, validateGroupUpdate, async (req, res) => {
   try {
     console.log(`[PUT /groups/${req.params.id}] Request received:`, req.body);
     const { id } = req.params;
@@ -206,7 +208,7 @@ router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
             user_id: parseInt(conductorId, 10),
             member_type: 'conductor',
             is_active: true,
-            created_by: 1 // TODO: get from JWT
+            created_by: req.user.id
           };
           console.log(`[PUT /groups/${id}] Adding conductor with data:`, conductorData);
           const result = await GroupMember.addMember(conductorData);
@@ -229,7 +231,7 @@ router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
             patient_id: parseInt(memberId, 10),
             member_type: 'patient',
             is_active: true,
-            created_by: 1 // TODO: get from JWT
+            created_by: req.user.id
           };
           console.log(`[PUT /groups/${id}] Adding member with data:`, memberData);
           const result = await GroupMember.addMember(memberData);
@@ -260,7 +262,7 @@ router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
 });
 
 // DELETE /groups/:id - Elimina gruppo
-router.delete('/:id', validateId, async (req, res) => {
+router.delete('/:id', authenticateToken, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -289,7 +291,7 @@ router.delete('/:id', validateId, async (req, res) => {
 });
 
 // POST /groups/:id/members - Add member to group
-router.post('/:id/members', validateId, async (req, res) => {
+router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
   try {
     console.log(`[POST /groups/${req.params.id}/members] Request received:`, req.body);
     const { id } = req.params;
@@ -333,7 +335,7 @@ router.post('/:id/members', validateId, async (req, res) => {
       user_id: user_id ? parseInt(user_id, 10) : null,
       member_type,
       notes,
-      created_by: 1 // TODO: Get from JWT token
+      created_by: req.user.id
     };
 
     console.log(`[POST /groups/${id}/members] Adding member:`, memberData);
@@ -370,7 +372,7 @@ router.post('/:id/members', validateId, async (req, res) => {
 });
 
 // DELETE /groups/:id/members/:memberId - Remove member from group
-router.delete('/:id/members/:memberId', validateId, async (req, res) => {
+router.delete('/:id/members/:memberId', authenticateToken, validateId, async (req, res) => {
   try {
     console.log(`[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Request received`);
     const { id, memberId } = req.params;
