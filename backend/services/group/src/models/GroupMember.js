@@ -195,16 +195,26 @@ class GroupMember {
 
   static async removeMember(memberId) {
     const query = `
-      UPDATE "group".group_members 
-      SET is_active = false, 
+      UPDATE "group".group_members
+      SET is_active = false,
           left_date = CURRENT_DATE,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
       RETURNING *
     `;
-    
+
     const result = await pool.query(query, [memberId]);
     return result.rows[0];
+  }
+
+  static async deleteByGroupId(groupId) {
+    const query = `
+      DELETE FROM "group".group_members
+      WHERE group_id = $1
+    `;
+
+    const result = await pool.query(query, [groupId]);
+    return result.rowCount;
   }
 }
 

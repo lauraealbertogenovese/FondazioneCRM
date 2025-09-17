@@ -173,17 +173,52 @@ router.put('/:id', validateId, validateGroupUpdate, async (req, res) => {
     console.log(`[PUT /groups/${req.params.id}] Request received:`, req.body);
     const { id } = req.params;
 
-    const updateData = req.body;
+    const { conductors = [], members = [], ...updateData } = req.body;
     console.log(`[PUT /groups/${id}] About to update with data:`, updateData);
+    console.log(`[PUT /groups/${id}] Conductors:`, conductors);
+    console.log(`[PUT /groups/${id}] Members:`, members);
 
     const updatedGroup = await Group.update(id, updateData);
     console.log(`[PUT /groups/${id}] Update completed:`, updatedGroup);
-    
+
     if (!updatedGroup) {
       return res.status(404).json({
         success: false,
         error: 'Group not found'
       });
+    }
+
+    // Update group members
+    await GroupMember.deleteByGroupId(id);
+
+    // Add conductors (users)
+    if (conductors.length > 0) {
+      for (const conductorId of conductors) {
+        const conductorData = {
+          group_id: id,
+          user_id: conductorId,
+          member_type: 'conductor',
+          is_active: true,
+          created_by: 1 // TODO: get from JWT
+        };
+        await GroupMember.addMember(conductorData);
+        console.log(`[PUT /groups/${id}] Added conductor:`, conductorId);
+      }
+    }
+
+    // Add patient members
+    if (members.length > 0) {
+      for (const memberId of members) {
+        const memberData = {
+          group_id: id,
+          patient_id: memberId,
+          member_type: 'patient',
+          is_active: true,
+          created_by: 1 // TODO: get from JWT
+        };
+        await GroupMember.addMember(memberData);
+        console.log(`[PUT /groups/${id}] Added member:`, memberId);
+      }
     }
 
     res.json({
