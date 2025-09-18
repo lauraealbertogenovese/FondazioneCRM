@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS "group".group_members (
     id SERIAL PRIMARY KEY,
     group_id INTEGER REFERENCES "group".groups(id) ON DELETE CASCADE,
     patient_id INTEGER REFERENCES patient.patients(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES auth.users(id), -- <--- Added user_id column
     member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('patient', 'psychologist', 'referente', 'observer')),
     role VARCHAR(50),
     joined_date DATE DEFAULT CURRENT_DATE,
@@ -72,6 +73,7 @@ CREATE INDEX IF NOT EXISTS idx_groups_status ON "group".groups(status);
 CREATE INDEX IF NOT EXISTS idx_groups_group_type ON "group".groups(group_type);
 CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON "group".group_members(group_id);
 CREATE INDEX IF NOT EXISTS idx_group_members_patient_id ON "group".group_members(patient_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_user_id ON "group".group_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_group_members_member_type ON "group".group_members(member_type);
 CREATE INDEX IF NOT EXISTS idx_group_members_is_active ON "group".group_members(is_active);
 CREATE INDEX IF NOT EXISTS idx_group_documents_group_id ON "group".group_documents(group_id);
