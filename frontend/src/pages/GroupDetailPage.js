@@ -310,7 +310,6 @@ const GroupDetailPage = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Nome</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Tipo</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Ruolo</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Iscrizione</TableCell>
                   <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Contatti</TableCell>
                   {hasPermission('groups.write') && (
@@ -333,11 +332,6 @@ const GroupDetailPage = () => {
                         color={getMemberTypeColor(member.member_type)}
                         variant="outlined"
                       />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {member.role || '-'}
-                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
