@@ -191,10 +191,10 @@ const Layout = ({ children }) => {
         )}
       </Toolbar>
       
-      <Box sx={{ px: 2, py: 1, flexGrow: 1, overflow: 'hidden' }}>
+      <Box sx={{  py: 1, flexGrow: 1, overflow: 'hidden' }}>
         <List sx={{ p: 0 }}>
           {filteredMenuItems.map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+            <ListItem key={item.text} disablePadding disableGutters sx={{ m: 0, borderRadius: 0 }}>
               <ListItemButton
                 selected={location.pathname === item.path}
                 onClick={() => handleNavigation(item.path)}
@@ -223,6 +223,7 @@ const Layout = ({ children }) => {
                     fontWeight: location.pathname === item.path ? 600 : 500,
                     color: location.pathname === item.path ? '#1e293b' : '#334155',
                     letterSpacing: '0.01em',
+                    whiteSpace: 'nowrap',
                   }}
                 />
               </ListItemButton>
