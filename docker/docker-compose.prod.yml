@@ -17,6 +17,8 @@ services:
     networks:
       - crm-network
     restart: unless-stopped
+    volumes:
+      - patient_uploads:/app/uploads/patient-documents
 
   # Auth Service
   auth-service:
@@ -53,6 +55,8 @@ services:
     networks:
       - crm-network
     restart: unless-stopped
+    volumes:
+      - clinical_uploads:/app/uploads/clinical
 
   # Group Service
   group-service:
@@ -139,3 +143,7 @@ services:
 networks:
   crm-network:
     driver: bridge
+
+volumes:
+  patient_uploads:
+  clinical_uploads:
