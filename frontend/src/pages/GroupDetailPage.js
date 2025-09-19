@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -22,8 +22,11 @@ import {
   ListItemText,
   Tooltip,
   CircularProgress,
-  Container
-} from '@mui/material';
+  Container,
+  alpha,
+  Tabs,
+  Tab,
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
@@ -35,21 +38,25 @@ import {
   MoreVert as MoreVertIcon,
   RemoveCircle as RemoveIcon,
   Phone as PhoneIcon,
-  Email as EmailIcon
-} from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-import { groupService } from '../services/api';
+  Email as EmailIcon,
+  Assignment as AssignmentIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
+import { groupService } from "../services/api";
+import GroupNotes from "../components/GroupNotes";
 
 const GroupDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
-  
+
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [activeTab, setActiveTab] = useState(0);
+
   // Menu states
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
@@ -68,16 +75,15 @@ const GroupDetailPage = () => {
         setGroup(response.data);
         setMembers(response.data.members || []);
       } else {
-        setError('Gruppo non trovato');
+        setError("Gruppo non trovato");
       }
     } catch (error) {
-      console.error('Error fetching group:', error);
-      setError('Errore nel caricamento del gruppo');
+      console.error("Error fetching group:", error);
+      setError("Errore nel caricamento del gruppo");
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleMenuOpen = (event, member) => {
     setAnchorEl(event.currentTarget);
@@ -90,13 +96,15 @@ const GroupDetailPage = () => {
   };
 
   const handleRemoveMember = async (memberId) => {
-    if (window.confirm('Sei sicuro di voler rimuovere questo membro dal gruppo?')) {
+    if (
+      window.confirm("Sei sicuro di voler rimuovere questo membro dal gruppo?")
+    ) {
       try {
         await groupService.removeGroupMember(id, memberId);
         fetchGroupDetail();
       } catch (error) {
-        console.error('Error removing member:', error);
-        setError('Errore nella rimozione del membro');
+        console.error("Error removing member:", error);
+        setError("Errore nella rimozione del membro");
       }
     }
     handleMenuClose();
@@ -104,47 +112,380 @@ const GroupDetailPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'inactive': return 'warning';
-      case 'archived': return 'default';
-      default: return 'default';
+      case "active":
+        return "success";
+      case "inactive":
+        return "warning";
+      case "archived":
+        return "default";
+      default:
+        return "default";
     }
   };
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'active': return 'Attivo';
-      case 'inactive': return 'Inattivo';
-      case 'archived': return 'Archiviato';
-      default: return status;
+      case "active":
+        return "Attivo";
+      case "inactive":
+        return "Inattivo";
+      case "archived":
+        return "Archiviato";
+      default:
+        return status;
     }
   };
 
   const getMemberTypeLabel = (type) => {
     switch (type) {
-      case 'patient': return 'Paziente';
-      case 'psychologist': return 'Psicologo';
-      default: return type;
+      case "patient":
+        return "Paziente";
+      case "psychologist":
+        return "Psicologo";
+      default:
+        return type;
     }
   };
 
   const getMemberTypeColor = (type) => {
     switch (type) {
-      case 'patient': return 'primary';
-      case 'psychologist': return 'secondary';
-      default: return 'default';
+      case "patient":
+        return "primary";
+      case "psychologist":
+        return "secondary";
+      default:
+        return "default";
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('it-IT');
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("it-IT");
   };
+  const tabSections = [
+    {
+      label: "Informazioni",
+      icon: <PersonIcon color="action" />,
+      content: "info",
+    },
+    { label: "Membri", icon: <GroupIcon color="action" />, content: "members" },
+    { label: "Note Gruppo", icon: <AssignmentIcon />, content: "notes" },
+  ];
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 0: // Informazioni
+        return (
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{ mb: 3, fontWeight: 600, color: "text.primary" }}
+            >
+              Informazioni Gruppo
+            </Typography>
 
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                gap: 3,
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    mb: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Tipo Gruppo
+                </Typography>
+                <Chip
+                  label={group?.group_type}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    mb: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Stato
+                </Typography>
+                <Chip
+                  label={getStatusLabel(group?.status)}
+                  color={getStatusColor(group?.status)}
+                  size="small"
+                />
+              </Box>
+
+              <Box sx={{ gridColumn: { md: "1 / -1" } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    mb: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Descrizione
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {group?.description || "Nessuna descrizione disponibile"}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    mb: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Data Inizio
+                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CalendarIcon
+                    sx={{ fontSize: 18, color: "text.secondary" }}
+                  />
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {formatDate(group?.start_date)}
+                  </Typography>
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    mb: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Frequenza Incontri
+                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <ScheduleIcon
+                    sx={{ fontSize: 18, color: "text.secondary" }}
+                  />
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {group?.meeting_frequency || "Non specificata"}
+                  </Typography>
+                </Stack>
+              </Box>
+
+              <Box sx={{ gridColumn: { md: "1 / -1" } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.75rem",
+                    mb: 0.5,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Luogo Incontri
+                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <LocationIcon
+                    sx={{ fontSize: 18, color: "text.secondary" }}
+                  />
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {group?.meeting_location || "Non specificato"}
+                  </Typography>
+                </Stack>
+              </Box>
+            </Box>
+          </Box>
+        );
+
+      case 1: // Membri
+        return (
+          <Stack>
+            <Typography
+              variant="h6"
+              sx={{ mb: 3, fontWeight: 600, color: "text.primary" }}
+            >
+              Membri del Gruppo ({members.filter((m) => m.is_active).length})
+            </Typography>
+
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Nome
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Tipo
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Iscrizione
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Contatti
+                    </TableCell>
+                    {hasPermission("groups.write") && (
+                      <TableCell
+                        align="center"
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Azioni
+                      </TableCell>
+                    )}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {members
+                    .filter((member) => member.is_active)
+                    .map((member) => (
+                      <TableRow key={member.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {member.nome} {member.cognome}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={getMemberTypeLabel(member.member_type)}
+                            size="small"
+                            color={getMemberTypeColor(member.member_type)}
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {formatDate(member.joined_date)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={0.5}>
+                            {member.email && (
+                              <Tooltip title={member.email}>
+                                <IconButton size="small">
+                                  <EmailIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {member.telefono && (
+                              <Tooltip title={member.telefono}>
+                                <IconButton size="small">
+                                  <PhoneIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Stack>
+                        </TableCell>
+                        {hasPermission("groups.write") && (
+                          <TableCell align="center">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuOpen(e, member)}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+
+              {members.filter((m) => m.is_active).length === 0 && (
+                <Box sx={{ textAlign: "center", py: 8 }}>
+                  <PeopleIcon
+                    sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
+                  />
+                  <Typography variant="body1" color="text.secondary">
+                    Nessun membro attivo nel gruppo
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    Usa la tab "Modifica" per gestire i membri
+                  </Typography>
+                </Box>
+              )}
+            </TableContainer>
+          </Stack>
+        );
+      case 2: // Note Gruppo e Diario
+        return (
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{ mb: 3, fontWeight: 600, color: "text.primary" }}
+            >
+              Note Gruppo e Diario
+            </Typography>
+            <GroupNotes
+              groupId={group.id}
+              groupName={`${group.nome} ${group.cognome}`}
+            />
+          </Box>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -154,19 +495,19 @@ const GroupDetailPage = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">{error}</Alert>
-        <Button 
-          startIcon={<ArrowBackIcon />} 
-          onClick={() => navigate('/groups')} 
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/groups")}
           variant="outlined"
           color="inherit"
-          sx={{ 
+          sx={{
             mt: 2,
-            borderColor: '#e2e8f0',
-            color: '#64748b',
-            '&:hover': {
-              borderColor: '#cbd5e1',
-              backgroundColor: 'rgba(248, 250, 252, 0.8)',
-            }
+            borderColor: "#e2e8f0",
+            color: "#64748b",
+            "&:hover": {
+              borderColor: "#cbd5e1",
+              backgroundColor: "rgba(248, 250, 252, 0.8)",
+            },
           }}
         >
           Torna ai Gruppi
@@ -177,216 +518,90 @@ const GroupDetailPage = () => {
 
   return (
     <>
-    <Container maxWidth="lg" sx={{ py: 2 }}>
-      {/* Minimal Header */}
-      <Box sx={{ mb: 3 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton onClick={() => navigate('/groups')} size="small">
-              <ArrowBackIcon />
-            </IconButton>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                {group?.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Gruppo di supporto • {group?.group_type}
-              </Typography>
-            </Box>
-          </Stack>
-          {hasPermission('groups.write') && (
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              onClick={() => navigate(`/groups/${id}/edit`)}
-              size="small"
-            >
-              Modifica
-            </Button>
-          )}
-        </Stack>
-      </Box>
-
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      <Stack spacing={3}>
-        {/* Informazioni Principali */}
-        <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-            <GroupIcon color="action" />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Informazioni Gruppo
-            </Typography>
-          </Stack>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Tipo Gruppo
-              </Typography>
-              <Chip
-                label={group?.group_type}
-                color="primary"
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Stato
-              </Typography>
-              <Chip
-                label={getStatusLabel(group?.status)}
-                color={getStatusColor(group?.status)}
-                size="small"
-              />
-            </Box>
-
-            <Box sx={{ gridColumn: { md: '1 / -1' } }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Descrizione
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                {group?.description || 'Nessuna descrizione disponibile'}
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Data Inizio
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <CalendarIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {formatDate(group?.start_date)}
+      <Container maxWidth="lg" sx={{ py: 2 }}>
+        {/* Minimal Header */}
+        <Box sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 2 }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <IconButton onClick={() => navigate("/groups")} size="small">
+                <ArrowBackIcon />
+              </IconButton>
+              <Box>
+                <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                  {group?.name}
                 </Typography>
-              </Stack>
-            </Box>
-
-            <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Frequenza Incontri
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <ScheduleIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {group?.meeting_frequency || 'Non specificata'}
-                </Typography>
-              </Stack>
-            </Box>
-
-            <Box sx={{ gridColumn: { md: '1 / -1' } }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem', mb: 0.5, textTransform: 'uppercase' }}>
-                Luogo Incontri
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {group?.meeting_location || 'Non specificato'}
-                </Typography>
-              </Stack>
-            </Box>
-          </Box>
-        </Paper>
-
-        {/* Membri del Gruppo */}
-        <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-            <PeopleIcon color="action" />
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Membri del Gruppo ({members.filter(m => m.is_active).length})
-            </Typography>
-          </Stack>
-
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Nome</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Tipo</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Iscrizione</TableCell>
-                  <TableCell sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Contatti</TableCell>
-                  {hasPermission('groups.write') && (
-                    <TableCell align="center" sx={{ fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Azioni</TableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {members.filter(member => member.is_active).map((member) => (
-                  <TableRow key={member.id} hover>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {member.nome} {member.cognome}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={getMemberTypeLabel(member.member_type)}
-                        size="small"
-                        color={getMemberTypeColor(member.member_type)}
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {formatDate(member.joined_date)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={0.5}>
-                        {member.email && (
-                          <Tooltip title={member.email}>
-                            <IconButton size="small">
-                              <EmailIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        {member.telefono && (
-                          <Tooltip title={member.telefono}>
-                            <IconButton size="small">
-                              <PhoneIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </Stack>
-                    </TableCell>
-                    {hasPermission('groups.write') && (
-                      <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuOpen(e, member)}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            {members.filter(m => m.is_active).length === 0 && (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <PeopleIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
-                <Typography variant="body1" color="text.secondary">
-                  Nessun membro attivo nel gruppo
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  Usa la tab "Modifica" per gestire i membri
+                <Typography variant="body2" color="text.secondary">
+                  Gruppo di supporto • {group?.group_type}
                 </Typography>
               </Box>
+            </Stack>
+            {hasPermission("groups.write") && (
+              <Button
+                variant="outlined"
+                startIcon={<EditIcon />}
+                onClick={() => navigate(`/groups/${id}/edit`)}
+                size="small"
+              >
+                Modifica
+              </Button>
             )}
-          </TableContainer>
-        </Paper>
+          </Stack>
+        </Box>
 
-      </Stack>
-    </Container>
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 2,
+            border: (theme) =>
+              `1px solid ${alpha(theme.palette.grey[300], 0.5)}`,
+            overflow: "hidden",
+          }}
+        >
+          {/* Tab Navigation */}
+          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Tabs
+              value={activeTab}
+              onChange={(e, newValue) => setActiveTab(newValue)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                "& .MuiTab-root": {
+                  minHeight: 48,
+                  textTransform: "none",
+                  fontWeight: 500,
+                  fontSize: "0.875rem",
+                },
+                "& .Mui-selected": {
+                  color: "primary.main",
+                },
+              }}
+            >
+              {tabSections.map((section, index) => (
+                <Tab
+                  key={index}
+                  label={section.label}
+                  icon={section.icon}
+                  iconPosition="start"
+                />
+              ))}
+            </Tabs>
+          </Box>
+
+          {/* Tab Content */}
+          <Box sx={{ p: 3 }}>{renderTabContent()}</Box>
+        </Paper>
+      </Container>
 
       {/* Member Actions Menu */}
       <Menu
@@ -395,9 +610,9 @@ const GroupDetailPage = () => {
         onClose={handleMenuClose}
       >
         <MenuList>
-          <MenuItemComponent 
+          <MenuItemComponent
             onClick={() => handleRemoveMember(selectedMember?.id)}
-            sx={{ color: 'error.main' }}
+            sx={{ color: "error.main" }}
           >
             <ListItemIcon>
               <RemoveIcon fontSize="small" color="error" />

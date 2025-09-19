@@ -262,7 +262,88 @@ const groupFiltersSchema = Joi.object({
     .allow('')
     .optional()
 });
+// Schema per la creazione di una nota di gruppo (tutti i campi richiesti)
+const noteCreateSchema = Joi.object({
+  group_id: Joi.number()
+    .integer()
+    .positive()
+    .required()
+    .messages({
+      'number.base': 'L\'ID del gruppo deve essere un numero',
+      'number.integer': 'L\'ID del gruppo deve essere un numero intero',
+      'number.positive': 'L\'ID del gruppo deve essere positivo',
+      'any.required': 'L\'ID del gruppo è obbligatorio'
+    }),
+  note_type: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .required()
+    .messages({
+      'string.base': 'Il tipo di nota deve essere una stringa',
+      'string.empty': 'Il tipo di nota è obbligatorio',
+      'string.min': 'Il tipo di nota deve avere almeno 2 caratteri',
+      'string.max': 'Il tipo di nota non può superare 100 caratteri',
+      'any.required': 'Il tipo di nota è obbligatorio'
+    }),
+  content: Joi.string()
+    .trim()
+    .min(1)
+    .max(2000)
+    .required()
+    .messages({
+      'string.base': 'Il contenuto deve essere una stringa',
+      'string.empty': 'Il contenuto è obbligatorio',
+      'string.min': 'Il contenuto deve avere almeno 1 carattere',
+      'string.max': 'Il contenuto non può superare 2000 caratteri',
+      'any.required': 'Il contenuto è obbligatorio'
+    }),
+  is_private: Joi.boolean()
+    .optional()
+    .messages({
+      'boolean.base': 'Il campo is_private deve essere booleano'
+    })
+});
 
+// Schema per l'aggiornamento di una nota di gruppo (tutti i campi opzionali)
+const noteUpdateSchema = Joi.object({
+  group_id: Joi.number()
+    .integer()
+    .positive()
+    .optional()
+    .messages({
+      'number.base': 'L\'ID del gruppo deve essere un numero',
+      'number.integer': 'L\'ID del gruppo deve essere un numero intero',
+      'number.positive': 'L\'ID del gruppo deve essere positivo'
+    }),
+  note_type: Joi.string()
+    .trim()
+    .min(2)
+    .max(100)
+    .optional()
+    .messages({
+      'string.base': 'Il tipo di nota deve essere una stringa',
+      'string.empty': 'Il tipo di nota è obbligatorio',
+      'string.min': 'Il tipo di nota deve avere almeno 2 caratteri',
+      'string.max': 'Il tipo di nota non può superare 100 caratteri'
+    }),
+  content: Joi.string()
+    .trim()
+    .min(1)
+    .max(2000)
+    .optional()
+    .messages({
+      'string.base': 'Il contenuto deve essere una stringa',
+      'string.empty': 'Il contenuto è obbligatorio',
+      'string.min': 'Il contenuto deve avere almeno 1 carattere',
+      'string.max': 'Il contenuto non può superare 2000 caratteri'
+    }),
+  is_private: Joi.boolean()
+    .optional()
+    .messages({
+      'boolean.base': 'Il campo is_private deve essere booleano'
+    })
+});
 // Middleware di validazione
 const validateGroup = (req, res, next) => {
   const { error, value } = groupSchema.validate(req.body, {
@@ -442,6 +523,55 @@ const validatePatientId = (req, res, next) => {
   next();
 };
 
+
+
+// Middleware per la creazione note
+const validateNoteCreate = (req, res, next) => {
+  const { error, value } = noteCreateSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+    convert: true
+  });
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      error: 'Dati nota non validi',
+      details: error.details.map(detail => ({
+        field: detail.context.key,
+        message: detail.message
+      }))
+    });
+  }
+
+  req.body = value;
+  next();
+};
+
+// Middleware per l'aggiornamento note
+const validateNoteUpdate = (req, res, next) => {
+  const { error, value } = noteUpdateSchema.validate(req.body, {
+    abortEarly: false,
+    stripUnknown: true,
+    convert: true
+  });
+
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      error: 'Dati aggiornamento nota non validi',
+      details: error.details.map(detail => ({
+        field: detail.context.key,
+        message: detail.message
+      }))
+    });
+  }
+
+  req.body = value;
+  next();
+};
+
+
 module.exports = {
   validateGroup,
   validateGroupCreate,
@@ -452,11 +582,15 @@ module.exports = {
   validateId,
   validateMemberId,
   validatePatientId,
+  validateNoteCreate,
+  validateNoteUpdate,
   // Export schemas for testing
   groupSchema,
   groupCreateSchema,
   groupUpdateSchema,
   memberSchema,
   memberUpdateSchema,
-  groupFiltersSchema
+  groupFiltersSchema,
+  noteCreateSchema,
+  noteUpdateSchema
 };

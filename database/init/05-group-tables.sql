@@ -66,6 +66,17 @@ CREATE TABLE IF NOT EXISTS "group".group_events (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- Tabella note gruppo
+CREATE TABLE IF NOT EXISTS "group".group_notes (
+    id SERIAL PRIMARY KEY,
+    group_id INTEGER REFERENCES "group".groups(id) ON DELETE CASCADE,
+    note_type VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    is_private BOOLEAN DEFAULT false,
+    created_by INTEGER REFERENCES auth.users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Indici per performance
 CREATE INDEX IF NOT EXISTS idx_groups_name ON "group".groups(name);
@@ -81,6 +92,8 @@ CREATE INDEX IF NOT EXISTS idx_group_documents_document_type ON "group".group_do
 CREATE INDEX IF NOT EXISTS idx_group_events_group_id ON "group".group_events(group_id);
 CREATE INDEX IF NOT EXISTS idx_group_events_event_date ON "group".group_events(event_date);
 CREATE INDEX IF NOT EXISTS idx_group_events_status ON "group".group_events(status);
+CREATE INDEX IF NOT EXISTS idx_group_notes_group_id ON "group".group_notes(group_id);
+CREATE INDEX IF NOT EXISTS idx_group_note_type ON "group".group_notes(note_type);
 
 -- Trigger per aggiornamento automatico updated_at
 CREATE TRIGGER update_groups_updated_at BEFORE UPDATE ON "group".groups
@@ -90,4 +103,7 @@ CREATE TRIGGER update_group_members_updated_at BEFORE UPDATE ON "group".group_me
     FOR EACH ROW EXECUTE FUNCTION auth.update_updated_at_column();
 
 CREATE TRIGGER update_group_events_updated_at BEFORE UPDATE ON "group".group_events
+    FOR EACH ROW EXECUTE FUNCTION auth.update_updated_at_column();
+
+CREATE TRIGGER update_group_notes_updated_at BEFORE UPDATE ON "group".group_notes
     FOR EACH ROW EXECUTE FUNCTION auth.update_updated_at_column();
