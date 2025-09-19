@@ -15,8 +15,13 @@ COPY src/ ./src/
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S clinical -u 1001
 
-# Change ownership
+# Create uploads directory and set correct permissions
+RUN mkdir -p /app/uploads/clinical && \
+    chown -R clinical:nodejs /app/uploads
+
+# Change ownership of the whole app (optional, but safe)
 RUN chown -R clinical:nodejs /app
+
 USER clinical
 
 # Expose port
