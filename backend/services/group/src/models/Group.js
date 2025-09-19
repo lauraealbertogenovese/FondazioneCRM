@@ -15,10 +15,10 @@ class Group {
         COUNT(DISTINCT CASE WHEN gm.member_type = 'patient' THEN gm.patient_id END) as member_count,
         ARRAY_AGG(
           DISTINCT CASE 
-            WHEN gm.member_type = 'conductor' AND gm.is_active = true
+            WHEN gm.member_type = 'psychologist' AND gm.is_active = true
             THEN CONCAT(staff.first_name, ' ', staff.last_name)
           END
-        ) FILTER (WHERE gm.member_type = 'conductor' AND gm.is_active = true) as conductors
+        ) FILTER (WHERE gm.member_type = 'psychologist' AND gm.is_active = true) as conductors
       FROM "group".groups g
       LEFT JOIN auth.users u ON g.created_by = u.id
       LEFT JOIN "group".group_members gm ON g.id = gm.group_id AND gm.is_active = true
@@ -65,10 +65,10 @@ class Group {
         COUNT(DISTINCT CASE WHEN gm.member_type = 'patient' THEN gm.patient_id END) as member_count,
         ARRAY_AGG(
           DISTINCT CASE
-            WHEN gm.member_type = 'conductor' AND gm.is_active = true
+            WHEN gm.member_type = 'psychologist' AND gm.is_active = true
             THEN CONCAT(staff.first_name, ' ', staff.last_name)
           END
-        ) FILTER (WHERE gm.member_type = 'conductor' AND gm.is_active = true) as conductors
+        ) FILTER (WHERE gm.member_type = 'psychologist' AND gm.is_active = true) as conductors
       FROM "group".groups g
       LEFT JOIN auth.users u ON g.created_by = u.id
       LEFT JOIN "group".group_members gm ON g.id = gm.group_id AND gm.is_active = true
