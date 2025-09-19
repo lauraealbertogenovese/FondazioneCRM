@@ -22,10 +22,10 @@ INSERT INTO "group".group_members (group_id, patient_id, user_id, member_type, r
 INSERT INTO "group".groups (name, description, group_type, max_members, status, start_date, meeting_frequency, meeting_location, created_by) VALUES
 ('Gruppo Attività Ricreative', 'Gruppo per attività ricreative e socializzazione', 'activity', 12, 'active', '2025-09-15', 'mensile', 'Sala Ricreativa - Piano Terra', 1);
 
--- Aggiungi membri al nuovo gruppo
+-- Aggiungi membri al nuovo gruppo (solo ID pazienti esistenti)
 INSERT INTO "group".group_members (group_id, patient_id, user_id, member_type, role, joined_date, is_active, created_by) VALUES
-(3, 6, 1, 'patient', 'Partecipante', '2025-09-15', true, 1),
-(3, 7, 1, 'patient', 'Partecipante', '2025-09-15', true, 1);
+(3, 1, 1, 'patient', 'Partecipante', '2025-09-15', true, 1),
+(3, 2, 1, 'patient', 'Partecipante', '2025-09-15', true, 1);
 
 -- Aggiungi alcuni eventi di gruppo per test
 INSERT INTO "group".group_events (group_id, title, description, event_date, duration_minutes, event_type, location, created_by) VALUES
