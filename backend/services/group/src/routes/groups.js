@@ -126,11 +126,11 @@ router.post('/', authenticateToken, validateGroupCreate, async (req, res) => {
     // Add conductors if provided
     if (conductors.length > 0) {
       for (const conductorId of conductors) {
-        const conductorData = {
+        const psychologistData = {
           group_id: newGroup.id,
           user_id: parseInt(conductorId, 10),
           patient_id: null,
-          member_type: 'conductor',
+          member_type: 'psychologist',
           created_by
         };
         await GroupMember.addMember(conductorData);
@@ -203,10 +203,10 @@ router.put('/:id', authenticateToken, validateId, validateGroupUpdate, async (re
       console.log(`[PUT /groups/${id}] Adding ${conductors.length} conductors...`);
       for (const conductorId of conductors) {
         try {
-          const conductorData = {
+          const psychologistData = {
             group_id: parseInt(id, 10),
             user_id: parseInt(conductorId, 10),
-            member_type: 'conductor',
+            member_type: 'psychologist',
             is_active: true,
             created_by: req.user.id
           };
@@ -312,10 +312,10 @@ router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
       });
     }
 
-    if (member_type === 'conductor' && !user_id) {
+    if (member_type === 'psychologist' && !user_id) {
       return res.status(400).json({
         success: false,
-        error: 'user_id is required for conductor members'
+        error: 'user_id is required for psychologist members'
       });
     }
 
@@ -344,13 +344,13 @@ router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
     
     if (member_type === 'patient') {
       newMember = await GroupMember.addMember(memberData);
-    } else if (member_type === 'conductor') {
-      // For conductors, we need to modify the data structure
-      const conductorData = {
+    } else if (member_type === 'psychologist') {
+      // For psychologists, we need to modify the data structure
+      const psychologistData = {
         ...memberData,
-        patient_id: null // Conductors don't have patient_id
+        patient_id: null // Psychologists don't have patient_id
       };
-      newMember = await GroupMember.addMember(conductorData);
+      newMember = await GroupMember.addMember(psychologistData);
     }
     
     console.log(`[POST /groups/${id}/members] Member added successfully:`, newMember);

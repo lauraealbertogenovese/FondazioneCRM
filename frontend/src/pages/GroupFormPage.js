@@ -83,7 +83,7 @@ const GroupFormPage = () => {
         
         // Match existing conductors with loaded conductor options
         const existingConductorIds = groupData.members
-          .filter(member => member.member_type === 'conductor')
+          .filter(member => member.member_type === 'psychologist')
           .map(member => member.user_id);
 
         console.log('Existing conductor IDs:', existingConductorIds);
@@ -151,7 +151,7 @@ const GroupFormPage = () => {
         // Load existing members and conductors
         if (group.members) {
           const existingConductors = group.members
-            .filter(member => member.member_type === 'conductor')
+            .filter(member => member.member_type === 'psychologist')
             .map(member => ({
               id: member.user_id,
               first_name: member.nome,

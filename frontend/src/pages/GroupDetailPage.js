@@ -123,7 +123,7 @@ const GroupDetailPage = () => {
   const getMemberTypeLabel = (type) => {
     switch (type) {
       case 'patient': return 'Paziente';
-      case 'conductor': return 'Conduttore';
+      case 'psychologist': return 'Psicologo';
       default: return type;
     }
   };
@@ -131,7 +131,7 @@ const GroupDetailPage = () => {
   const getMemberTypeColor = (type) => {
     switch (type) {
       case 'patient': return 'primary';
-      case 'conductor': return 'secondary';
+      case 'psychologist': return 'secondary';
       default: return 'default';
     }
   };
