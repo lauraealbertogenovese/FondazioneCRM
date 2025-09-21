@@ -76,7 +76,7 @@ const DashboardPage = () => {
       description: "Organizzazione e gestione dei gruppi di supporto psicologico per il recupero.",
       features: [
         "Creazione gruppi tematici di supporto",
-        "Assegnazione conduttori e membri",
+        "Assegnazione psicologi e membri",
         "Gestione calendario attività di gruppo",
         "Monitoraggio partecipazione pazienti",
         "Documentazione sessioni di gruppo",

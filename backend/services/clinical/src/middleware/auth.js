@@ -32,38 +32,48 @@ const authenticateToken = async (req, res, next) => {
 
 // Helper function to check if user has a specific permission
 const hasPermission = (userPermissions, permission) => {
+  // List of possible roots
+  const roots = ["pages", "features", "administration"];
+
   // If permissions is an array (legacy format)
   if (Array.isArray(userPermissions)) {
     return userPermissions.includes(permission) || userPermissions.includes('*');
   }
-  
+
   // If permissions is an object (granular format)
   if (typeof userPermissions === 'object' && userPermissions !== null) {
-    // Check for wildcard (different possible formats)
-    if (userPermissions['*'] ||
-        userPermissions['all'] === true ||
-        Object.values(userPermissions).includes('*')) {
+    // Check for wildcard
+    if (
+      userPermissions['*'] ||
+      userPermissions['all'] === true ||
+      Object.values(userPermissions).includes('*')
+    ) {
       return true;
     }
-    
-    // Check direct permission
-    if (userPermissions[permission]) return true;
-    
-    // Check nested permissions (e.g., clinical.read)
-    const parts = permission.split('.');
-    let current = userPermissions;
-    
-    for (const part of parts) {
-      if (current && typeof current === 'object' && current[part]) {
-        current = current[part];
-      } else {
-        return false;
+
+    // Try each root (pages, features, administration)
+    for (const root of roots) {
+      if (userPermissions[root]) {
+        const parts = permission.split('.');
+        let current = userPermissions[root];
+        for (const part of parts) {
+          if (current && typeof current === 'object' && part in current) {
+            current = current[part];
+          } else {
+            current = null;
+            break;
+          }
+        }
+        if (current === true) {
+          return true;
+        }
       }
     }
-    
-    return current === true;
+
+    // Also check direct permission at root (for backwards compatibility)
+    if (userPermissions[permission]) return true;
   }
-  
+
   return false;
 };
 

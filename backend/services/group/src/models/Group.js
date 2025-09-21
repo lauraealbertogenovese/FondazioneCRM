@@ -18,7 +18,7 @@ class Group {
             WHEN gm.member_type = 'psychologist' AND gm.is_active = true
             THEN CONCAT(staff.first_name, ' ', staff.last_name)
           END
-        ) FILTER (WHERE gm.member_type = 'psychologist' AND gm.is_active = true) as conductors
+        ) FILTER (WHERE gm.member_type = 'psychologist' AND gm.is_active = true) as psychologists
       FROM "group".groups g
       LEFT JOIN auth.users u ON g.created_by = u.id
       LEFT JOIN "group".group_members gm ON g.id = gm.group_id AND gm.is_active = true
@@ -68,7 +68,7 @@ class Group {
             WHEN gm.member_type = 'psychologist' AND gm.is_active = true
             THEN CONCAT(staff.first_name, ' ', staff.last_name)
           END
-        ) FILTER (WHERE gm.member_type = 'psychologist' AND gm.is_active = true) as conductors
+        ) FILTER (WHERE gm.member_type = 'psychologist' AND gm.is_active = true) as psychologists
       FROM "group".groups g
       LEFT JOIN auth.users u ON g.created_by = u.id
       LEFT JOIN "group".group_members gm ON g.id = gm.group_id AND gm.is_active = true
@@ -103,6 +103,7 @@ class Group {
       name,
       description,
       group_type,
+      status, 
       start_date,
       end_date,
       meeting_frequency,
@@ -112,9 +113,9 @@ class Group {
 
     const query = `
       INSERT INTO "group".groups
-      (name, description, group_type, start_date, end_date,
+      (name, description, group_type, status, start_date, end_date,
        meeting_frequency, meeting_location, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
 
@@ -122,6 +123,7 @@ class Group {
       name,
       description,
       group_type,
+      status, 
       start_date,
       end_date,
       meeting_frequency,

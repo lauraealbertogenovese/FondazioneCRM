@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS clinical.clinical_records (
     patient_id INTEGER REFERENCES patient.patients(id) ON DELETE CASCADE,
     record_number VARCHAR(50) UNIQUE NOT NULL,
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'archived', 'closed')),
+    record_type VARCHAR(100),
     diagnosis TEXT,
     treatment_plan TEXT,
     notes TEXT,

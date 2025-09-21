@@ -10,7 +10,8 @@ class ClinicalRecord {
       diagnosis,
       treatment_plan,
       notes,
-      created_by
+      created_by,
+      record_type
     } = recordData;
 
     // Genera record_number se non fornito
@@ -18,14 +19,14 @@ class ClinicalRecord {
 
     const query = `
       INSERT INTO clinical.clinical_records 
-      (patient_id, record_number, status, diagnosis, treatment_plan, notes, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      (patient_id, record_number, status, diagnosis, treatment_plan, notes, created_by, record_type)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
     const values = [
       patient_id, finalRecordNumber, status, diagnosis, 
-      treatment_plan, notes, created_by
+      treatment_plan, notes, created_by, record_type
     ];
 
     try {

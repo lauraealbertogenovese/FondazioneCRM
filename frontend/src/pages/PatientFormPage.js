@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -26,9 +26,9 @@ import {
   Radio,
   FormLabel,
   Chip,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { parse, isValid } from 'date-fns';
+} from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { parse, isValid } from "date-fns";
 import {
   Person as PersonIcon,
   Save as SaveIcon,
@@ -36,10 +36,11 @@ import {
   Check as CheckIcon,
   Edit as EditIcon,
   Cancel as CancelIcon,
-} from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { patientService, userService } from '../services/api';
-import { maritalStatusOptions } from '../utils/maritalStatusUtils';
+} from "@mui/icons-material";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { patientService, userService } from "../services/api";
+import { maritalStatusOptions } from "../utils/maritalStatusUtils";
+import { useAuth } from "../contexts/AuthContext";
 
 const PatientFormPage = () => {
   const theme = useTheme();
@@ -52,46 +53,47 @@ const PatientFormPage = () => {
   const [patient, setPatient] = useState(null);
 
   const [formData, setFormData] = useState({
-    codice_fiscale: '',
-    numero_tessera_sanitaria: '',
-    nome: '',
-    cognome: '',
+    codice_fiscale: "",
+    numero_tessera_sanitaria: "",
+    nome: "",
+    cognome: "",
     data_nascita: null,
-    sesso: '',
-    telefono: '',
-    email: '',
-    indirizzo: '',
-    citta: '',
-    cap: '',
-    provincia: '',
+    sesso: "",
+    telefono: "",
+    email: "",
+    indirizzo: "",
+    citta: "",
+    cap: "",
+    provincia: "",
     consenso_trattamento_dati: false,
-    note: '',
-    medico_curante: '', // Clinician assignment
+    note: "",
+    medico_curante: "", // Clinician assignment
     // New fields as per TODO requirements
-    sostanza_abuso: '', // Substance of abuse
+    sostanza_abuso: "", // Substance of abuse
     abusi_secondari: [], // Secondary substance abuse (multi-select)
-    stato_civile: '', // Civil status
-    professione: '', // Profession information
+    stato_civile: "", // Civil status
+    professione: "", // Profession information
   });
 
   const [errors, setErrors] = useState({});
   const [clinicians, setClinicians] = useState([]);
-  
+
   // Opzioni per i selettori
   const sostanzaAbusoOptions = [
-    { value: '', label: 'Nessuna' },
-    { value: 'alcol', label: 'Alcol' },
-    { value: 'cannabis', label: 'Cannabis' },
-    { value: 'cocaina', label: 'Cocaina' },
-    { value: 'eroina', label: 'Eroina' },
-    { value: 'anfetamine', label: 'Anfetamine' },
-    { value: 'ecstasy', label: 'Ecstasy/MDMA' },
-    { value: 'benzodiazepine', label: 'Benzodiazepine' },
-    { value: 'oppiacei', label: 'Oppiacei' },
-    { value: 'altro', label: 'Altro' },
-    { value: 'policonsumo', label: 'Policonsumo' },
+    { value: "", label: "Nessuna" },
+    { value: "alcol", label: "Alcol" },
+    { value: "cannabis", label: "Cannabis" },
+    { value: "cocaina", label: "Cocaina" },
+    { value: "eroina", label: "Eroina" },
+    { value: "anfetamine", label: "Anfetamine" },
+    { value: "ecstasy", label: "Ecstasy/MDMA" },
+    { value: "benzodiazepine", label: "Benzodiazepine" },
+    { value: "oppiacei", label: "Oppiacei" },
+    { value: "altro", label: "Altro" },
+    { value: "policonsumo", label: "Policonsumo" },
   ];
-  
+
+  const { hasPermission, user } = useAuth();
 
   useEffect(() => {
     if (isEdit) {
@@ -100,40 +102,41 @@ const PatientFormPage = () => {
     fetchClinicians();
   }, [id, isEdit]);
 
-
   const fetchPatient = async () => {
     try {
       setLoading(true);
       const response = await patientService.getPatient(id);
       const patientData = response.patient;
-      
+
       setPatient(patientData);
       // Destructure to exclude come_vi_raggiunge field
       const { come_vi_raggiunge, ...cleanPatientData } = patientData;
-      
+
       setFormData({
         ...cleanPatientData,
         // Convert null values to empty strings for text fields
-        nome: patientData.nome || '',
-        cognome: patientData.cognome || '',
-        codice_fiscale: patientData.codice_fiscale || '',
-        numero_tessera_sanitaria: patientData.numero_tessera_sanitaria || '',
-        telefono: patientData.telefono || '',
-        email: patientData.email || '',
-        indirizzo: patientData.indirizzo || '',
-        citta: patientData.citta || '',
-        provincia: patientData.provincia || '',
-        cap: patientData.cap || '',
-        professione: patientData.professione || '',
-        stato_civile: patientData.stato_civile || '',
-        note: patientData.note || '',
-        medico_curante: patientData.medico_curante || '',
-        data_nascita: patientData.data_nascita ? new Date(patientData.data_nascita) : null,
+        nome: patientData.nome || "",
+        cognome: patientData.cognome || "",
+        codice_fiscale: patientData.codice_fiscale || "",
+        numero_tessera_sanitaria: patientData.numero_tessera_sanitaria || "",
+        telefono: patientData.telefono || "",
+        email: patientData.email || "",
+        indirizzo: patientData.indirizzo || "",
+        citta: patientData.citta || "",
+        provincia: patientData.provincia || "",
+        cap: patientData.cap || "",
+        professione: patientData.professione || "",
+        stato_civile: patientData.stato_civile || "",
+        note: patientData.note || "",
+        medico_curante: patientData.medico_curante || "",
+        data_nascita: patientData.data_nascita
+          ? new Date(patientData.data_nascita)
+          : null,
         abusi_secondari: patientData.abusi_secondari || [],
       });
     } catch (error) {
-      console.error('Errore nel caricamento del paziente:', error);
-      setError('Errore nel caricamento del paziente');
+      console.error("Errore nel caricamento del paziente:", error);
+      setError("Errore nel caricamento del paziente");
     } finally {
       setLoading(false);
     }
@@ -144,72 +147,79 @@ const PatientFormPage = () => {
       const response = await userService.getClinicians();
       // Filter and deduplicate users
       const uniqueUsers = response.clinicians
-        .filter(user => user.first_name && user.last_name) // Only users with complete name info
+        .filter((user) => user.first_name && user.last_name) // Only users with complete name info
         .reduce((unique, user) => {
           // Remove duplicates based on ID
-          if (!unique.find(u => u.id === user.id)) {
+          if (!unique.find((u) => u.id === user.id)) {
             unique.push(user);
           }
           return unique;
         }, [])
-        .sort((a, b) => `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)); // Sort by name
-      
+        .sort((a, b) =>
+          `${a.first_name} ${a.last_name}`.localeCompare(
+            `${b.first_name} ${b.last_name}`
+          )
+        ); // Sort by name
+
       setClinicians(uniqueUsers);
     } catch (error) {
-      console.error('Errore nel caricamento dei clinici:', error);
+      console.error("Errore nel caricamento dei clinici:", error);
     }
   };
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
 
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const handleClinicianChange = (event, newValue) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      medico_curante: newValue ? newValue.id : ''
+      medico_curante: newValue ? newValue.id : "",
     }));
 
     // Clear error when user makes selection
     if (errors.medico_curante) {
-      setErrors(prev => ({ ...prev, medico_curante: null }));
+      setErrors((prev) => ({ ...prev, medico_curante: null }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.nome?.trim()) newErrors.nome = 'Nome è obbligatorio';
-    if (!formData.cognome?.trim()) newErrors.cognome = 'Cognome è obbligatorio';
-    if (!formData.codice_fiscale?.trim()) newErrors.codice_fiscale = 'Codice Fiscale è obbligatorio';
-    
+    if (!formData.nome?.trim()) newErrors.nome = "Nome è obbligatorio";
+    if (!formData.cognome?.trim()) newErrors.cognome = "Cognome è obbligatorio";
+    if (!formData.codice_fiscale?.trim())
+      newErrors.codice_fiscale = "Codice Fiscale è obbligatorio";
+
     // Validazione data di nascita
     if (!formData.data_nascita) {
-      newErrors.data_nascita = 'Data di nascita è obbligatoria';
+      newErrors.data_nascita = "Data di nascita è obbligatoria";
     } else {
       const today = new Date();
       const birthDate = formData.data_nascita;
-      const age = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24 * 365.25));
-      
+      const age = Math.floor(
+        (today - birthDate) / (1000 * 60 * 60 * 24 * 365.25)
+      );
+
       if (birthDate > today) {
-        newErrors.data_nascita = 'La data di nascita non può essere nel futuro';
+        newErrors.data_nascita = "La data di nascita non può essere nel futuro";
       } else if (age < 16) {
-        newErrors.data_nascita = 'Il paziente deve avere almeno 16 anni';
+        newErrors.data_nascita = "Il paziente deve avere almeno 16 anni";
       } else if (age > 80) {
-        newErrors.data_nascita = 'Il paziente non può avere più di 80 anni';
+        newErrors.data_nascita = "Il paziente non può avere più di 80 anni";
       }
     }
-    
-    if (!formData.sesso) newErrors.sesso = 'Sesso è obbligatorio';
+
+    if (!formData.sesso) newErrors.sesso = "Sesso è obbligatorio";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -230,16 +240,16 @@ const PatientFormPage = () => {
       const submissionData = {
         ...formData,
         // Convert Date object to YYYY-MM-DD format for API
-        data_nascita: formData.data_nascita 
-          ? formData.data_nascita.toISOString().split('T')[0]
-          : null
+        data_nascita: formData.data_nascita
+          ? formData.data_nascita.toISOString().split("T")[0]
+          : null,
       };
 
       // Debug: check formData content
-      console.log('📋 FormData being sent:', {
+      console.log("📋 FormData being sent:", {
         ...submissionData,
         medico_curante: submissionData.medico_curante,
-        medico_curante_type: typeof submissionData.medico_curante
+        medico_curante_type: typeof submissionData.medico_curante,
       });
 
       if (isEdit) {
@@ -255,63 +265,114 @@ const PatientFormPage = () => {
           navigate(`/patients/${id}`);
         } else {
           // For new patients, redirect to patients list
-          navigate('/patients');
+          navigate("/patients");
         }
       }, 1500);
     } catch (error) {
-      console.error('Errore nel salvataggio del paziente:', error);
-      
+      console.error("Errore nel salvataggio del paziente:", error);
+
       // Handle detailed validation errors from backend
       if (error.response?.data?.details) {
         const validationErrors = {};
-        error.response.data.details.forEach(errorMsg => {
+        error.response.data.details.forEach((errorMsg) => {
           // Map backend error messages to form fields
-          if (errorMsg.includes('Nome')) {
+          if (errorMsg.includes("Nome")) {
             validationErrors.nome = errorMsg;
-          } else if (errorMsg.includes('Cognome')) {
+          } else if (errorMsg.includes("Cognome")) {
             validationErrors.cognome = errorMsg;
-          } else if (errorMsg.includes('Codice Fiscale')) {
+          } else if (errorMsg.includes("Codice Fiscale")) {
             validationErrors.codice_fiscale = errorMsg;
-          } else if (errorMsg.includes('Numero Tessera Sanitaria')) {
+          } else if (errorMsg.includes("Numero Tessera Sanitaria")) {
             validationErrors.numero_tessera_sanitaria = errorMsg;
-          } else if (errorMsg.includes('Data di nascita') || errorMsg.includes('date')) {
+          } else if (
+            errorMsg.includes("Data di nascita") ||
+            errorMsg.includes("date")
+          ) {
             validationErrors.data_nascita = errorMsg;
-          } else if (errorMsg.includes('Sesso')) {
+          } else if (errorMsg.includes("Sesso")) {
             validationErrors.sesso = errorMsg;
-          } else if (errorMsg.includes('email')) {
+          } else if (errorMsg.includes("email")) {
             validationErrors.email = errorMsg;
-          } else if (errorMsg.includes('phone') || errorMsg.includes('telefono')) {
+          } else if (
+            errorMsg.includes("phone") ||
+            errorMsg.includes("telefono")
+          ) {
             validationErrors.telefono = errorMsg;
-          } else if (errorMsg.includes('CAP')) {
+          } else if (errorMsg.includes("CAP")) {
             validationErrors.cap = errorMsg;
-          } else if (errorMsg.includes('clinician') || errorMsg.includes('medico')) {
+          } else if (
+            errorMsg.includes("clinician") ||
+            errorMsg.includes("medico")
+          ) {
             validationErrors.medico_curante = errorMsg;
-          } else if (errorMsg.includes('Consenso')) {
+          } else if (errorMsg.includes("Consenso")) {
             validationErrors.consenso_trattamento_dati = errorMsg;
           }
         });
-        
+
         // If we mapped any errors to specific fields, show them on the form
         if (Object.keys(validationErrors).length > 0) {
           setErrors(validationErrors);
-          setError(`Errori di validazione: ${error.response.data.details.join(', ')}`);
+          setError(
+            `Errori di validazione: ${error.response.data.details.join(", ")}`
+          );
         } else {
           // Show all validation errors as general error if we couldn't map them
-          setError(`Errori di validazione: ${error.response.data.details.join(', ')}`);
+          setError(
+            `Errori di validazione: ${error.response.data.details.join(", ")}`
+          );
         }
       } else {
         // Standard error handling
-        setError(error.response?.data?.error || 'Errore nel salvataggio del paziente');
+        setError(
+          error.response?.data?.error || "Errore nel salvataggio del paziente"
+        );
       }
     } finally {
       setLoading(false);
     }
   };
+  const [notAllowed, setNotAllowed] = useState(false);
+  const [checkingPermission, setCheckingPermission] = useState(isEdit);
 
-  if (loading && isEdit) {
+useEffect(() => {
+  if (!isEdit || !patient) return;
+
+  // If user has full update permission, allow
+  if (hasPermission("patients.update")) {
+    setNotAllowed(false);
+    setCheckingPermission(false);
+    return;
+  }
+
+  // If user has update_own and is the owner, allow
+  if (
+    hasPermission("patients.update_own") &&
+    patient.created_by_username === user.username
+  ) {
+    setNotAllowed(false);
+    setCheckingPermission(false);
+    return;
+  }
+
+  // Otherwise, not allowed
+  setNotAllowed(true);
+  setCheckingPermission(false);
+}, [isEdit, patient, hasPermission, user]);
+
+  if (notAllowed) {
+    return <Navigate to={'/patients'} replace />;
+  }
+
+  if ((loading && isEdit) || checkingPermission) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="400px"
+        >
           <CircularProgress size={60} />
         </Box>
       </Container>
@@ -321,17 +382,27 @@ const PatientFormPage = () => {
   if (success) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="400px">
-          <Avatar sx={{ 
-            bgcolor: 'success.main', 
-            width: 80, 
-            height: 80, 
-            mb: 2 
-          }}>
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          minHeight="400px"
+        >
+          <Avatar
+            sx={{
+              bgcolor: "success.main",
+              width: 80,
+              height: 80,
+              mb: 2,
+            }}
+          >
             <CheckIcon sx={{ fontSize: 40 }} />
           </Avatar>
           <Typography variant="h5" gutterBottom>
-            {isEdit ? 'Paziente aggiornato con successo!' : 'Paziente creato con successo!'}
+            {isEdit
+              ? "Paziente aggiornato con successo!"
+              : "Paziente creato con successo!"}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Reindirizzamento in corso...
@@ -346,15 +417,17 @@ const PatientFormPage = () => {
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       {/* Header */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
-        <IconButton onClick={() => navigate('/patients')} sx={{ mr: 1 }}>
+        <IconButton onClick={() => navigate("/patients")} sx={{ mr: 1 }}>
           <ArrowBackIcon />
         </IconButton>
         <Box>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-            {isEdit ? 'Modifica Paziente' : 'Nuovo Paziente'}
+            {isEdit ? "Modifica Paziente" : "Nuovo Paziente"}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            {isEdit ? 'Aggiorna le informazioni del paziente' : 'Inserisci i dati del nuovo paziente'}
+            {isEdit
+              ? "Aggiorna le informazioni del paziente"
+              : "Inserisci i dati del nuovo paziente"}
           </Typography>
         </Box>
       </Stack>
@@ -371,14 +444,18 @@ const PatientFormPage = () => {
         <CardContent sx={{ p: 4 }}>
           <Box component="form" onSubmit={handleSubmit} noValidate>
             {/* Dati Anagrafici */}
-            <Typography variant="h6" gutterBottom sx={{ 
-              color: 'primary.main',
-              fontWeight: 600,
-              mb: 3
-            }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
+                color: "primary.main",
+                fontWeight: 600,
+                mb: 3,
+              }}
+            >
               Dati Anagrafici
             </Typography>
-            
+
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -393,7 +470,7 @@ const PatientFormPage = () => {
                   required
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <TextField
                   name="cognome"
@@ -407,7 +484,7 @@ const PatientFormPage = () => {
                   required
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <TextField
                   name="codice_fiscale"
@@ -419,10 +496,10 @@ const PatientFormPage = () => {
                   helperText={errors.codice_fiscale}
                   variant="outlined"
                   required
-                  inputProps={{ style: { textTransform: 'uppercase' } }}
+                  inputProps={{ style: { textTransform: "uppercase" } }}
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <TextField
                   name="numero_tessera_sanitaria"
@@ -435,23 +512,36 @@ const PatientFormPage = () => {
                   variant="outlined"
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <DatePicker
                   label="Data di Nascita *"
                   value={formData.data_nascita}
                   onChange={(newValue) => {
-                    setFormData(prev => ({ ...prev, data_nascita: newValue }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      data_nascita: newValue,
+                    }));
                     // Clear error when user changes the date
                     if (errors.data_nascita) {
-                      setErrors(prev => ({ ...prev, data_nascita: null }));
+                      setErrors((prev) => ({ ...prev, data_nascita: null }));
                     }
                   }}
-                  maxDate={new Date(new Date().setFullYear(new Date().getFullYear() - 16))} // Massimo 16 anni fa
-                  minDate={new Date(new Date().setFullYear(new Date().getFullYear() - 80))} // Massimo 80 anni fa
+                  maxDate={
+                    new Date(
+                      new Date().setFullYear(new Date().getFullYear() - 16)
+                    )
+                  } // Massimo 16 anni fa
+                  minDate={
+                    new Date(
+                      new Date().setFullYear(new Date().getFullYear() - 80)
+                    )
+                  } // Massimo 80 anni fa
                   shouldDisableDate={(date) => {
                     const today = new Date();
-                    const age = Math.floor((today - date) / (1000 * 60 * 60 * 24 * 365.25));
+                    const age = Math.floor(
+                      (today - date) / (1000 * 60 * 60 * 24 * 365.25)
+                    );
                     return age < 16 || age > 80;
                   }}
                   slotProps={{
@@ -459,15 +549,16 @@ const PatientFormPage = () => {
                       fullWidth: true,
                       variant: "outlined",
                       error: !!errors.data_nascita,
-                      helperText: errors.data_nascita || 'Età consentita: 16-80 anni',
-                      required: true
-                    }
+                      helperText:
+                        errors.data_nascita || "Età consentita: 16-80 anni",
+                      required: true,
+                    },
                   }}
                   format="dd/MM/yyyy"
-                  views={['year', 'month', 'day']}
+                  views={["year", "month", "day"]}
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <FormControl error={!!errors.sesso} required>
                   <FormLabel component="legend">Sesso</FormLabel>
@@ -477,20 +568,20 @@ const PatientFormPage = () => {
                     onChange={handleChange}
                     row
                   >
-                    <FormControlLabel 
-                      value="M" 
-                      control={<Radio />} 
-                      label="Maschio" 
+                    <FormControlLabel
+                      value="M"
+                      control={<Radio />}
+                      label="Maschio"
                     />
-                    <FormControlLabel 
-                      value="F" 
-                      control={<Radio />} 
-                      label="Femmina" 
+                    <FormControlLabel
+                      value="F"
+                      control={<Radio />}
+                      label="Femmina"
                     />
-                    <FormControlLabel 
-                      value="A" 
-                      control={<Radio />} 
-                      label="Altro" 
+                    <FormControlLabel
+                      value="A"
+                      control={<Radio />}
+                      label="Altro"
                     />
                   </RadioGroup>
                   {errors.sesso && (
@@ -501,15 +592,19 @@ const PatientFormPage = () => {
 
               {/* Informazioni di Contatto */}
               <Grid item xs={12} sx={{ mt: 2 }}>
-                <Typography variant="h6" gutterBottom sx={{ 
-                  color: 'primary.main',
-                  fontWeight: 600,
-                  mb: 3
-                }}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{
+                    color: "primary.main",
+                    fontWeight: 600,
+                    mb: 3,
+                  }}
+                >
                   Informazioni di Contatto
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <TextField
                   name="telefono"
@@ -521,7 +616,7 @@ const PatientFormPage = () => {
                   variant="outlined"
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={6}>
                 <TextField
                   name="email"
@@ -533,7 +628,7 @@ const PatientFormPage = () => {
                   variant="outlined"
                 />
               </Grid>
-              
+
               <Grid item xs={12}>
                 <TextField
                   name="indirizzo"
@@ -544,7 +639,7 @@ const PatientFormPage = () => {
                   variant="outlined"
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={4}>
                 <TextField
                   name="citta"
@@ -555,7 +650,7 @@ const PatientFormPage = () => {
                   variant="outlined"
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={4}>
                 <TextField
                   name="cap"
@@ -566,7 +661,7 @@ const PatientFormPage = () => {
                   variant="outlined"
                 />
               </Grid>
-              
+
               <Grid item xs={12} md={4}>
                 <TextField
                   name="provincia"
@@ -580,15 +675,19 @@ const PatientFormPage = () => {
 
               {/* Consensi */}
               <Grid item xs={12} sx={{ mt: 2 }}>
-                <Typography variant="h6" gutterBottom sx={{ 
-                  color: 'primary.main',
-                  fontWeight: 600,
-                  mb: 3
-                }}>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{
+                    color: "primary.main",
+                    fontWeight: 600,
+                    mb: 3,
+                  }}
+                >
                   Consensi e Privacy
                 </Typography>
               </Grid>
-              
+
               <Grid item xs={12}>
                 <FormControlLabel
                   control={
@@ -605,7 +704,8 @@ const PatientFormPage = () => {
                         Consenso al trattamento dei dati personali
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Il paziente ha autorizzato al trattamento dei rispettivi dati personali
+                        Il paziente ha autorizzato al trattamento dei rispettivi
+                        dati personali
                       </Typography>
                     </Box>
                   }
@@ -619,7 +719,10 @@ const PatientFormPage = () => {
 
               {/* New clinical information fields */}
               <Grid item xs={12}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, mb: 2, color: "primary.main" }}
+                >
                   Informazioni Cliniche
                 </Typography>
               </Grid>
@@ -629,13 +732,17 @@ const PatientFormPage = () => {
                   fullWidth
                   options={sostanzaAbusoOptions}
                   getOptionLabel={(option) => option.label}
-                  value={sostanzaAbusoOptions.find(option => option.value === formData.sostanza_abuso) || null}
+                  value={
+                    sostanzaAbusoOptions.find(
+                      (option) => option.value === formData.sostanza_abuso
+                    ) || null
+                  }
                   onChange={(event, newValue) => {
                     handleChange({
                       target: {
-                        name: 'sostanza_abuso',
-                        value: newValue ? newValue.value : ''
-                      }
+                        name: "sostanza_abuso",
+                        value: newValue ? newValue.value : "",
+                      },
                     });
                   }}
                   renderInput={(params) => (
@@ -652,14 +759,14 @@ const PatientFormPage = () => {
                     const { key, ...optionProps } = props;
                     return (
                       <Box component="li" key={option.value} {...optionProps}>
-                        <Typography variant="body2">
-                          {option.label}
-                        </Typography>
+                        <Typography variant="body2">{option.label}</Typography>
                       </Box>
                     );
                   }}
                   noOptionsText="Nessuna sostanza trovata"
-                  isOptionEqualToValue={(option, value) => option?.value === value?.value}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.value === value?.value
+                  }
                 />
               </Grid>
 
@@ -667,16 +774,24 @@ const PatientFormPage = () => {
                 <Autocomplete
                   multiple
                   fullWidth
-                  options={sostanzaAbusoOptions.filter(option => option.value !== '')}
+                  options={sostanzaAbusoOptions.filter(
+                    (option) => option.value !== ""
+                  )}
                   getOptionLabel={(option) => option.label}
-                  value={formData.abusi_secondari.map(value => 
-                    sostanzaAbusoOptions.find(option => option.value === value)
-                  ).filter(Boolean)}
+                  value={formData.abusi_secondari
+                    .map((value) =>
+                      sostanzaAbusoOptions.find(
+                        (option) => option.value === value
+                      )
+                    )
+                    .filter(Boolean)}
                   onChange={(event, newValue) => {
-                    const selectedValues = newValue.map(option => option.value);
-                    setFormData(prev => ({
+                    const selectedValues = newValue.map(
+                      (option) => option.value
+                    );
+                    setFormData((prev) => ({
                       ...prev,
-                      abusi_secondari: selectedValues
+                      abusi_secondari: selectedValues,
                     }));
                   }}
                   renderTags={(value, getTagProps) =>
@@ -689,15 +804,15 @@ const PatientFormPage = () => {
                           {...chipProps}
                           size="small"
                           sx={{
-                            backgroundColor: '#f0f9ff',
-                            border: '1px solid #0ea5e9',
-                            color: '#0369a1',
-                            '& .MuiChip-deleteIcon': {
-                              color: '#0369a1',
-                              '&:hover': {
-                                color: '#dc2626'
-                              }
-                            }
+                            backgroundColor: "#f0f9ff",
+                            border: "1px solid #0ea5e9",
+                            color: "#0369a1",
+                            "& .MuiChip-deleteIcon": {
+                              color: "#0369a1",
+                              "&:hover": {
+                                color: "#dc2626",
+                              },
+                            },
                           }}
                         />
                       );
@@ -710,24 +825,26 @@ const PatientFormPage = () => {
                       placeholder="Seleziona sostanze secondarie..."
                       size="small"
                       error={!!errors.abusi_secondari}
-                      helperText={errors.abusi_secondari || "Seleziona le sostanze di abuso secondarie (opzionale)"}
+                      helperText={
+                        errors.abusi_secondari ||
+                        "Seleziona le sostanze di abuso secondarie (opzionale)"
+                      }
                     />
                   )}
                   renderOption={(props, option) => {
                     const { key, ...optionProps } = props;
                     return (
                       <Box component="li" key={option.value} {...optionProps}>
-                        <Typography variant="body2">
-                          {option.label}
-                        </Typography>
+                        <Typography variant="body2">{option.label}</Typography>
                       </Box>
                     );
                   }}
                   noOptionsText="Nessuna sostanza trovata"
-                  isOptionEqualToValue={(option, value) => option?.value === value?.value}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.value === value?.value
+                  }
                 />
               </Grid>
-
 
               <Grid item xs={12} md={6}>
                 <FormControl fullWidth>
@@ -762,33 +879,42 @@ const PatientFormPage = () => {
               <Grid item xs={12}>
                 <Autocomplete
                   options={clinicians}
-                  getOptionLabel={(option) => 
-                    `${option.first_name} ${option.last_name} (${option.role_name || 'N/A'})`
+                  getOptionLabel={(option) =>
+                    `${option.first_name} ${option.last_name} (${
+                      option.role_name || "N/A"
+                    })`
                   }
-                  value={clinicians.find(c => c.id === parseInt(formData.medico_curante)) || null}
+                  value={
+                    clinicians.find(
+                      (c) => c.id === parseInt(formData.medico_curante)
+                    ) || null
+                  }
                   onChange={handleClinicianChange}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  isOptionEqualToValue={(option, value) =>
+                    option.id === value.id
+                  }
                   renderOption={(props, option) => (
                     <li {...props} key={option.id}>
-                      {option.first_name} {option.last_name} ({option.role_name || 'N/A'})
+                      {option.first_name} {option.last_name} (
+                      {option.role_name || "N/A"})
                     </li>
                   )}
                   componentsProps={{
                     popper: {
-                      placement: 'bottom-start',
+                      placement: "bottom-start",
                       modifiers: [
                         {
-                          name: 'flip',
+                          name: "flip",
                           enabled: false, // Disable auto-flip to top
                         },
                         {
-                          name: 'preventOverflow',
+                          name: "preventOverflow",
                           enabled: true,
                           options: {
                             altAxis: true,
                             altBoundary: true,
                             tether: false,
-                            rootBoundary: 'document',
+                            rootBoundary: "document",
                           },
                         },
                       ],
@@ -809,7 +935,7 @@ const PatientFormPage = () => {
                   closeText="Chiudi opzioni"
                 />
               </Grid>
-              
+
               <Grid item xs={12}>
                 <TextField
                   name="note"
@@ -824,37 +950,45 @@ const PatientFormPage = () => {
                 />
               </Grid>
             </Grid>
-            
+
             {/* Action Buttons */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'flex-end',
-              gap: 2,
-              mt: 4,
-              pt: 3,
-              borderTop: `1px solid ${theme.palette.divider}`
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                mt: 4,
+                pt: 3,
+                borderTop: `1px solid ${theme.palette.divider}`,
+              }}
+            >
               <Button
                 variant="outlined"
-                onClick={() => navigate('/patients')}
+                onClick={() => navigate("/patients")}
                 startIcon={<CancelIcon />}
               >
                 Annulla
               </Button>
-              
+
               <Button
                 type="submit"
                 variant="contained"
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+                startIcon={
+                  loading ? <CircularProgress size={20} /> : <SaveIcon />
+                }
                 sx={{
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                  '&:hover': {
+                  "&:hover": {
                     background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                  }
+                  },
                 }}
               >
-                {loading ? 'Salvataggio...' : (isEdit ? 'Aggiorna Paziente' : 'Crea Paziente')}
+                {loading
+                  ? "Salvataggio..."
+                  : isEdit
+                  ? "Aggiorna Paziente"
+                  : "Crea Paziente"}
               </Button>
             </Box>
           </Box>

@@ -401,7 +401,7 @@ export const groupService = {
   createGroup: async (groupData) => {
     console.log("=== API SERVICE DEBUG - CREATE GROUP ===");
     console.log("Group data being sent:", groupData);
-    console.log("Conductors array:", groupData.conductors);
+    console.log("Psychologists array:", groupData.psychologists);
     console.log("Members array:", groupData.members);
     console.log("=======================================");
     const response = await groupApi.post("/groups", groupData);
@@ -412,7 +412,7 @@ export const groupService = {
     console.log("=== API SERVICE DEBUG - UPDATE GROUP ===");
     console.log("Group ID:", id);
     console.log("Group data being sent:", groupData);
-    console.log("Conductors array:", groupData.conductors);
+    console.log("Psychologists array:", groupData.psychologists);
     console.log("Members array:", groupData.members);
     console.log("=======================================");
     const response = await groupApi.put(`/groups/${id}`, groupData);

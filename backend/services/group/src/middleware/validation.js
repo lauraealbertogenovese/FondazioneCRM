@@ -89,14 +89,14 @@ const groupUpdateSchema = groupSchema.fork(
   ['name', 'group_type'],
   (schema) => schema.optional()
 ).keys({
-  conductors: Joi.array()
+  psychologists: Joi.array()
     .items(Joi.number().integer().positive())
     .optional()
     .messages({
-      'array.base': 'I conduttori devono essere un array',
-      'number.base': 'Gli ID dei conduttori devono essere numeri',
-      'number.integer': 'Gli ID dei conduttori devono essere numeri interi',
-      'number.positive': 'Gli ID dei conduttori devono essere positivi'
+      'array.base': 'I psicologi devono essere un array',
+      'number.base': 'Gli ID dei psicologi devono essere numeri',
+      'number.integer': 'Gli ID dei psicologi devono essere numeri interi',
+      'number.positive': 'Gli ID dei psicologi devono essere positivi'
     }),
 
   members: Joi.array()
@@ -110,7 +110,7 @@ const groupUpdateSchema = groupSchema.fork(
     })
 });
 
-// Schema per la creazione di gruppi con conduttori e membri
+// Schema per la creazione di gruppi con psicologi e membri
 const groupCreateSchema = Joi.object({
   name: Joi.string()
     .trim()
@@ -135,6 +135,43 @@ const groupCreateSchema = Joi.object({
       'string.max': 'La descrizione non può superare 1000 caratteri'
     }),
 
+  group_type: Joi.string()
+    .valid('support', 'therapy', 'activity', 'education', 'rehabilitation')
+    .required()
+    .messages({
+      'string.base': 'Il tipo di gruppo deve essere una stringa',
+      'any.only': 'Il tipo di gruppo deve essere uno tra: support, therapy, activity, education, rehabilitation',
+      'any.required': 'Il tipo di gruppo è obbligatorio'
+    }),
+
+  status: Joi.string()
+    .valid('active', 'inactive', 'archived')
+    .default('active')
+    .messages({
+      'string.base': 'Lo status deve essere una stringa',
+      'any.only': 'Lo status deve essere uno tra: active, inactive, archived'
+    }),
+
+  start_date: Joi.date()
+    .iso()
+    .optional()
+    .allow(null)
+    .messages({
+      'date.base': 'La data di inizio deve essere una data valida',
+      'date.format': 'La data di inizio deve essere in formato ISO (YYYY-MM-DD)'
+    }),
+
+  end_date: Joi.date()
+    .iso()
+    .optional()
+    .allow(null)
+    .min(Joi.ref('start_date'))
+    .messages({
+      'date.base': 'La data di fine deve essere una data valida',
+      'date.format': 'La data di fine deve essere in formato ISO (YYYY-MM-DD)',
+      'date.min': 'La data di fine deve essere successiva alla data di inizio'
+    }),
+
   meeting_frequency: Joi.string()
     .trim()
     .min(2)
@@ -148,12 +185,22 @@ const groupCreateSchema = Joi.object({
       'any.required': 'La frequenza degli incontri è obbligatoria'
     }),
 
-  conductors: Joi.array()
+  meeting_location: Joi.string()
+    .trim()
+    .max(200)
+    .allow('')
+    .optional()
+    .messages({
+      'string.base': 'Il luogo degli incontri deve essere una stringa',
+      'string.max': 'Il luogo degli incontri non può superare 200 caratteri'
+    }),
+
+  psychologists: Joi.array()
     .items(Joi.number().integer().positive())
     .min(1)
     .required()
     .messages({
-      'array.base': 'I conduttori devono essere un array',
+      'array.base': 'I psicologi devono essere un array',
       'array.min': 'Almeno un conduttore è obbligatorio',
       'any.required': 'Almeno un conduttore è obbligatorio'
     }),
@@ -181,11 +228,11 @@ const memberSchema = Joi.object({
     }),
 
   member_type: Joi.string()
-    .valid('patient', 'conductor')
+    .valid('patient', 'psychologist')
     .default('patient')
     .messages({
       'string.base': 'Il tipo di membro deve essere una stringa',
-      'any.only': 'Il tipo di membro deve essere uno tra: patient, conductor'
+      'any.only': 'Il tipo di membro deve essere uno tra: patient, psychologist'
     }),
 
   role: Joi.string()
@@ -212,11 +259,11 @@ const memberSchema = Joi.object({
 // Schema per l'aggiornamento dei membri
 const memberUpdateSchema = Joi.object({
   member_type: Joi.string()
-    .valid('patient', 'conductor')
+    .valid('patient', 'psychologist')
     .optional()
     .messages({
       'string.base': 'Il tipo di membro deve essere una stringa',
-      'any.only': 'Il tipo di membro deve essere uno tra: patient, conductor'
+      'any.only': 'Il tipo di membro deve essere uno tra: patient, psychologist'
     }),
 
   role: Joi.string()

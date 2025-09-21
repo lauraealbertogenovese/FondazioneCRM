@@ -120,7 +120,7 @@ const PatientGroupManager = ({ patientId, patientName, showAddButton = true }) =
             action: 'joined',
             date: membership.joined_date || new Date().toISOString(),
             note: `Paziente aggiunto al gruppo ${membership.group_name}`,
-            created_by: membership.conductor || 'Sistema'
+            created_by: membership.psychologist || 'Sistema'
           }
         ];
         
@@ -354,10 +354,10 @@ const PatientGroupManager = ({ patientId, patientName, showAddButton = true }) =
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
                       <Typography variant="caption" color="text.secondary" display="block">
-                        CONDUTTORE
+                        PSICOLOGO
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {membership.conductor}
+                        {membership.psychologist}
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
@@ -420,7 +420,7 @@ const PatientGroupManager = ({ patientId, patientName, showAddButton = true }) =
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle2">{option.name}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {option.conductor} • {option.current_members}/{option.max_members} membri
+                        {option.psychologist} • {option.current_members}/{option.max_members} membri
                       </Typography>
                     </Box>
                     <Chip label={option.type} size="small" variant="outlined" />
@@ -445,7 +445,7 @@ const PatientGroupManager = ({ patientId, patientName, showAddButton = true }) =
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="caption" color="text.secondary">CONDUTTORE</Typography>
-                      <Typography variant="body2">{selectedGroup.conductor}</Typography>
+                      <Typography variant="body2">{selectedGroup.psychologist}</Typography>
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="caption" color="text.secondary">MEMBRI</Typography>

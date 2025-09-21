@@ -206,7 +206,7 @@ const GroupsPageNew = () => {
                   Nome Gruppo
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Conduttori
+                  Psicologi
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                   Numero di Partecipanti
@@ -241,8 +241,8 @@ const GroupsPageNew = () => {
                     
                     <TableCell>
                       <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                        {group.conductors && group.conductors.length > 0 
-                          ? group.conductors.filter(c => c !== null).join(', ') 
+                        {group.psychologists && group.psychologists.length > 0 
+                          ? group.psychologists.filter(c => c !== null).join(', ') 
                           : '-'
                         }
                       </Typography>

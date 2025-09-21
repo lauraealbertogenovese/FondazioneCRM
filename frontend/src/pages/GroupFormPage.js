@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -12,47 +12,54 @@ import {
   IconButton,
   CircularProgress,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Divider,
   Autocomplete,
-  Chip
-} from '@mui/material';
+  Chip,
+  menuItemClasses,
+  selectClasses,
+  Grid,
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
-} from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-import { groupService, userService, patientService } from '../services/api';
+} from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
+import { groupService, userService, patientService } from "../services/api";
+import { DatePicker } from "@mui/x-date-pickers";
 
 const GroupFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const isEdit = Boolean(id);
-  
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    meeting_frequency: '',
-    status: 'active'
+    name: "",
+    description: "",
+    meeting_frequency: "",
+    status: "active",
+    group_type: "support", // Default type
+    start_date: "",
+    end_date: "",
+    meeting_location: "",
   });
 
   const [formErrors, setFormErrors] = useState({});
-  
+
   // Multi-select states
-  const [selectedConductors, setSelectedConductors] = useState([]);
+  const [selectedPsychologists, setSelectedPsychologists] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
 
   // Options
-  const [conductors, setConductors] = useState([]);
+  const [psychologists, setPsychologists] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
@@ -67,67 +74,75 @@ const GroupFormPage = () => {
   }, [isEdit, id]);
 
   useEffect(() => {
-    if (!hasPermission('groups.write')) {
-      navigate('/groups');
+    if (!hasPermission("groups.write")) {
+      navigate("/groups");
     }
   }, [hasPermission, navigate]);
 
   // Sync existing group members with loaded options
   useEffect(() => {
-    if (groupData && conductors.length > 0 && patients.length > 0) {
+    if (groupData && psychologists.length > 0 && patients.length > 0) {
       if (groupData.members) {
-        console.log('Syncing members with options...');
-        console.log('Group members:', groupData.members);
-        console.log('Available conductors:', conductors);
-        console.log('Available patients:', patients);
-        
-        // Match existing conductors with loaded conductor options
-        const existingConductorIds = groupData.members
-          .filter(member => member.member_type === 'psychologist')
-          .map(member => member.user_id);
+        console.log("Syncing members with options...");
+        console.log("Group members:", groupData.members);
+        console.log("Available psychologists:", psychologists);
+        console.log("Available patients:", patients);
 
-        console.log('Existing conductor IDs:', existingConductorIds);
+        // Match existing psychologists with loaded psychologist options
+        const existingPsychologistIds = groupData.members
+          .filter((member) => member.member_type === "psychologist")
+          .map((member) => member.user_id);
 
-        const matchedConductors = conductors.filter(conductor =>
-          existingConductorIds.includes(conductor.id)
+        console.log("Existing psychologist IDs:", existingPsychologistIds);
+
+        const matchedPsychologists = psychologists.filter((psychologist) =>
+          existingPsychologistIds.includes(psychologist.id)
         );
 
-        console.log('Matched conductors:', matchedConductors);
+        console.log("Matched psychologists:", matchedPsychologists);
 
         // Match existing members with loaded patient options
         const existingMemberIds = groupData.members
-          .filter(member => member.member_type === 'patient')
-          .map(member => member.patient_id);
+          .filter((member) => member.member_type === "patient")
+          .map((member) => member.patient_id);
 
-        const matchedMembers = patients.filter(patient =>
+        const matchedMembers = patients.filter((patient) =>
           existingMemberIds.includes(patient.id)
         );
 
-        setSelectedConductors(matchedConductors);
+        setSelectedPsychologists(matchedPsychologists);
         setSelectedMembers(matchedMembers);
       }
     }
-  }, [groupData, conductors, patients]);
+  }, [groupData, psychologists, patients]);
 
   const fetchOptions = async () => {
     try {
       setLoadingOptions(true);
-      
-      // Fetch conductors (users)
+
+      // Fetch psychologists (users)
       const usersResponse = await userService.getUsers();
-      setConductors(usersResponse.users || []);
-      
+      setPsychologists(usersResponse.users || []);
+
       // Fetch patients
       const patientsResponse = await patientService.getPatients();
       setPatients(patientsResponse.patients || []);
-      
     } catch (error) {
-      console.error('Error fetching options:', error);
-      setError('Errore nel caricamento delle opzioni');
+      console.error("Error fetching options:", error);
+      setError("Errore nel caricamento delle opzioni");
     } finally {
       setLoadingOptions(false);
     }
   };
+
+  // Utility to format date to YYYY-MM-DD
+  function toYYYYMMDD(dateString) {
+    if (!dateString) return "";
+    // Handles both Date objects and ISO strings
+    const d = new Date(dateString);
+    if (isNaN(d)) return "";
+    return d.toISOString().slice(0, 10);
+  }
 
   const fetchGroup = async () => {
     try {
@@ -135,120 +150,169 @@ const GroupFormPage = () => {
       const response = await groupService.getGroup(id);
       if (response.success) {
         const group = response.data;
-        console.log('Group data from backend:', group);
-        console.log('Group members:', group.members);
-        
+        // Format dates to YYYY-MM-DD for input fields
         setFormData({
-          name: group.name || '',
-          description: group.description || '',
-          meeting_frequency: group.meeting_frequency || '',
-          status: group.status || 'active'
+          name: group.name || "",
+          description: group.description || "",
+          meeting_frequency: group.meeting_frequency || "",
+          status: group.status || "active",
+          group_type: group.group_type || "support",
+          start_date: toYYYYMMDD(group.start_date),
+          end_date: toYYYYMMDD(group.end_date),
+          meeting_location: group.meeting_location || "",
         });
-        
-        // Store group data for later processing when options are loaded
+
         setGroupData(group);
 
-        // Load existing members and conductors
+        // Load existing members and psychologists
         if (group.members) {
-          const existingConductors = group.members
-            .filter(member => member.member_type === 'psychologist')
-            .map(member => ({
+          const existingPsychologists = group.members
+            .filter((member) => member.member_type === "psychologist")
+            .map((member) => ({
               id: member.user_id,
               first_name: member.nome,
               last_name: member.cognome,
-              role: member.role || 'Staff'
+              role: member.role || "Staff",
             }));
 
           const existingMembers = group.members
-            .filter(member => member.member_type === 'patient')
-            .map(member => ({
+            .filter((member) => member.member_type === "patient")
+            .map((member) => ({
               id: member.patient_id,
               nome: member.nome,
-              cognome: member.cognome
+              cognome: member.cognome,
             }));
 
-          setSelectedConductors(existingConductors);
+          setSelectedPsychologists(existingPsychologists);
           setSelectedMembers(existingMembers);
         }
       } else {
-        setError('Gruppo non trovato');
+        setError("Gruppo non trovato");
       }
     } catch (error) {
-      console.error('Error fetching group:', error);
-      setError('Errore nel caricamento del gruppo');
+      console.error("Error fetching group:", error);
+      setError("Errore nel caricamento del gruppo");
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear field error when user starts typing
     if (formErrors[field]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [field]: null
+        [field]: null,
       }));
     }
   };
 
   const validateForm = () => {
     const errors = {};
-    
+
+    // Name required
     if (!formData.name.trim()) {
-      errors.name = 'Il nome del gruppo è obbligatorio';
+      errors.name = "Il nome del gruppo è obbligatorio";
     }
-    
+
+    // Meeting frequency required
     if (!formData.meeting_frequency.trim()) {
-      errors.meeting_frequency = 'La frequenza degli incontri è obbligatoria';
+      errors.meeting_frequency = "La frequenza degli incontri è obbligatoria";
     }
-    
-    if (selectedConductors.length === 0) {
-      errors.conductors = 'Almeno un conduttore è obbligatorio';
+
+    // At least one psychologist required
+    if (selectedPsychologists.length === 0) {
+      errors.psychologists = "Almeno un psicologo è obbligatorio";
     }
-    
+
+    // Group type required
+    if (!formData.group_type) {
+      errors.group_type = "Il tipo di gruppo è obbligatorio";
+    }
+
+    // Status required
+    if (!formData.status) {
+      errors.status = "Lo stato è obbligatorio";
+    }
+
+    // Start date required
+    if (!formData.start_date) {
+      errors.start_date = "La data di inizio è obbligatoria";
+    } else if (isNaN(Date.parse(formData.start_date))) {
+      errors.start_date = "La data di inizio non è valida";
+    }
+
+    // End date (optional, but if present must be valid and after start)
+    if (formData.end_date) {
+      if (isNaN(Date.parse(formData.end_date))) {
+        errors.end_date = "La data di fine non è valida";
+      } else if (
+        formData.start_date &&
+        !isNaN(Date.parse(formData.start_date))
+      ) {
+        const start = new Date(formData.start_date);
+        const end = new Date(formData.end_date);
+        if (start > end) {
+          errors.end_date =
+            "La data di fine deve essere successiva alla data di inizio";
+        }
+      }
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     try {
       setSaving(true);
       setError(null);
-      
+
       const submitData = {
         ...formData,
-        conductors: selectedConductors.map(c => c.id),
-        members: selectedMembers.map(m => m.id)
+        psychologists: selectedPsychologists.map((c) => c.id),
+        members: selectedMembers.map((m) => m.id),
       };
 
-      console.log('=== FORM SUBMISSION DEBUG ===');
-      console.log('selectedConductors:', selectedConductors);
-      console.log('selectedConductors.length:', selectedConductors.length);
-      console.log('selectedMembers:', selectedMembers);
-      console.log('selectedMembers.length:', selectedMembers.length);
-      console.log('submitData before API call:', submitData);
-      console.log('conductors array:', submitData.conductors);
-      console.log('conductors array length:', submitData.conductors.length);
-      console.log('members array:', submitData.members);
-      console.log('members array length:', submitData.members.length);
-      console.log('Array.isArray(submitData.conductors):', Array.isArray(submitData.conductors));
-      console.log('Array.isArray(submitData.members):', Array.isArray(submitData.members));
+      console.log("=== FORM SUBMISSION DEBUG ===");
+      console.log("selectedPsychologists:", selectedPsychologists);
+      console.log(
+        "selectedPsychologists.length:",
+        selectedPsychologists.length
+      );
+      console.log("selectedMembers:", selectedMembers);
+      console.log("selectedMembers.length:", selectedMembers.length);
+      console.log("submitData before API call:", submitData);
+      console.log("psychologists array:", submitData.psychologists);
+      console.log(
+        "psychologists array length:",
+        submitData.psychologists.length
+      );
+      console.log("members array:", submitData.members);
+      console.log("members array length:", submitData.members.length);
+      console.log(
+        "Array.isArray(submitData.psychologists):",
+        Array.isArray(submitData.psychologists)
+      );
+      console.log(
+        "Array.isArray(submitData.members):",
+        Array.isArray(submitData.members)
+      );
 
-      // Test each conductor mapping
-      selectedConductors.forEach((conductor, index) => {
-        console.log(`conductor[${index}]:`, conductor);
-        console.log(`conductor[${index}].id:`, conductor.id);
+      // Test each psychologist mapping
+      selectedPsychologists.forEach((psychologist, index) => {
+        console.log(`psychologist[${index}]:`, psychologist);
+        console.log(`psychologist[${index}].id:`, psychologist.id);
       });
 
       // Test each member mapping
@@ -257,7 +321,7 @@ const GroupFormPage = () => {
         console.log(`member[${index}].id:`, member.id);
       });
 
-      console.log('==============================');
+      console.log("==============================");
 
       let response;
       if (isEdit) {
@@ -265,22 +329,24 @@ const GroupFormPage = () => {
       } else {
         response = await groupService.createGroup(submitData);
       }
-      
+
       if (response.success) {
         setSuccess(true);
         setTimeout(() => {
           if (isEdit) {
             navigate(`/groups/${id}`);
           } else {
-            navigate('/groups');
+            navigate("/groups");
           }
         }, 1500);
       } else {
-        setError(response.message || 'Errore durante il salvataggio');
+        setError(response.message || "Errore durante il salvataggio");
       }
     } catch (error) {
-      console.error('Error saving group:', error);
-      setError(error.response?.data?.message || 'Errore durante il salvataggio');
+      console.error("Error saving group:", error);
+      setError(
+        error.response?.data?.message || "Errore durante il salvataggio"
+      );
     } finally {
       setSaving(false);
     }
@@ -290,20 +356,38 @@ const GroupFormPage = () => {
     if (isEdit) {
       navigate(`/groups/${id}`);
     } else {
-      navigate('/groups');
+      navigate("/groups");
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 2 }}>
+    <Container
+      maxWidth="md"
+      sx={{
+        py: 2,
+        [`& .${menuItemClasses.root}`]: {
+          fontSize: (theme) => theme.typography.body2.fontSize,
+        },
+        [`& .${selectClasses.select}`]: {
+          fontSize: (theme) => theme.typography.body2.fontSize,
+        },
+      }}
+    >
       {/* Minimal Header */}
       <Box sx={{ mb: 3 }}>
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
@@ -312,10 +396,12 @@ const GroupFormPage = () => {
           </IconButton>
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 600 }}>
-              {isEdit ? 'Modifica Gruppo' : 'Nuovo Gruppo'}
+              {isEdit ? "Modifica Gruppo" : "Nuovo Gruppo"}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {isEdit ? 'Aggiorna le informazioni del gruppo' : 'Crea un nuovo gruppo di terapia'}
+              {isEdit
+                ? "Aggiorna le informazioni del gruppo"
+                : "Crea un nuovo gruppo di terapia"}
             </Typography>
           </Box>
         </Stack>
@@ -327,218 +413,454 @@ const GroupFormPage = () => {
           {error}
         </Alert>
       )}
-      
+
       {success && (
         <Alert severity="success" sx={{ mb: 3 }}>
-          Gruppo {isEdit ? 'aggiornato' : 'creato'} con successo!
+          Gruppo {isEdit ? "aggiornato" : "creato"} con successo!
         </Alert>
       )}
 
       {/* Form */}
-      <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+      <Paper
+        elevation={0}
+        sx={{ p: 3, border: 1, borderColor: "divider", borderRadius: 2 }}
+      >
         <form onSubmit={handleSubmit}>
           <Stack spacing={3}>
-          
-          {/* Basic Information */}
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              Informazioni del Gruppo
-            </Typography>
-            
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Nome Gruppo *
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  error={Boolean(formErrors.name)}
-                  helperText={formErrors.name}
-                  placeholder="es. Gruppo Supporto Ansia"
-                  size="small"
-                />
-              </Box>
-              
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Descrizione
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Descrizione dettagliata del gruppo e dei suoi obiettivi..."
-                  size="small"
-                />
-              </Box>
-              
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Frequenza Incontri *
-                </Typography>
-                <TextField
-                  fullWidth
-                  value={formData.meeting_frequency}
-                  onChange={(e) => handleInputChange('meeting_frequency', e.target.value)}
-                  error={Boolean(formErrors.meeting_frequency)}
-                  helperText={formErrors.meeting_frequency}
-                  placeholder="es. Settimanale, Bisettimanale, Mensile"
-                  size="small"
-                />
-              </Box>
-            </Stack>
-          </Box>
+            {/* Basic Information */}
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                Informazioni del Gruppo
+              </Typography>
 
-          <Divider />
-              
-          {/* Conductors and Members */}
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-              Conduttori e Membri
-            </Typography>
-            
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Conduttori *
-                </Typography>
-                <Autocomplete
-                  multiple
-                  options={conductors}
-                  value={selectedConductors}
-                  onChange={(event, newValue) => {
-                    setSelectedConductors(newValue);
-                    // Clear error when user selects conductors
-                    if (formErrors.conductors && newValue.length > 0) {
-                      setFormErrors(prev => ({ ...prev, conductors: null }));
+              <Stack spacing={2}>
+                {/* Nome Gruppo */}
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                    Nome Gruppo *
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    error={Boolean(formErrors.name)}
+                    helperText={formErrors.name}
+                    placeholder="es. Gruppo Supporto Ansia"
+                    size="small"
+                  />
+                </Box>
+
+                {/* Descrizione */}
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                    Descrizione
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
                     }
-                  }}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
-                  getOptionLabel={(option) => `${option.first_name || option.nome || ''} ${option.last_name || option.cognome || ''} (${option.role || option.ruolo || option.job_title || 'Staff'})`}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Seleziona uno o più conduttori..."
-                      size="small"
-                      error={Boolean(formErrors.conductors)}
-                      helperText={formErrors.conductors}
-                    />
-                  )}
-                  renderTags={(tagValue, getTagProps) =>
-                    tagValue.map((option, index) => {
-                      const { key, ...chipProps } = getTagProps({ index });
-                      return (
-                        <Chip
-                          key={option.id}
-                          label={`${option.first_name || option.nome || ''} ${option.last_name || option.cognome || ''}`}
-                          {...chipProps}
+                    placeholder="Descrizione dettagliata del gruppo e dei suoi obiettivi..."
+                    size="small"
+                  />
+                </Box>
+                <Box>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      {/* Frequenza Incontri */}
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 1 }}
+                        >
+                          Frequenza Incontri *
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          value={formData.meeting_frequency}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "meeting_frequency",
+                              e.target.value
+                            )
+                          }
+                          error={Boolean(formErrors.meeting_frequency)}
+                          helperText={formErrors.meeting_frequency}
+                          placeholder="es. Settimanale, Bisettimanale, Mensile"
                           size="small"
-                          color="primary"
                         />
-                      );
-                    })
-                  }
-                  loading={loadingOptions}
-                  noOptionsText="Nessun conduttore trovato"
-                />
-              </Box>
-              
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                  Membri (Pazienti)
-                </Typography>
-                <Autocomplete
-                  multiple
-                  options={patients}
-                  value={selectedMembers}
-                  onChange={(event, newValue) => {
-                    setSelectedMembers(newValue);
-                  }}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
-                  getOptionLabel={(option) => `${option.nome || ''} ${option.cognome || ''}`}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      placeholder="Seleziona i pazienti da aggiungere al gruppo..."
-                      size="small"
-                      helperText="Opzionale - puoi aggiungere membri anche dopo la creazione del gruppo"
-                    />
-                  )}
-                  renderTags={(tagValue, getTagProps) =>
-                    tagValue.map((option, index) => {
-                      const { key, ...chipProps } = getTagProps({ index });
-                      return (
-                        <Chip
-                          key={option.id}
-                          label={`${option.nome || ''} ${option.cognome || ''}`}
-                          {...chipProps}
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      {/* Sede Incontri */}
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 1 }}
+                        >
+                          Sede Incontri
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          value={formData.meeting_location}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "meeting_location",
+                              e.target.value
+                            )
+                          }
+                          error={Boolean(formErrors.meeting_location)}
+                          helperText={formErrors.meeting_location}
+                          placeholder="es. Sala 1, Centro Medico XYZ"
                           size="small"
-                          color="secondary"
                         />
-                      );
-                    })
-                  }
-                  loading={loadingOptions}
-                  noOptionsText="Nessun paziente trovato"
-                />
-              </Box>
-            </Stack>
-          </Box>
-              
-          <Divider />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
 
-          {/* Action Buttons */}
-          <Stack direction="row" spacing={2} justifyContent="flex-end">
-            <Button
-              variant="outlined"
-              onClick={handleCancel}
-              disabled={saving}
-              sx={{
-                color: 'text.primary',
-                borderColor: 'divider',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                  borderColor: 'primary.main',
+                <Box>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      {/* Tipo Gruppo */}
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 1 }}
+                        >
+                          Tipo Gruppo *
+                        </Typography>
+                        <FormControl
+                          fullWidth
+                          size="small"
+                          error={Boolean(formErrors.group_type)}
+                        >
+                          <Select
+                            labelId="group-type-label"
+                            value={formData.group_type}
+                            onChange={(e) =>
+                              handleInputChange("group_type", e.target.value)
+                            }
+                          >
+                            <MenuItem value="support">Supporto</MenuItem>
+                            <MenuItem value="therapy">Terapia</MenuItem>
+                            <MenuItem value="activity">Attività</MenuItem>
+                            <MenuItem value="education">Educazione</MenuItem>
+                            <MenuItem value="rehabilitation">
+                              Riabilitazione
+                            </MenuItem>
+                          </Select>
+                          {formErrors.group_type && (
+                            <Typography variant="caption" color="error">
+                              {formErrors.group_type}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      {/* Stato */}
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 1 }}
+                        >
+                          Stato *
+                        </Typography>
+                        <FormControl
+                          fullWidth
+                          size="small"
+                          error={Boolean(formErrors.status)}
+                        >
+                          <Select
+                            labelId="status-label"
+                            value={formData.status}
+                            onChange={(e) =>
+                              handleInputChange("status", e.target.value)
+                            }
+                          >
+                            <MenuItem value="active">Attivo</MenuItem>
+                            <MenuItem value="inactive">Non Attivo</MenuItem>
+                            <MenuItem value="archived">Archiviato</MenuItem>
+                          </Select>
+                          {formErrors.status && (
+                            <Typography variant="caption" color="error">
+                              {formErrors.status}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Box>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      {/* Data Inizio */}
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 1 }}
+                        >
+                          Data Inizio *
+                        </Typography>
+                        <DatePicker
+                          value={
+                            formData.start_date
+                              ? new Date(formData.start_date)
+                              : null
+                          }
+                          onChange={(date) =>
+                            handleInputChange(
+                              "start_date",
+                              date ? date.toISOString().slice(0, 10) : ""
+                            )
+                          }
+                          format="yyyy-MM-dd"
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: "small",
+                              error: Boolean(formErrors.start_date),
+                              helperText: formErrors.start_date,
+                              InputProps: {
+                                sx: {
+                                  pr: 1,
+                                },
+                              },
+                            },
+                            openPickerButton: {
+                              size: "small",
+                              edge: "end",
+                            },
+                          }}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      {/* Data Fine */}
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 500, mb: 1 }}
+                        >
+                          Data Fine
+                        </Typography>
+                        <DatePicker
+                          value={
+                            formData.end_date
+                              ? new Date(formData.end_date)
+                              : null
+                          }
+                          onChange={(date) =>
+                            handleInputChange(
+                              "end_date",
+                              date ? date.toISOString().slice(0, 10) : ""
+                            )
+                          }
+                          format="yyyy-MM-dd"
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: "small",
+                              error: Boolean(formErrors.end_date),
+                              helperText: formErrors.end_date,
+                              InputProps: {
+                                sx: {
+                                  pr: 1,
+                                },
+                              },
+                            },
+                            openPickerButton: {
+                              size: "small",
+                              edge: "end",
+                            },
+                          }}
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            {/* Psychologists and Members */}
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                Psicologi e Membri
+              </Typography>
+
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                    Psicologi *
+                  </Typography>
+                  <Autocomplete
+                    multiple
+                    options={psychologists}
+                    value={selectedPsychologists}
+                    onChange={(event, newValue) => {
+                      setSelectedPsychologists(newValue);
+                      // Clear error when user selects psychologists
+                      if (formErrors.psychologists && newValue.length > 0) {
+                        setFormErrors((prev) => ({
+                          ...prev,
+                          psychologists: null,
+                        }));
+                      }
+                    }}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    getOptionLabel={(option) =>
+                      `${option.first_name || option.nome || ""} ${
+                        option.last_name || option.cognome || ""
+                      } (${
+                        option.role ||
+                        option.ruolo ||
+                        option.job_title ||
+                        "Staff"
+                      })`
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Seleziona uno o più psicologi..."
+                        size="small"
+                        error={Boolean(formErrors.psychologists)}
+                        helperText={formErrors.psychologists}
+                      />
+                    )}
+                    renderTags={(tagValue, getTagProps) =>
+                      tagValue.map((option, index) => {
+                        const { key, ...chipProps } = getTagProps({ index });
+                        return (
+                          <Chip
+                            key={option.id}
+                            label={`${option.first_name || option.nome || ""} ${
+                              option.last_name || option.cognome || ""
+                            }`}
+                            {...chipProps}
+                            size="small"
+                            color="primary"
+                          />
+                        );
+                      })
+                    }
+                    loading={loadingOptions}
+                    noOptionsText="Nessun conduttore trovato"
+                  />
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                    Membri (Pazienti)
+                  </Typography>
+                  <Autocomplete
+                    multiple
+                    options={patients}
+                    value={selectedMembers}
+                    onChange={(event, newValue) => {
+                      setSelectedMembers(newValue);
+                    }}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
+                    getOptionLabel={(option) =>
+                      `${option.nome || ""} ${option.cognome || ""}`
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Seleziona i pazienti da aggiungere al gruppo..."
+                        size="small"
+                        helperText="Opzionale - puoi aggiungere membri anche dopo la creazione del gruppo"
+                      />
+                    )}
+                    renderTags={(tagValue, getTagProps) =>
+                      tagValue.map((option, index) => {
+                        const { key, ...chipProps } = getTagProps({ index });
+                        return (
+                          <Chip
+                            key={option.id}
+                            label={`${option.nome || ""} ${
+                              option.cognome || ""
+                            }`}
+                            {...chipProps}
+                            size="small"
+                            color="secondary"
+                          />
+                        );
+                      })
+                    }
+                    loading={loadingOptions}
+                    noOptionsText="Nessun paziente trovato"
+                  />
+                </Box>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            {/* Action Buttons */}
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                disabled={saving}
+                sx={{
+                  color: "text.primary",
+                  borderColor: "divider",
+                  "&:hover": {
+                    backgroundColor: "action.hover",
+                    borderColor: "primary.main",
+                  },
+                }}
+              >
+                Annulla
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={
+                  saving ? <CircularProgress size={20} /> : <SaveIcon />
                 }
-              }}
-            >
-              Annulla
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-              disabled={saving}
-              sx={{
-                backgroundColor: 'primary.main',
-                color: 'white',
-                fontWeight: 600,
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                },
-                '&:disabled': {
-                  backgroundColor: 'action.disabledBackground',
-                  color: 'action.disabled',
-                }
-              }}
-            >
-              {saving ? 'Salvataggio...' : (isEdit ? 'Aggiorna Gruppo' : 'Crea Gruppo')}
-            </Button>
-          </Stack>
-          
+                disabled={saving}
+                sx={{
+                  backgroundColor: "primary.main",
+                  color: "white",
+                  fontWeight: 600,
+                  "&:hover": {
+                    backgroundColor: "primary.dark",
+                  },
+                  "&:disabled": {
+                    backgroundColor: "action.disabledBackground",
+                    color: "action.disabled",
+                  },
+                }}
+              >
+                {saving
+                  ? "Salvataggio..."
+                  : isEdit
+                  ? "Aggiorna Gruppo"
+                  : "Crea Gruppo"}
+              </Button>
+            </Stack>
           </Stack>
         </form>
       </Paper>
-      
+
       {/* Help Text */}
-      <Box sx={{ mt: 2, p: 2, backgroundColor: 'grey.50', borderRadius: 1 }}>
+      <Box sx={{ mt: 2, p: 2, backgroundColor: "grey.50", borderRadius: 1 }}>
         <Typography variant="caption" color="text.secondary">
-          <strong>Suggerimento:</strong> Il nome del gruppo dovrebbe essere descrittivo e facilmente riconoscibile. 
-          La descrizione aiuta i membri a comprendere gli obiettivi del gruppo.
+          <strong>Suggerimento:</strong> Il nome del gruppo dovrebbe essere
+          descrittivo e facilmente riconoscibile. La descrizione aiuta i membri
+          a comprendere gli obiettivi del gruppo.
         </Typography>
       </Box>
     </Container>

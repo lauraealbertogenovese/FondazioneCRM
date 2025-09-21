@@ -4,8 +4,8 @@
   "description": "Sistema CRM per Fondazione - Gestione Pazienti, Cartelle Cliniche e Gruppi di Supporto",
   "main": "index.js",
   "scripts": {
-    "dev": "docker-compose -f docker/docker-compose.dev.yml up --build",
-    "prod": "docker-compose -f docker/docker-compose.prod.yml up --build",
+    "dev": "docker-compose -f docker/docker-compose.dev.yml up -d --build",
+    "prod": "docker-compose -f docker/docker-compose.prod.yml up -d --build",
     "stop": "docker-compose -f docker/docker-compose.dev.yml down",
     "stop:prod": "docker-compose -f docker/docker-compose.prod.yml down",
     "logs": "docker-compose -f docker/docker-compose.dev.yml logs -f",

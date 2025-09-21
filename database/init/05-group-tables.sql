@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS "group".group_members (
     group_id INTEGER REFERENCES "group".groups(id) ON DELETE CASCADE,
     patient_id INTEGER REFERENCES patient.patients(id) ON DELETE CASCADE,
     user_id INTEGER REFERENCES auth.users(id), -- <--- Added user_id column
-    member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('patient', 'psychologist', 'referente', 'observer', 'conductor')),
+    member_type VARCHAR(20) NOT NULL CHECK (member_type IN ('patient', 'psychologist', 'referente', 'observer')),
     role VARCHAR(50),
     joined_date DATE DEFAULT CURRENT_DATE,
     left_date DATE,

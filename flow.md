@@ -206,8 +206,8 @@ erDiagram
         int id PK
         int group_id FK
         int user_id FK "null per pazienti"
-        int patient_id FK "null per conduttori"
-        string member_type "patient o conductor"
+        int patient_id FK "null per psicologi "
+        string member_type "patient o psychologist"
         timestamp joined_at "data ingresso"
         timestamp left_at "data uscita"
     }
@@ -499,12 +499,14 @@ graph TB
 ## Key Features & Capabilities
 
 ### 🔐 Autenticazione e Autorizzazione
+
 - Autenticazione basata su JWT con refresh token
 - Controllo accessi basato sui ruoli (RBAC) con permessi granulari
 - Permessi utente possono sovrascrivere quelli del ruolo (modello ibrido)
 - Protezione di route e endpoint API
 
 ### 👥 Gestione Pazienti
+
 - Anagrafica completa pazienti con dati sanitari italiani
 - Codice Fiscale e Tessera Sanitaria Nazionale
 - Gestione documenti (caricamento, download, organizzazione)
@@ -513,30 +515,35 @@ graph TB
 - Conformità GDPR con gestione consensi
 
 ### 📊 Cartelle Cliniche
+
 - Cartelle cliniche digitali con tracciamento visite
 - Note cliniche con timeline cronologica
 - Allegati documentali per cartelle cliniche
 - Sistema di pianificazione visite (in sviluppo futuro)
 
 ### 🏥 Gestione Gruppi di Supporto Psicologico
+
 - Creazione e gestione gruppi di supporto per dipendenze
-- Assegnazione flessibile conduttori (qualsiasi operatore)
+- Assegnazione flessibile psicologi (qualsiasi operatore)
 - Iscrizione pazienti e tracciamento partecipazione
 - Documentazione e note di gruppo
 
 ### 💳 Sistema Fatturazione
+
 - Generazione e gestione fatture per prestazioni
 - Generazione PDF fatture con jsPDF
 - Tracciamento stato pagamenti (Da Pagare/Pagata)
 - Reportistica finanziaria e statistiche
 
 ### 📝 Audit e Conformità GDPR
+
 - Logging completo delle azioni audit
 - Strumenti di conformità GDPR per sanità italiana
 - Gestione ritenzione dati
 - Tracciamento attività utenti
 
 ### 🛡️ Funzionalità di Sicurezza
+
 - Validazione e sanitizzazione input
 - Prevenzione SQL injection
 - Protezione XSS con Helmet.js

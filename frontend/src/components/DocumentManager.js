@@ -496,6 +496,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
     setAnchorEl(null);
     setSelectedDocument(null);
   };
+const isAllowed = showUploadButton && hasPermission('documents.create')
 
   const handleDragOver = (event) => {
     event.preventDefault();
@@ -505,7 +506,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
   const handleDrop = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    
+    if (!isAllowed) return;
     const files = Array.from(event.dataTransfer.files);
     if (files.length > 0) {
       setNewDocument({ ...newDocument, file: files[0] });
@@ -523,7 +524,6 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
       </Box>
     );
   }
-
   return (
     <Box>
       {/* Header */}
@@ -541,8 +541,8 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
             Carica e gestisci i documenti del paziente
           </Typography>
         </Box>
-        
-        {showUploadButton && hasPermission('documents.create') && (
+
+        {isAllowed && (
           <Button
             variant="contained"
             startIcon={<UploadIcon />}
@@ -593,6 +593,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
             <Typography variant="h6" gutterBottom>
               Nessun documento caricato
             </Typography>
+            {isAllowed && <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Trascina i file qui o utilizza il pulsante per caricare i documenti
             </Typography>
@@ -603,6 +604,7 @@ const DocumentManager = ({ patientId, clinicalRecordId, groupId, showUploadButto
             >
               Carica Primo Documento
             </Button>
+            </>}
           </CardContent>
         </Card>
       ) : (

@@ -1,74 +1,74 @@
-const express = require('express');
-const Group = require('../models/Group');
-const GroupMember = require('../models/GroupMember');
+const express = require("express");
+const Group = require("../models/Group");
+const GroupMember = require("../models/GroupMember");
 const {
   validateGroup,
   validateGroupCreate,
   validateGroupUpdate,
   validateGroupFilters,
-  validateId
-} = require('../middleware/validation');
-const { authenticateToken } = require('../middleware/auth');
+  validateId,
+} = require("../middleware/validation");
+const { authenticateToken } = require("../middleware/auth");
 
 const router = express.Router();
 
 // GET /groups - Lista tutti i gruppi con filtri
-router.get('/', validateGroupFilters, async (req, res) => {
+router.get("/", validateGroupFilters, async (req, res) => {
   try {
     const { status, group_type, search } = req.query;
-    
+
     const filters = {};
     if (status) filters.status = status;
     if (group_type) filters.group_type = group_type;
     if (search) filters.search = search;
 
     const groups = await Group.findAll(filters);
-    
+
     res.json({
       success: true,
       data: groups,
-      total: groups.length
+      total: groups.length,
     });
   } catch (error) {
-    console.error('Error fetching groups:', error);
+    console.error("Error fetching groups:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });
 
 // GET /groups/statistics - Statistiche gruppi
-router.get('/statistics', async (req, res) => {
+router.get("/statistics", async (req, res) => {
   try {
     const stats = await Group.getStatistics();
-    
+
     res.json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (error) {
-    console.error('Error fetching group statistics:', error);
+    console.error("Error fetching group statistics:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });
 
 // GET /groups/:id - Dettaglio gruppo specifico
-router.get('/:id', validateId, async (req, res) => {
+router.get("/:id", validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
     const group = await Group.findById(id);
-    
+
     if (!group) {
       return res.status(404).json({
         success: false,
-        error: 'Group not found'
+        error: "Group not found",
       });
     }
 
@@ -81,31 +81,47 @@ router.get('/:id', validateId, async (req, res) => {
       data: {
         ...group,
         members,
-        member_statistics: memberStats
-      }
+        member_statistics: memberStats,
+      },
     });
   } catch (error) {
-    console.error('Error fetching group:', error);
+    console.error("Error fetching group:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });
 
 // POST /groups - Crea nuovo gruppo
-router.post('/', authenticateToken, validateGroupCreate, async (req, res) => {
+router.post("/", authenticateToken, validateGroupCreate, async (req, res) => {
   try {
     const {
       name,
       description,
       meeting_frequency,
-      conductors = [],
-      members = []
+      psychologists = [],
+      members = [],
+      start_date,
+      end_date,
+      meeting_location,
+      group_type = "support",
+      status = "active",
     } = req.body;
 
-    console.log(`[POST /groups] Creating group with:`, { name, description, meeting_frequency, conductors, members });
+    console.log(`[POST /groups] Creating group with:`, {
+      name,
+      description,
+      start_date,
+      end_date,
+      meeting_location,
+      psychologists,
+      members,
+      group_type,
+      meeting_frequency,
+      status,
+    });
 
     // Get user ID from JWT token
     const created_by = req.user.id;
@@ -114,27 +130,30 @@ router.post('/', authenticateToken, validateGroupCreate, async (req, res) => {
     const groupData = {
       name,
       description,
-      group_type: 'support', // Default type
+      group_type,
       meeting_frequency,
-      status: 'active',
-      created_by
+      status,
+      created_by,
+      start_date,
+      end_date,
+      meeting_location,
     };
 
     const newGroup = await Group.create(groupData);
     console.log(`[POST /groups] Group created with ID:`, newGroup.id);
 
-    // Add conductors if provided
-    if (conductors.length > 0) {
-      for (const conductorId of conductors) {
+    // Add psychologists if provided
+    if (psychologists.length > 0) {
+      for (const psychologistId of psychologists) {
         const psychologistData = {
           group_id: newGroup.id,
-          user_id: parseInt(conductorId, 10),
+          user_id: parseInt(psychologistId, 10),
           patient_id: null,
-          member_type: 'psychologist',
-          created_by
+          member_type: "psychologist",
+          created_by,
         };
-        await GroupMember.addMember(conductorData);
-        console.log(`[POST /groups] Added conductor:`, conductorId);
+        await GroupMember.addMember(psychologistData);
+        console.log(`[POST /groups] Added psychologist:`, psychologistId);
       }
     }
 
@@ -145,155 +164,189 @@ router.post('/', authenticateToken, validateGroupCreate, async (req, res) => {
           group_id: newGroup.id,
           patient_id: parseInt(memberId, 10),
           user_id: null,
-          member_type: 'patient',
-          created_by
+          member_type: "patient",
+          created_by,
         };
         await GroupMember.addMember(memberData);
         console.log(`[POST /groups] Added member:`, memberId);
       }
     }
-    
+
     res.status(201).json({
       success: true,
       data: newGroup,
-      message: 'Group created successfully'
+      message: "Group created successfully",
     });
   } catch (error) {
-    console.error('Error creating group:', error);
+    console.error("Error creating group:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });
 
 // PUT /groups/:id - Aggiorna gruppo
-router.put('/:id', authenticateToken, validateId, validateGroupUpdate, async (req, res) => {
-  try {
-    console.log(`[PUT /groups/${req.params.id}] Request received:`, req.body);
-    const { id } = req.params;
+router.put(
+  "/:id",
+  authenticateToken,
+  validateId,
+  validateGroupUpdate,
+  async (req, res) => {
+    try {
+      console.log(`[PUT /groups/${req.params.id}] Request received:`, req.body);
+      const { id } = req.params;
 
-    const { conductors = [], members = [], ...updateData } = req.body;
-    console.log(`[PUT /groups/${id}] About to update with data:`, updateData);
-    console.log(`[PUT /groups/${id}] Extracted conductors:`, conductors);
-    console.log(`[PUT /groups/${id}] Extracted members:`, members);
+      const { psychologists = [], members = [], ...updateData } = req.body;
+      console.log(`[PUT /groups/${id}] About to update with data:`, updateData);
+      console.log(
+        `[PUT /groups/${id}] Extracted psychologists:`,
+        psychologists
+      );
+      console.log(`[PUT /groups/${id}] Extracted members:`, members);
 
-    const updatedGroup = await Group.update(id, updateData);
-    console.log(`[PUT /groups/${id}] Update completed:`, updatedGroup);
+      const updatedGroup = await Group.update(id, updateData);
+      console.log(`[PUT /groups/${id}] Update completed:`, updatedGroup);
 
-    if (!updatedGroup) {
-      return res.status(404).json({
+      if (!updatedGroup) {
+        return res.status(404).json({
+          success: false,
+          error: "Group not found",
+        });
+      }
+
+      console.log(`[PUT /groups/${id}] Starting member management...`);
+      console.log(`[PUT /groups/${id}] Psychologists array:`, psychologists);
+      console.log(`[PUT /groups/${id}] Members array:`, members);
+
+      // Update group members
+      console.log(`[PUT /groups/${id}] Deleting existing members...`);
+      const deletedCount = await GroupMember.deleteByGroupId(id);
+      console.log(
+        `[PUT /groups/${id}] Deleted ${deletedCount} existing members`
+      );
+
+      // Add psychologists (users)
+      if (psychologists && psychologists.length > 0) {
+        console.log(
+          `[PUT /groups/${id}] Adding ${psychologists.length} psychologists...`
+        );
+        for (const psychologistId of psychologists) {
+          try {
+            const psychologistData = {
+              group_id: parseInt(id, 10),
+              user_id: parseInt(psychologistId, 10),
+              member_type: "psychologist",
+              is_active: true,
+              created_by: req.user.id,
+            };
+            console.log(
+              `[PUT /groups/${id}] Adding psychologist with data:`,
+              psychologistData
+            );
+            const result = await GroupMember.addMember(psychologistData);
+            console.log(
+              `[PUT /groups/${id}] Added psychologist ${psychologistId} successfully:`,
+              result
+            );
+          } catch (error) {
+            console.error(
+              `[PUT /groups/${id}] Error adding psychologist ${psychologistId}:`,
+              error
+            );
+          }
+        }
+      } else {
+        console.log(`[PUT /groups/${id}] No psychologists to add`);
+      }
+
+      // Add patient members
+      if (members && members.length > 0) {
+        console.log(`[PUT /groups/${id}] Adding ${members.length} members...`);
+        for (const memberId of members) {
+          try {
+            const memberData = {
+              group_id: parseInt(id, 10),
+              patient_id: parseInt(memberId, 10),
+              member_type: "patient",
+              is_active: true,
+              created_by: req.user.id,
+            };
+            console.log(
+              `[PUT /groups/${id}] Adding member with data:`,
+              memberData
+            );
+            const result = await GroupMember.addMember(memberData);
+            console.log(
+              `[PUT /groups/${id}] Added member ${memberId} successfully:`,
+              result
+            );
+          } catch (error) {
+            console.error(
+              `[PUT /groups/${id}] Error adding member ${memberId}:`,
+              error
+            );
+          }
+        }
+      } else {
+        console.log(`[PUT /groups/${id}] No members to add`);
+      }
+
+      console.log(`[PUT /groups/${id}] Member management completed`);
+
+      res.json({
+        success: true,
+        data: updatedGroup,
+        message: "Group updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating group:", error);
+      res.status(500).json({
         success: false,
-        error: 'Group not found'
+        error: "Internal server error",
+        message: error.message,
       });
     }
-
-    console.log(`[PUT /groups/${id}] Starting member management...`);
-    console.log(`[PUT /groups/${id}] Conductors array:`, conductors);
-    console.log(`[PUT /groups/${id}] Members array:`, members);
-
-    // Update group members
-    console.log(`[PUT /groups/${id}] Deleting existing members...`);
-    const deletedCount = await GroupMember.deleteByGroupId(id);
-    console.log(`[PUT /groups/${id}] Deleted ${deletedCount} existing members`);
-
-    // Add conductors (users)
-    if (conductors && conductors.length > 0) {
-      console.log(`[PUT /groups/${id}] Adding ${conductors.length} conductors...`);
-      for (const conductorId of conductors) {
-        try {
-          const psychologistData = {
-            group_id: parseInt(id, 10),
-            user_id: parseInt(conductorId, 10),
-            member_type: 'psychologist',
-            is_active: true,
-            created_by: req.user.id
-          };
-          console.log(`[PUT /groups/${id}] Adding conductor with data:`, conductorData);
-          const result = await GroupMember.addMember(conductorData);
-          console.log(`[PUT /groups/${id}] Added conductor ${conductorId} successfully:`, result);
-        } catch (error) {
-          console.error(`[PUT /groups/${id}] Error adding conductor ${conductorId}:`, error);
-        }
-      }
-    } else {
-      console.log(`[PUT /groups/${id}] No conductors to add`);
-    }
-
-    // Add patient members
-    if (members && members.length > 0) {
-      console.log(`[PUT /groups/${id}] Adding ${members.length} members...`);
-      for (const memberId of members) {
-        try {
-          const memberData = {
-            group_id: parseInt(id, 10),
-            patient_id: parseInt(memberId, 10),
-            member_type: 'patient',
-            is_active: true,
-            created_by: req.user.id
-          };
-          console.log(`[PUT /groups/${id}] Adding member with data:`, memberData);
-          const result = await GroupMember.addMember(memberData);
-          console.log(`[PUT /groups/${id}] Added member ${memberId} successfully:`, result);
-        } catch (error) {
-          console.error(`[PUT /groups/${id}] Error adding member ${memberId}:`, error);
-        }
-      }
-    } else {
-      console.log(`[PUT /groups/${id}] No members to add`);
-    }
-
-    console.log(`[PUT /groups/${id}] Member management completed`);
-
-    res.json({
-      success: true,
-      data: updatedGroup,
-      message: 'Group updated successfully'
-    });
-  } catch (error) {
-    console.error('Error updating group:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: error.message
-    });
   }
-});
+);
 
 // DELETE /groups/:id - Elimina gruppo
-router.delete('/:id', authenticateToken, validateId, async (req, res) => {
+router.delete("/:id", authenticateToken, validateId, async (req, res) => {
   try {
     const { id } = req.params;
 
     const deletedGroup = await Group.delete(id);
-    
+
     if (!deletedGroup) {
       return res.status(404).json({
         success: false,
-        error: 'Group not found'
+        error: "Group not found",
       });
     }
 
     res.json({
       success: true,
       data: deletedGroup,
-      message: 'Group deleted successfully'
+      message: "Group deleted successfully",
     });
   } catch (error) {
-    console.error('Error deleting group:', error);
+    console.error("Error deleting group:", error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });
 
 // POST /groups/:id/members - Add member to group
-router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
+router.post("/:id/members", authenticateToken, validateId, async (req, res) => {
   try {
-    console.log(`[POST /groups/${req.params.id}/members] Request received:`, req.body);
+    console.log(
+      `[POST /groups/${req.params.id}/members] Request received:`,
+      req.body
+    );
     const { id } = req.params;
     const { patient_id, user_id, member_type, notes } = req.body;
 
@@ -301,21 +354,21 @@ router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
     if (!member_type) {
       return res.status(400).json({
         success: false,
-        error: 'member_type is required'
+        error: "member_type is required",
       });
     }
 
-    if (member_type === 'patient' && !patient_id) {
+    if (member_type === "patient" && !patient_id) {
       return res.status(400).json({
         success: false,
-        error: 'patient_id is required for patient members'
+        error: "patient_id is required for patient members",
       });
     }
 
-    if (member_type === 'psychologist' && !user_id) {
+    if (member_type === "psychologist" && !user_id) {
       return res.status(400).json({
         success: false,
-        error: 'user_id is required for psychologist members'
+        error: "user_id is required for psychologist members",
       });
     }
 
@@ -324,7 +377,7 @@ router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
     if (!group) {
       return res.status(404).json({
         success: false,
-        error: 'Group not found'
+        error: "Group not found",
       });
     }
 
@@ -335,99 +388,112 @@ router.post('/:id/members', authenticateToken, validateId, async (req, res) => {
       user_id: user_id ? parseInt(user_id, 10) : null,
       member_type,
       notes,
-      created_by: req.user.id
+      created_by: req.user.id,
     };
 
     console.log(`[POST /groups/${id}/members] Adding member:`, memberData);
-    
+
     let newMember;
-    
-    if (member_type === 'patient') {
+
+    if (member_type === "patient") {
       newMember = await GroupMember.addMember(memberData);
-    } else if (member_type === 'psychologist') {
+    } else if (member_type === "psychologist") {
       // For psychologists, we need to modify the data structure
       const psychologistData = {
         ...memberData,
-        patient_id: null // Psychologists don't have patient_id
+        patient_id: null, // Psychologists don't have patient_id
       };
       newMember = await GroupMember.addMember(psychologistData);
     }
-    
-    console.log(`[POST /groups/${id}/members] Member added successfully:`, newMember);
-    
+
+    console.log(
+      `[POST /groups/${id}/members] Member added successfully:`,
+      newMember
+    );
+
     res.status(201).json({
       success: true,
-      message: 'Member added successfully',
-      data: newMember
+      message: "Member added successfully",
+      data: newMember,
     });
-    
   } catch (error) {
     console.error(`[POST /groups/${req.params.id}/members] Error:`, error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });
 
 // DELETE /groups/:id/members/:memberId - Remove member from group
-router.delete('/:id/members/:memberId', authenticateToken, validateId, async (req, res) => {
-  try {
-    console.log(`[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Request received`);
-    const { id, memberId } = req.params;
+router.delete(
+  "/:id/members/:memberId",
+  authenticateToken,
+  validateId,
+  async (req, res) => {
+    try {
+      console.log(
+        `[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Request received`
+      );
+      const { id, memberId } = req.params;
 
-    // Validate memberId is a number
-    const memberIdNum = parseInt(memberId, 10);
-    if (isNaN(memberIdNum) || memberIdNum <= 0) {
-      return res.status(400).json({
+      // Validate memberId is a number
+      const memberIdNum = parseInt(memberId, 10);
+      if (isNaN(memberIdNum) || memberIdNum <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid member ID",
+        });
+      }
+
+      // Check if group exists
+      const group = await Group.findById(id);
+      if (!group) {
+        return res.status(404).json({
+          success: false,
+          error: "Group not found",
+        });
+      }
+
+      // Check if member exists in this group
+      const members = await GroupMember.findActiveMembers(id);
+      const memberToRemove = members.find((m) => m.id === memberIdNum);
+
+      if (!memberToRemove) {
+        return res.status(404).json({
+          success: false,
+          error: "Member not found in this group",
+        });
+      }
+
+      // Remove member by setting is_active to false
+      await GroupMember.removeMember(memberIdNum);
+
+      console.log(
+        `[DELETE /groups/${id}/members/${memberId}] Member removed successfully`
+      );
+
+      res.json({
+        success: true,
+        message: "Member removed successfully",
+      });
+    } catch (error) {
+      console.error(
+        `[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Error:`,
+        error
+      );
+      res.status(500).json({
         success: false,
-        error: 'Invalid member ID'
+        error: "Internal server error",
+        message: error.message,
       });
     }
-
-    // Check if group exists
-    const group = await Group.findById(id);
-    if (!group) {
-      return res.status(404).json({
-        success: false,
-        error: 'Group not found'
-      });
-    }
-
-    // Check if member exists in this group
-    const members = await GroupMember.findActiveMembers(id);
-    const memberToRemove = members.find(m => m.id === memberIdNum);
-    
-    if (!memberToRemove) {
-      return res.status(404).json({
-        success: false,
-        error: 'Member not found in this group'
-      });
-    }
-
-    // Remove member by setting is_active to false
-    await GroupMember.removeMember(memberIdNum);
-
-    console.log(`[DELETE /groups/${id}/members/${memberId}] Member removed successfully`);
-    
-    res.json({
-      success: true,
-      message: 'Member removed successfully'
-    });
-    
-  } catch (error) {
-    console.error(`[DELETE /groups/${req.params.id}/members/${req.params.memberId}] Error:`, error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: error.message
-    });
   }
-});
+);
 
 // DELETE /groups/:id - Delete group permanently
-router.delete('/:id', validateId, async (req, res) => {
+router.delete("/:id", validateId, async (req, res) => {
   try {
     console.log(`[DELETE /groups/${req.params.id}] Request received`);
     const { id } = req.params;
@@ -437,27 +503,29 @@ router.delete('/:id', validateId, async (req, res) => {
     if (!group) {
       return res.status(404).json({
         success: false,
-        error: 'Group not found'
+        error: "Group not found",
       });
     }
 
     // Delete the group (CASCADE will handle related records)
     const deletedGroup = await Group.delete(id);
 
-    console.log(`[DELETE /groups/${id}] Group deleted successfully:`, deletedGroup.name);
-    
+    console.log(
+      `[DELETE /groups/${id}] Group deleted successfully:`,
+      deletedGroup.name
+    );
+
     res.json({
       success: true,
-      message: 'Group deleted successfully',
-      data: deletedGroup
+      message: "Group deleted successfully",
+      data: deletedGroup,
     });
-    
   } catch (error) {
     console.error(`[DELETE /groups/${req.params.id}] Error:`, error);
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
-      message: error.message
+      error: "Internal server error",
+      message: error.message,
     });
   }
 });

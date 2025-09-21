@@ -41,7 +41,6 @@ import LoadingSpinner from "./components/LoadingSpinner";
 // Componente per le rotte protette
 const ProtectedRoute = ({ children, requiredPermission = null }) => {
   const { isAuthenticated, isLoading, hasPermission } = useAuth();
-
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -112,7 +111,7 @@ const AppContent = () => {
       <Route
         path="/patients/:id/edit"
         element={
-          <ProtectedRoute requiredPermission="patients.update">
+          <ProtectedRoute requiredPermission={["patients.update", "patients.update_own"]}>
             <PatientFormPage />
           </ProtectedRoute>
         }

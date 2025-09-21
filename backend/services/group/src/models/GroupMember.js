@@ -183,7 +183,7 @@ class GroupMember {
         COUNT(*) as total_members,
         COUNT(CASE WHEN is_active = true THEN 1 END) as active_members,
         COUNT(CASE WHEN member_type = 'patient' AND is_active = true THEN 1 END) as active_patients,
-        COUNT(CASE WHEN member_type = 'conductor' AND is_active = true THEN 1 END) as active_conductors,
+        COUNT(CASE WHEN member_type = 'psychologist' AND is_active = true THEN 1 END) as active_psychologists,
         COUNT(CASE WHEN member_type = 'referente' AND is_active = true THEN 1 END) as active_referenti
       FROM "group".group_members
       WHERE group_id = $1
