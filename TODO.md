@@ -25,7 +25,7 @@
 - [x] **API Gateway**: Routing, autenticazione JWT, controllo accessi per ruolo
 - [x] **Patient Service**: CRUD completo anagrafica + dati clinici
 - [x] **Clinical Service**: Cartelle cliniche, visite, diario cronologico
-- [x] **Group Service**: Gruppi terapeutici, gestione membri, psicologi
+- [x] **Group Service**: Gruppi terapeutici, gestione membri, conduttori
 
 ### ✅ Fase 4: Frontend Core (COMPLETATO)
 
@@ -44,7 +44,7 @@
 
 **Status**: FULLY IMPLEMENTED - Sistema di controllo accessi completo con editor permessi funzionante
 
-- [x] **Ruolo Clinico (Medico/Psicologo/Psichiatra)**
+- [x] **Ruolo Clinico (Medico/Conduttore/Psichiatra)**
   - [x] Accesso completo a pazienti e cartelle cliniche
   - [x] Gestione gruppi terapeutici come conduttore
   - [x] Creazione e modifica dati clinici
@@ -88,7 +88,7 @@
 - [x] **Creazione Gruppo**
   - [x] Medico può creare nuovo gruppo come "Conduttore"
   - [x] Attributi: Nome (es. "Gruppo Familiari"), Descrizione obiettivi
-  - [x] Sistema gestione psicologi multipli
+  - [x] Sistema gestione conduttori multipli
 - [x] **Associazione Pazienti**
   - [x] Associazione due o più pazienti registrati al gruppo
   - [x] Visualizzazione gruppi in cartella paziente
@@ -175,7 +175,7 @@
 - **Auth Service**: JWT, ruoli, permessi granulari ✅
 - **Patient Service**: CRUD completo, validazione, ricerca ✅
 - **Clinical Service**: Cartelle, visite, documenti ✅
-- **Group Service**: Gruppi terapeutici, membri, psicologi ✅
+- **Group Service**: Gruppi terapeutici, membri, conduttori ✅
 - **API Gateway**: Proxy, CORS, timeouts configurati ✅
 - **Database**: PostgreSQL con schemi separati ✅
 
@@ -253,7 +253,7 @@
 
 1. **Gestione Ruoli** ✅ - Sistema completo con editor permessi funzionante
 2. **Modulo Cartella Clinica** ✅ - Anagrafica completa, diario cronologico, documenti
-3. **Modulo Gestione Gruppi** ✅ - Creazione, psicologi, membri, diario gruppo
+3. **Modulo Gestione Gruppi** ✅ - Creazione, conduttori, membri, diario gruppo
 4. **Requisiti Privacy** ✅ - GDPR compliant, audit trail, consensi tracciati
 5. **Sicurezza** ✅ - Controlli accesso, validazione, infrastruttura sicura
 
@@ -363,7 +363,7 @@ patients: {
 
 #### **Domande Aperte per Implementazione Futura**
 
-1. Chi crea i pazienti tipicamente? (Accoglienza → Psicologo?)
+1. Chi crea i pazienti tipicamente? (Accoglienza → Conduttore?)
 2. Chi decide l'assegnazione? (Auto-assegnazione vs Supervisione?)
 3. Come gestire emergenze? (Sostituzione temporanea?)
 4. Serve ruolo "Supervisore" differenziato?

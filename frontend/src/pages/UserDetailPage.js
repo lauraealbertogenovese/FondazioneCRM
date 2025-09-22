@@ -72,7 +72,7 @@ const UserDetailPage = () => {
     const colors = {
       admin: 'error',
       doctor: 'primary',
-      psychologist: 'secondary',
+      conductor: 'secondary',
       operator: 'success',
     };
     return colors[roleName] || 'default';
@@ -83,7 +83,7 @@ const UserDetailPage = () => {
       case 'admin':
         return <AdminIcon />;
       case 'doctor':
-      case 'psychologist':
+      case 'conductor':
         return <BadgeIcon />;
       default:
         return <PersonIcon />;

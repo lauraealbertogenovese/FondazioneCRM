@@ -19,7 +19,7 @@ graph TB
     AuthService[🔐 Servizio Auth<br/>Porta: 3001<br/>JWT + bcrypt]
     PatientService[👥 Servizio Pazienti<br/>Porta: 3002<br/>Upload documenti]
     ClinicalService[📊 Servizio Clinico<br/>Porta: 3003<br/>Cartelle + Visite]
-    GroupService[🏥 Servizio Gruppi<br/>Porta: 3004<br/>Supporto Psicologico]
+    GroupService[🏥 Servizio Gruppi<br/>Porta: 3004<br/>Supporto Conduttorico]
     BillingService[💳 Servizio Fatturazione<br/>Porta: 3005<br/>Fatture + PDF]
     AuditService[📝 Servizio Audit<br/>Porta: 3006<br/>Logging + GDPR]
 
@@ -131,7 +131,7 @@ erDiagram
     %% Definizioni Entità
     ROLES {
         int id PK
-        string name "admin, Operatore, Medico, Psicologo"
+        string name "admin, Operatore, Medico, Conduttore"
         text description
         jsonb permissions "permessi granulari"
         timestamp created_at
@@ -206,8 +206,8 @@ erDiagram
         int id PK
         int group_id FK
         int user_id FK "null per pazienti"
-        int patient_id FK "null per psicologi "
-        string member_type "patient o psychologist"
+        int patient_id FK "null per conduttori "
+        string member_type "patient o conductor"
         timestamp joined_at "data ingresso"
         timestamp left_at "data uscita"
     }
@@ -220,7 +220,6 @@ erDiagram
         text description "descrizione prestazione"
         string status "Da Pagare, Pagata"
         date issue_date "data emissione"
-        date due_date "data scadenza"
         date paid_date "data pagamento"
         int created_by FK
         timestamp created_at
@@ -521,10 +520,10 @@ graph TB
 - Allegati documentali per cartelle cliniche
 - Sistema di pianificazione visite (in sviluppo futuro)
 
-### 🏥 Gestione Gruppi di Supporto Psicologico
+### 🏥 Gestione Gruppi di Supporto Conduttorico
 
 - Creazione e gestione gruppi di supporto per dipendenze
-- Assegnazione flessibile psicologi (qualsiasi operatore)
+- Assegnazione flessibile conduttori (qualsiasi operatore)
 - Iscrizione pazienti e tracciamento partecipazione
 - Documentazione e note di gruppo
 

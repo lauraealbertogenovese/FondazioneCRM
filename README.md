@@ -94,22 +94,26 @@ npm run stop:prod        # Ferma ambiente di produzione
 ## 🌐 Endpoints API
 
 ### Autenticazione
+
 - `POST /auth/login` - Login utente
 - `POST /auth/logout` - Logout utente
 - `GET /auth/profile` - Profilo utente
 
 ### Pazienti
+
 - `GET /patients` - Lista pazienti
 - `POST /patients` - Crea paziente
 - `GET /patients/:id` - Dettaglio paziente
 - `PUT /patients/:id` - Aggiorna paziente
 
 ### Cartelle Cliniche
+
 - `GET /clinical/records` - Lista cartelle
 - `POST /clinical/records` - Crea cartella
 - `GET /clinical/visits` - Lista visite
 
 ### Gruppi
+
 - `GET /groups` - Lista gruppi
 - `POST /groups` - Crea gruppo
 - `GET /groups/:id/members` - Membri gruppo
@@ -124,24 +128,28 @@ npm run stop:prod        # Ferma ambiente di produzione
 ## 📊 Funzionalità
 
 ### Gestione Pazienti
+
 - Anagrafica completa (CF, tessera sanitaria, anamnesi medica)
 - Gestione documenti (DOC, PDF)
 - Storia modifiche
 - Export dati
 
 ### Cartelle Cliniche
+
 - Creazione e gestione cartelle
 - Visite e appuntamenti
 - Documenti clinici
 - Note e osservazioni
 
 ### Gruppi di Supporto
-- Gestione gruppi psicologici
+
+- Gestione gruppi conduttorici
 - Assegnazione pazienti con referenti
 - Calendario eventi
 - Documenti di gruppo
 
 ### Dashboard
+
 - Calendario attività personalizzato
 - Panoramica generale
 - Accesso rapido alle funzionalità

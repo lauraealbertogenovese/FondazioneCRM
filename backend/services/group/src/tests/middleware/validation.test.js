@@ -144,7 +144,7 @@ describe('Validation Schemas', () => {
 
       const { error } = memberSchema.validate(invalidData);
       expect(error).toBeDefined();
-      expect(error.details[0].message).toContain('patient, psychologist, referente, observer');
+      expect(error.details[0].message).toContain('patient, conductor');
     });
 
     it('should set default member_type', () => {

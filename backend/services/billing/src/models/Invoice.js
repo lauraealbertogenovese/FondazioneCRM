@@ -13,7 +13,6 @@ class Invoice {
     this.payment_method = data.payment_method;
     this.status = data.status;
     this.issue_date = data.issue_date;
-    this.due_date = data.due_date;
     this.payment_date = data.payment_date;
     this.payment_notes = data.payment_notes;
     this.created_by = data.created_by;
@@ -61,17 +60,14 @@ class Invoice {
       
       // Generate invoice number
       const invoiceNumber = await this.generateInvoiceNumber();
-      
-      // Calculate due date (default 30 days from issue)
-      const dueDays = invoiceData.due_days || 30;
+   
       const issueDate = invoiceData.issue_date || new Date();
-      const dueDate = moment(issueDate).add(dueDays, 'days').toDate();
       
       const queryText = `
         INSERT INTO billing.invoices (
           invoice_number, patient_id, patient_name, patient_cf,
-          description, amount, payment_method, issue_date, due_date, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+          description, amount, payment_method, issue_date, created_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
       `;
       
@@ -84,7 +80,6 @@ class Invoice {
         invoiceData.amount,
         invoiceData.payment_method || 'contanti',
         issueDate,
-        dueDate,
         createdBy
       ];
       
@@ -238,10 +233,7 @@ class Invoice {
         patientCF = patient.codice_fiscale;
       }
 
-      // Calculate due date if changed
-      const dueDays = invoiceData.due_days || 30;
       const issueDate = invoiceData.issue_date || existingInvoice.issue_date;
-      const dueDate = moment(issueDate).add(dueDays, 'days').toDate();
 
       const queryText = `
         UPDATE billing.invoices 
@@ -252,9 +244,8 @@ class Invoice {
             amount = $5,
             payment_method = $6,
             issue_date = $7,
-            due_date = $8,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $9
+        WHERE id = $8
         RETURNING *
       `;
       
@@ -266,7 +257,6 @@ class Invoice {
         invoiceData.amount,
         invoiceData.payment_method || 'contanti',
         issueDate,
-        dueDate,
         id
       ];
       
@@ -334,7 +324,6 @@ class Invoice {
       UPDATE billing.invoices 
       SET status = 'overdue' 
       WHERE status = 'pending' 
-        AND due_date < CURRENT_DATE
       RETURNING id, invoice_number
     `);
     

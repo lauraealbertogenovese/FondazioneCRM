@@ -1,7 +1,8 @@
 # 🐛 Bug Hunting and Functionality Testing Plan
+
 # Fondazione CRM - Complete Testing Strategy
 
-*Based on comprehensive analysis of all project documentation and current system status*
+_Based on comprehensive analysis of all project documentation and current system status_
 
 ---
 
@@ -10,13 +11,14 @@
 **Current Status**: System is **95% functional** with MVP core completed  
 **System Score**: 8.4/10 (A- Grade) - Excellent foundation  
 **Primary Goal**: Systematic testing to identify remaining bugs and validate all functionalities  
-**Secondary Goal**: Prepare roadmap for enterprise-grade improvements  
+**Secondary Goal**: Prepare roadmap for enterprise-grade improvements
 
 ---
 
 ## 🎯 **TESTING SCOPE OVERVIEW**
 
 ### ✅ **Completed Components (Validation Required)**
+
 - **Backend Services**: Auth, Patient, Clinical, Group (5/5 complete)
 - **Frontend Pages**: 15+ pages with modern UI
 - **Database**: PostgreSQL with 4 separate schemas
@@ -24,11 +26,13 @@
 - **Real Data Integration**: All mock data eliminated ✅
 
 ### 🔄 **In Progress Components (Testing Required)**
+
 - **Billing Service**: Partially implemented (backend missing)
 - **Admin Panel**: System monitoring and configuration
 - **File Upload/Download**: Cross-service document management
 
 ### 📅 **Future Phase Components**
+
 - **Calendar System**: Multi-doctor scheduling (planned next phase)
 - **Advanced Reporting**: Analytics and insights
 - **GDPR Compliance Tools**: Data export/deletion requests
@@ -36,11 +40,13 @@
 ---
 
 ## 🧪 **PHASE 1: CRITICAL FUNCTIONALITY TESTING**
-*Priority: 🔴 HIGH - Essential for production readiness*
+
+_Priority: 🔴 HIGH - Essential for production readiness_
 
 ### **1.1 Authentication & Authorization System**
 
 #### **🔐 Login Flow Testing**
+
 ```bash
 # Test Cases
 ✓ Valid credentials (admin2/password123) → Dashboard
@@ -52,15 +58,17 @@
 ```
 
 **Expected Results:**
+
 - ✅ Login successful with valid credentials
 - ❌ Access denied for invalid attempts
 - 🔄 Automatic token refresh on expiration
 - 🛡️ No SQL injection vulnerabilities
 
 #### **🎭 Role-Based Access Control**
+
 ```bash
 # Test Matrix by Role
-ROLE: Clinico (Doctor/Psychologist)
+ROLE: Clinico (Doctor/Conductor)
 ✓ Can access: Patients, Clinical Records, Groups
 ✗ Cannot access: Billing, User Management, System Admin
 
@@ -74,6 +82,7 @@ ROLE: Root/Admin
 ```
 
 **Test Procedure:**
+
 1. Login with each role type
 2. Attempt to access restricted URLs directly
 3. Verify menu items show/hide correctly
@@ -82,33 +91,35 @@ ROLE: Root/Admin
 ### **1.2 Patient Management System**
 
 #### **📝 Patient CRUD Operations**
+
 ```javascript
 // Critical Test Scenarios
 const patientTests = {
   create: {
     validData: "Complete anagrafica with all required fields",
-    invalidCF: "Duplicate Codice Fiscale rejection", 
+    invalidCF: "Duplicate Codice Fiscale rejection",
     missingRequired: "Nome, Cognome, CF validation",
-    xssAttempts: "HTML/script tag sanitization"
+    xssAttempts: "HTML/script tag sanitization",
   },
   read: {
     listView: "Pagination and filtering functionality",
     detailView: "Complete patient profile display",
-    searchFunction: "Nome, CF, diagnosis search accuracy"
+    searchFunction: "Nome, CF, diagnosis search accuracy",
   },
   update: {
     editProfile: "Anagrafica modifications save correctly",
     clinicalData: "Substance abuse, diagnosis updates",
-    consensoGDPR: "Privacy consent tracking"
+    consensoGDPR: "Privacy consent tracking",
   },
   delete: {
     softDelete: "Patient deactivation (not permanent deletion)",
-    dependencyCheck: "Cannot delete if linked to groups/clinical records"
-  }
+    dependencyCheck: "Cannot delete if linked to groups/clinical records",
+  },
 };
 ```
 
 #### **🔍 Advanced Search & Filtering**
+
 ```bash
 # Filter Test Cases
 ✓ By Name/Surname → Partial match results
@@ -121,6 +132,7 @@ const patientTests = {
 ```
 
 #### **📁 Document Management Testing**
+
 ```bash
 # File Upload/Download Tests
 ✓ Supported formats: PDF, DOCX, JPG, PNG (max 10MB)
@@ -134,25 +146,27 @@ const patientTests = {
 ### **1.3 Clinical Records System**
 
 #### **🏥 Clinical Workflow Testing**
+
 ```javascript
 const clinicalTests = {
   cartelleCliniche: {
     creation: "New clinical record with patient assignment",
     notesCronologiche: "Timestamp and author tracking",
     diagnosisTracking: "Clinical diagnosis history",
-    visitRecords: "Appointment and visit logging"
+    visitRecords: "Appointment and visit logging",
   },
   permissions: {
     cliniciOnly: "Administrative users cannot access",
     patientLinking: "Records properly linked to patients",
-    auditTrail: "All modifications logged with user/timestamp"
-  }
+    auditTrail: "All modifications logged with user/timestamp",
+  },
 };
 ```
 
 ### **1.4 Group Therapy Management**
 
 #### **👥 Group Operations Testing**
+
 ```bash
 # Group Management Test Suite
 ✓ Group Creation → Conduttore assignment, description
@@ -166,11 +180,13 @@ const clinicalTests = {
 ---
 
 ## 🔬 **PHASE 2: INTEGRATION & API TESTING**
-*Priority: 🟡 MEDIUM - System reliability validation*
+
+_Priority: 🟡 MEDIUM - System reliability validation_
 
 ### **2.1 Microservices Communication**
 
 #### **🌐 API Gateway Testing**
+
 ```bash
 # Service Routing Tests
 curl -X GET http://localhost:3000/patients → Patient Service (3002)
@@ -187,14 +203,15 @@ Timeout → 408 Request Timeout
 ```
 
 #### **📊 Real Data Integration Testing**
+
 ```javascript
 // Verify No Mock Data Remains
 const dataSourceTests = {
   dashboard: "All statistics from real API calls",
   patientStats: "Live count from database",
-  clinicalRecords: "Dynamic from clinical service", 
+  clinicalRecords: "Dynamic from clinical service",
   groupMetrics: "Real-time group statistics",
-  systemMonitoring: "Actual service health checks"
+  systemMonitoring: "Actual service health checks",
 };
 
 // Test Data Flow: Database → Service → API → Frontend
@@ -203,6 +220,7 @@ const dataSourceTests = {
 ### **2.2 Database Integrity Testing**
 
 #### **🗄️ PostgreSQL Schema Validation**
+
 ```sql
 -- Schema Separation Test
 SELECT schemaname FROM pg_tables WHERE schemaname IN ('auth', 'patient', 'clinical', 'group');
@@ -219,6 +237,7 @@ LEFT JOIN clinical.clinical_records cr ON p.id = cr.patient_id;
 ```
 
 #### **🔒 GDPR Compliance Validation**
+
 ```bash
 # Privacy Controls Testing
 ✓ Consent tracking → consenso_trattamento_dati field
@@ -231,11 +250,13 @@ LEFT JOIN clinical.clinical_records cr ON p.id = cr.patient_id;
 ---
 
 ## 🎮 **PHASE 3: USER EXPERIENCE TESTING**
-*Priority: 🟠 MEDIUM - User acceptance validation*
+
+_Priority: 🟠 MEDIUM - User acceptance validation_
 
 ### **3.1 Frontend UI/UX Testing**
 
 #### **📱 Responsive Design Testing**
+
 ```bash
 # Device Testing Matrix
 ✓ Desktop (1920x1080, 1366x768)
@@ -245,29 +266,31 @@ LEFT JOIN clinical.clinical_records cr ON p.id = cr.patient_id;
 ```
 
 #### **🎨 Material-UI Component Testing**
+
 ```javascript
 const uiTests = {
   navigation: {
     sidebarMenus: "Role-based menu items display",
     breadcrumbs: "Navigation path accuracy",
-    backButtons: "Return to previous page functionality"
+    backButtons: "Return to previous page functionality",
   },
   forms: {
     validation: "Real-time field validation messages",
     submission: "Loading states and success feedback",
-    errorHandling: "Clear error message display"
+    errorHandling: "Clear error message display",
   },
   dataDisplay: {
     tables: "Sorting, pagination, filtering",
     charts: "Dynamic data visualization",
-    modalDialogs: "Proper overlay and close functionality"
-  }
+    modalDialogs: "Proper overlay and close functionality",
+  },
 };
 ```
 
 ### **3.2 Workflow Testing**
 
 #### **🏥 Clinical Workflow Simulation**
+
 ```bash
 # End-to-End Clinical Scenario
 1. Doctor logs in with clinical role
@@ -283,6 +306,7 @@ const uiTests = {
 ```
 
 #### **💼 Administrative Workflow Simulation**
+
 ```bash
 # End-to-End Billing Scenario (When implemented)
 1. Admin logs in with administrative role
@@ -298,11 +322,13 @@ const uiTests = {
 ---
 
 ## 🛡️ **PHASE 4: SECURITY & PERFORMANCE TESTING**
-*Priority: 🔴 HIGH - Production security validation*
+
+_Priority: 🔴 HIGH - Production security validation_
 
 ### **4.1 Security Penetration Testing**
 
 #### **🔐 Authentication Security**
+
 ```bash
 # JWT Security Tests
 ✓ Token forgery attempts → Verification fails
@@ -318,26 +344,28 @@ const uiTests = {
 ```
 
 #### **🛡️ Input Sanitization Testing**
+
 ```javascript
 const securityTests = {
   sqlInjection: {
     payloads: ["'; DROP TABLE patients; --", "1' OR '1'='1"],
-    expectedResult: "Sanitized/rejected, no database impact"
+    expectedResult: "Sanitized/rejected, no database impact",
   },
   xssAttempts: {
     payloads: ["<script>alert('xss')</script>", "javascript:alert(1)"],
-    expectedResult: "HTML encoded, script not executed"
+    expectedResult: "HTML encoded, script not executed",
   },
   fileUpload: {
     maliciousFiles: ["virus.exe", "script.bat", "malware.php"],
-    expectedResult: "File type validation rejects dangerous files"
-  }
+    expectedResult: "File type validation rejects dangerous files",
+  },
 };
 ```
 
 ### **4.2 Performance & Load Testing**
 
 #### **⚡ API Response Time Testing**
+
 ```bash
 # Performance Benchmarks
 Target: < 200ms for 95% of requests
@@ -352,6 +380,7 @@ EXPLAIN ANALYZE SELECT * FROM patient.patients LIMIT 50;
 ```
 
 #### **💾 Memory & Resource Monitoring**
+
 ```bash
 # Docker Container Monitoring
 docker stats fondazione-crm-api-gateway
@@ -368,11 +397,13 @@ SELECT schemaname, tablename, n_tup_ins, n_tup_upd, n_tup_del FROM pg_stat_user_
 ---
 
 ## 🐛 **PHASE 5: BUG HUNTING METHODOLOGY**
-*Priority: 🔴 HIGH - Systematic issue identification*
+
+_Priority: 🔴 HIGH - Systematic issue identification_
 
 ### **5.1 Known Issue Areas (From Analysis)**
 
 #### **🚨 Critical Issues to Investigate**
+
 ```bash
 # Environment Configuration Issues
 ✓ Docker environment variables → All services accessible
@@ -380,7 +411,7 @@ SELECT schemaname, tablename, n_tup_ins, n_tup_upd, n_tup_del FROM pg_stat_user_
 ✓ Service communication → No CORS or networking issues
 ✓ JWT secret consistency → Same secret across services
 
-# Data Flow Issues  
+# Data Flow Issues
 ✓ Mock data elimination → All real data confirmed
 ✓ API endpoint responses → Correct data structure
 ✓ Frontend data binding → Real-time updates
@@ -388,24 +419,26 @@ SELECT schemaname, tablename, n_tup_ins, n_tup_upd, n_tup_del FROM pg_stat_user_
 ```
 
 #### **⚠️ Potential Regression Areas**
+
 ```javascript
 const regressionTests = {
   recentChanges: {
     systemService: "Real data integration working correctly",
-    authInterceptor: "Token refresh still functioning", 
-    apiRouting: "All microservices accessible"
+    authInterceptor: "Token refresh still functioning",
+    apiRouting: "All microservices accessible",
   },
   complexWorkflows: {
     patientGroupAssignment: "Multi-step patient-group linking",
     documentUploadFlow: "File handling across services",
-    rolePermissionFlow: "Access control edge cases"
-  }
+    rolePermissionFlow: "Access control edge cases",
+  },
 };
 ```
 
 ### **5.2 Edge Case Testing**
 
 #### **🎯 Boundary Condition Testing**
+
 ```bash
 # Data Limits
 ✓ Maximum field lengths → Text truncation handling
@@ -420,59 +453,63 @@ const regressionTests = {
 ```
 
 #### **🔄 Error Recovery Testing**
+
 ```javascript
 const errorRecoveryTests = {
   networkFailures: {
     apiTimeout: "Request timeout handling and retry logic",
     serviceDown: "Graceful degradation when service unavailable",
-    partialFailure: "Some services up, others down"
+    partialFailure: "Some services up, others down",
   },
   dataCorruption: {
     malformedJson: "API response parsing error handling",
     brokenForeignKeys: "Database constraint violations",
-    incompleteRecords: "Missing required field handling"
-  }
+    incompleteRecords: "Missing required field handling",
+  },
 };
 ```
 
 ---
 
 ## 📊 **PHASE 6: AUTOMATED TESTING FRAMEWORK**
-*Priority: 🟡 MEDIUM - Long-term maintenance*
+
+_Priority: 🟡 MEDIUM - Long-term maintenance_
 
 ### **6.1 Backend Testing Suite**
 
 #### **🧪 Unit Testing Setup**
+
 ```javascript
 // Jest Configuration for Each Service
 const testStructure = {
   "backend/services/auth/__tests__/": {
     "models/User.test.js": "User model methods",
     "routes/auth.test.js": "Authentication endpoints",
-    "utils/jwt.test.js": "JWT utility functions"
+    "utils/jwt.test.js": "JWT utility functions",
   },
   "backend/services/patient/__tests__/": {
-    "models/Patient.test.js": "Patient CRUD operations", 
+    "models/Patient.test.js": "Patient CRUD operations",
     "routes/patients.test.js": "Patient API endpoints",
-    "validation/patient.test.js": "Input validation logic"
-  }
+    "validation/patient.test.js": "Input validation logic",
+  },
   // Similar structure for clinical and group services
 };
 
 // Sample Test Cases
-describe('Patient Service', () => {
-  test('should create patient with valid data', async () => {
+describe("Patient Service", () => {
+  test("should create patient with valid data", async () => {
     const patient = await Patient.create(validPatientData);
     expect(patient.id).toBeDefined();
   });
-  
-  test('should reject duplicate Codice Fiscale', async () => {
+
+  test("should reject duplicate Codice Fiscale", async () => {
     await expect(Patient.create(duplicatePatient)).rejects.toThrow();
   });
 });
 ```
 
 #### **🔗 Integration Testing**
+
 ```bash
 # API Integration Tests
 npm run test:integration
@@ -487,41 +524,45 @@ npm run test:services
 ### **6.2 Frontend Testing Suite**
 
 #### **⚛️ React Component Testing**
+
 ```javascript
 // React Testing Library + Jest
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-describe('PatientListPage', () => {
-  test('displays patient list from API', async () => {
+describe("PatientListPage", () => {
+  test("displays patient list from API", async () => {
     render(<PatientListPage />);
     await waitFor(() => {
-      expect(screen.getByText('Mario Rossi')).toBeInTheDocument();
+      expect(screen.getByText("Mario Rossi")).toBeInTheDocument();
     });
   });
-  
-  test('filters patients by search term', async () => {
+
+  test("filters patients by search term", async () => {
     render(<PatientListPage />);
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Mario' } });
+    fireEvent.change(screen.getByRole("textbox"), {
+      target: { value: "Mario" },
+    });
     await waitFor(() => {
-      expect(screen.getByText('Mario Rossi')).toBeInTheDocument();
-      expect(screen.queryByText('Luigi Verdi')).not.toBeInTheDocument();
+      expect(screen.getByText("Mario Rossi")).toBeInTheDocument();
+      expect(screen.queryByText("Luigi Verdi")).not.toBeInTheDocument();
     });
   });
 });
 ```
 
 #### **🔄 End-to-End Testing**
+
 ```javascript
 // Cypress E2E Tests
-describe('Clinical Workflow', () => {
-  it('completes full patient management flow', () => {
-    cy.login('clinico', 'password');
-    cy.visit('/patients');
-    cy.contains('Nuovo Paziente').click();
+describe("Clinical Workflow", () => {
+  it("completes full patient management flow", () => {
+    cy.login("clinico", "password");
+    cy.visit("/patients");
+    cy.contains("Nuovo Paziente").click();
     cy.fillPatientForm(patientData);
-    cy.contains('Salva').click();
-    cy.url().should('include', '/patients/');
-    cy.contains(patientData.nome).should('be.visible');
+    cy.contains("Salva").click();
+    cy.url().should("include", "/patients/");
+    cy.contains(patientData.nome).should("be.visible");
   });
 });
 ```
@@ -531,14 +572,16 @@ describe('Clinical Workflow', () => {
 ## 📈 **TESTING EXECUTION PLAN**
 
 ### **Week 1-2: Critical Functionality (Phase 1)**
+
 ```bash
 Day 1-2: Authentication & Authorization comprehensive testing
-Day 3-5: Patient Management system validation  
+Day 3-5: Patient Management system validation
 Day 6-7: Clinical Records workflow testing
 Day 8-10: Group Management functionality verification
 ```
 
 ### **Week 3: Integration & Performance (Phase 2-4)**
+
 ```bash
 Day 1-3: API integration and microservices communication
 Day 4-5: Database integrity and performance testing
@@ -546,6 +589,7 @@ Day 6-7: Security penetration testing and vulnerability assessment
 ```
 
 ### **Week 4: Bug Hunting & Quality Assurance (Phase 5)**
+
 ```bash
 Day 1-3: Systematic edge case testing and error scenarios
 Day 4-5: Cross-browser and device compatibility testing
@@ -553,6 +597,7 @@ Day 6-7: User acceptance testing with clinical workflow simulation
 ```
 
 ### **Ongoing: Automated Testing (Phase 6)**
+
 ```bash
 Setup automated test suites for continuous integration
 Implement monitoring and alerting for production deployment
@@ -564,13 +609,15 @@ Create regression test automation for future development
 ## 🎯 **SUCCESS METRICS & ACCEPTANCE CRITERIA**
 
 ### **📊 Quantitative Goals**
+
 - **Functionality Coverage**: 95% of core features working correctly
-- **Performance**: API response time < 200ms for 95% of requests  
+- **Performance**: API response time < 200ms for 95% of requests
 - **Uptime**: System availability > 99.5% during testing period
 - **Security**: Zero critical vulnerabilities found
 - **User Experience**: Task completion rate > 90% for clinical workflows
 
 ### **✅ Acceptance Criteria**
+
 ```bash
 # System Ready for Production When:
 ✅ All authentication flows work correctly
@@ -585,6 +632,7 @@ Create regression test automation for future development
 ```
 
 ### **🚨 Critical Blocker Criteria**
+
 ```bash
 # System NOT Ready If:
 ❌ Authentication failures or security vulnerabilities
@@ -600,6 +648,7 @@ Create regression test automation for future development
 ## 🔄 **CONTINUOUS TESTING STRATEGY**
 
 ### **📋 Daily Testing Checklist**
+
 ```bash
 # Development Daily Checks
 □ All services start correctly via Docker Compose
@@ -611,8 +660,10 @@ Create regression test automation for future development
 ```
 
 ### **📊 Weekly Testing Reports**
+
 ```markdown
 # Weekly Testing Report Template
+
 **Date Range**: [Start] - [End]
 **Tests Executed**: [Number]
 **Bugs Found**: [Critical/Major/Minor breakdown]
@@ -623,6 +674,7 @@ Create regression test automation for future development
 ```
 
 ### **🎯 Release Testing Gates**
+
 ```bash
 # Before Any Production Release
 ✅ All automated tests passing
@@ -639,6 +691,7 @@ Create regression test automation for future development
 ## 📚 **TESTING DOCUMENTATION & KNOWLEDGE BASE**
 
 ### **📖 Test Case Repository**
+
 ```bash
 /testing-documentation/
 ├── test-cases/
@@ -661,6 +714,7 @@ Create regression test automation for future development
 ```
 
 ### **🔧 Testing Tools & Environment**
+
 ```bash
 # Recommended Testing Stack
 Backend Testing: Jest, Supertest, Postman/Insomnia
@@ -691,4 +745,4 @@ The system demonstrates professional-grade implementation with strong foundation
 
 ---
 
-*This testing plan is a living document that should be updated as testing progresses and new requirements emerge.*
+_This testing plan is a living document that should be updated as testing progresses and new requirements emerge._

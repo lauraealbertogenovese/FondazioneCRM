@@ -9,23 +9,23 @@ INSERT INTO patient.patients (
 ) VALUES
 ('Mario', 'Rossi', '1985-03-15', 'Milano', 'M', '+39 320 1234567', 'mario.rossi@email.com',
  'Via Roma 123', 'Milano', '20100', 'MI', 'RSSMRA85C15F205X', '80380800301',
- true, 2, 'Alcol', 'Operaio', 'married', 'Paziente molto collaborativo', 1),
+ true, 1, 'Alcol', 'Operaio', 'married', 'Paziente molto collaborativo', 1),
 
 ('Lucia', 'Bianchi', '1990-07-22', 'Roma', 'F', '+39 335 9876543', 'lucia.bianchi@email.com',
  'Corso Italia 45', 'Roma', '00100', 'RM', 'BNCLCU90L62H501Y', '80380800302',
- true, 2, 'Cocaina', 'Impiegata', 'single', 'Prima volta in terapia', 1),
+ true, 1, 'Cocaina', 'Impiegata', 'single', 'Prima volta in terapia', 1),
 
 ('Andrea', 'Verdi', '1978-11-08', 'Napoli', 'M', '+39 347 5555666', 'andrea.verdi@email.com',
  'Piazza Garibaldi 12', 'Napoli', '80100', 'NA', 'VRDNDR78S08F839Z', '80380800303',
- false, 2, 'Eroina', 'Muratore', 'divorced', 'Necessita supporto familiare', 1),
+ false, 1, 'Eroina', 'Muratore', 'divorced', 'Necessita supporto familiare', 1),
 
 ('Sofia', 'Neri', '1995-01-30', 'Torino', 'F', '+39 368 3333444', 'sofia.neri@email.com',
  'Via Dante 67', 'Torino', '10100', 'TO', 'NRISFO95A70L219W', '80380800304',
- true, 2, 'Cannabis', 'Studentessa', 'single', 'Molto motivata al cambiamento', 1),
+ true, 1, 'Cannabis', 'Studentessa', 'single', 'Molto motivata al cambiamento', 1),
 
 ('Francesco', 'Gialli', '1988-09-12', 'Firenze', 'M', '+39 349 9999000', 'francesco.gialli@email.com',
  'Viale Europa 89', 'Firenze', '50100', 'FI', 'GLLFNC88P12D612Q', '80380800305',
- true, 2, 'Metadone', 'Cameriere', 'cohabiting', 'In programma di mantenimento', 1);
+ true, 1, 'Metadone', 'Cameriere', 'cohabiting', 'In programma di mantenimento', 1);
 
 -- Inserimento cartelle cliniche per i pazienti
 INSERT INTO clinical.clinical_records (

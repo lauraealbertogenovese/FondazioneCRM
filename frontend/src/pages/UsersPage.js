@@ -139,8 +139,8 @@ const UsersPage = () => {
         bgColor: alpha(theme.palette.primary.main, 0.1),
         textColor: theme.palette.primary.main
       },
-      psychologist: { 
-        label: 'Psicologo', 
+      conductor: { 
+        label: 'Conduttore', 
         color: 'secondary',
         icon: PsychologyIcon,
         bgColor: alpha(theme.palette.secondary.main, 0.1),

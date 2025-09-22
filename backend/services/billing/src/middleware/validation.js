@@ -48,14 +48,7 @@ const createInvoiceSchema = Joi.object({
   payment_method: Joi.string().valid('contanti', 'tracciabile').default('contanti')
     .messages({
       'any.only': 'Modalità di pagamento deve essere "contanti" o "tracciabile"'
-    }),
-    
-  due_days: Joi.number().integer().min(1).max(365).default(30)
-    .messages({
-      'number.min': 'Giorni scadenza deve essere almeno 1',
-      'number.max': 'Giorni scadenza non può superare 365'
-    }),
-    
+    }), 
   issue_date: Joi.date().max('now').optional()
     .messages({
       'date.max': 'Data emissione non può essere futura'

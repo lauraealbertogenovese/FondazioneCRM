@@ -69,7 +69,7 @@ const realisticSupportGroups = [
     start_date: new Date('2024-02-15'),
     end_date: new Date('2024-12-15'), // 10-month program
     facilitator_notes: 'Gruppo chiuso terapeutico. Focus su transizione età adulta. Uso di tecniche espressive e creative.',
-    created_by: 5, // Psicologa Giulia Bianchi
+    created_by: 5, // Conduttrice Giulia Bianchi
     created_at: new Date('2024-02-10'),
     updated_at: new Date('2024-02-10')
   },
@@ -119,7 +119,7 @@ const realisticSupportGroups = [
     start_date: new Date('2024-01-10'),
     end_date: new Date('2024-07-10'), // 6-month program
     facilitator_notes: 'Gruppo semi-aperto con possibilità inserimenti ogni mese. Lavoro strutturato su ABC model e homework settimanali.',
-    created_by: 3, // Psicologa Laura Ferrari
+    created_by: 3, // Conduttrice Laura Ferrari
     created_at: new Date('2024-01-05'),
     updated_at: new Date('2024-01-05')
   },
@@ -135,7 +135,7 @@ const realisticSupportGroups = [
     start_date: new Date('2024-02-20'),
     end_date: null,
     facilitator_notes: 'Approccio innovativo molto apprezzato. Riduzione stress e ansia. Migliorata gestione impulsi e craving.',
-    created_by: 4, // Psicologo Alessandro Conti
+    created_by: 4, // Conduttore Alessandro Conti
     created_at: new Date('2024-02-15'),
     updated_at: new Date('2024-02-15')
   },
@@ -168,7 +168,7 @@ const realisticSupportGroups = [
     start_date: new Date('2024-02-01'),
     end_date: new Date('2024-05-01'), // 3-month program
     facilitator_notes: 'Gruppo chiuso intensivo. Partecipanti con storia di agiti etero/auto aggressivi. Lavoro su trigger e strategie coping.',
-    created_by: 4, // Psicologo Alessandro Conti
+    created_by: 4, // Conduttore Alessandro Conti
     created_at: new Date('2024-01-25'),
     updated_at: new Date('2024-01-25')
   },
@@ -219,7 +219,7 @@ const realisticSupportGroups = [
     start_date: new Date('2023-11-01'),
     end_date: new Date('2024-01-31'),
     facilitator_notes: 'Programma completato con successo. 7/8 partecipanti hanno mantenuto astinenza. Follow-up a 3 mesi positivo.',
-    created_by: 3, // Psicologa Laura Ferrari
+    created_by: 3, // Conduttrice Laura Ferrari
     created_at: new Date('2023-10-25'),
     updated_at: new Date('2024-02-01')
   },
@@ -236,7 +236,7 @@ const realisticSupportGroups = [
     start_date: new Date('2024-01-15'),
     end_date: null,
     facilitator_notes: 'Difficoltà mantenimento frequenza adolescenti. Necessario ripensare format. Valutazione ripresa a settembre.',
-    created_by: 5, // Psicologa Giulia Bianchi
+    created_by: 5, // Conduttrice Giulia Bianchi
     created_at: new Date('2024-01-10'),
     updated_at: new Date('2024-03-01')
   }

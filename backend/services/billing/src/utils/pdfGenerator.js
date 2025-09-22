@@ -10,7 +10,6 @@ const generateInvoicePDF = async (invoice, companySettings = {}) => {
     const invoiceText = `
 FATTURA N. ${invoice.invoice_number}
 Data: ${moment(invoice.issue_date).format('DD/MM/YYYY')}
-Scadenza: ${moment(invoice.due_date).format('DD/MM/YYYY')}
 Paziente: ${invoice.patient_name}
 Codice Fiscale: ${invoice.patient_cf}
 Importo: €${invoice.amount}
@@ -187,7 +186,6 @@ const generateInvoiceHTML = (invoice, companySettings) => {
         </div>
         <div class="invoice-dates">
           <div><strong>Data Emissione:</strong> ${formatDate(invoice.issue_date)}</div>
-          ${invoice.payment_date ? `<div><strong>Data Pagamento:</strong> ${formatDate(invoice.payment_date)}</div>` : ''}
         </div>
       </div>
       

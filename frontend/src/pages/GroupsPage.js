@@ -562,7 +562,7 @@ const GroupsPage = () => {
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Nome Gruppo</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Tipo</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Psicologi</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Conduttori</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Membri</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Data Inizio</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: theme.palette.text.primary }}>Frequenza</TableCell>
@@ -633,11 +633,11 @@ const GroupsPage = () => {
                     </TableCell>
                     <TableCell>
                       <Box>
-                        {group.psychologists && group.psychologists.length > 0 ? (
-                          group.psychologists.map((psychologist, index) => (
+                        {group.conductors && group.conductors.length > 0 ? (
+                          group.conductors.map((conductor, index) => (
                             <Chip
                               key={index}
-                              label={psychologist}
+                              label={conductor}
                               size="small"
                               sx={{
                                 mr: 0.5,

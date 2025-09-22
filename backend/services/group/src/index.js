@@ -37,10 +37,10 @@ app.use((req, res, next) => {
     console.log(`[DEBUG MIDDLEWARE] Raw body:`, req.body);
     console.log(`[DEBUG MIDDLEWARE] Body type:`, typeof req.body);
     console.log(`[DEBUG MIDDLEWARE] Body keys:`, Object.keys(req.body || {}));
-    if (req.body && req.body.psychologists) {
-      console.log(`[DEBUG MIDDLEWARE] Psychologists found:`, req.body.psychologists);
+    if (req.body && req.body.conductors) {
+      console.log(`[DEBUG MIDDLEWARE] Conductors found:`, req.body.conductors);
     } else {
-      console.log(`[DEBUG MIDDLEWARE] No psychologists in body`);
+      console.log(`[DEBUG MIDDLEWARE] No conductors in body`);
     }
     if (req.body && req.body.members) {
       console.log(`[DEBUG MIDDLEWARE] Members found:`, req.body.members);

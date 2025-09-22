@@ -2,7 +2,7 @@
 
 Non tutti gli utenti devono avere accesso alle stesse informazioni.
 
-Ruolo Medico/Psicologo/Psichiatra:
+Ruolo Medico/Conduttore/Psichiatra:
 
 Accesso completo alle funzionalità di gestione delle cartelle cliniche e dei gruppi.
 
@@ -200,7 +200,7 @@ Gestione Fatturazione: La piattaforma dovrà includere una sezione (probabilment
 
 - Nel menu di navigazione è presente la voce **"Gruppi"**.
 - Cliccando su **"Gruppi"** si vede una tabella o lista dei gruppi esistenti.
-- Per ogni gruppo visibili: Nome del Gruppo, Psicologi , Numero di Pazienti membri.
+- Per ogni gruppo visibili: Nome del Gruppo, Conduttori , Numero di Pazienti membri.
 - Se non ci sono gruppi, si mostra il messaggio:  
   _"Nessun gruppo presente. Clicca su 'Nuovo Gruppo' per iniziare"_
 - Presente pulsante ben visibile **"Nuovo Gruppo"**.
@@ -209,7 +209,7 @@ Gestione Fatturazione: La piattaforma dovrà includere una sezione (probabilment
 
 ## 8) Creare nuovo gruppo
 
-**Come** Medico, voglio creare un nuovo gruppo definendo nome, descrizione e psicologi per iniziare un'attività terapeutica di gruppo.
+**Come** Medico, voglio creare un nuovo gruppo definendo nome, descrizione e conduttori per iniziare un'attività terapeutica di gruppo.
 
 ### Acceptance Test:
 
@@ -217,7 +217,7 @@ Gestione Fatturazione: La piattaforma dovrà includere una sezione (probabilment
 - Il modulo contiene:
   - Nome (testo, obbligatorio)
   - Descrizione (area testo estesa)
-  - Psicologi(selezione multipla di utenti con ruolo "Medico")
+  - Conduttori(selezione multipla di utenti con ruolo "Medico")
 - Almeno un conduttore è obbligatorio.
 - Dopo compilazione e clic su **"Salva"**, il gruppo viene creato.
 - Dopo salvataggio, si viene reindirizzati alla pagina dettaglio del gruppo.
@@ -231,7 +231,7 @@ Gestione Fatturazione: La piattaforma dovrà includere una sezione (probabilment
 ### Acceptance Test:
 
 - Dalla lista gruppi, cliccando su riga o nome si apre pagina dettaglio.
-- La pagina mostra Nome, Descrizione, elenco Psicologi .
+- La pagina mostra Nome, Descrizione, elenco Conduttori .
 - Presente sezioni distinte per:
   - Pazienti Membri
   - Diario di Gruppo
@@ -416,7 +416,7 @@ Non tutti gli utenti devono avere accesso alle stesse informazioni.
 
 ### Ruolo Clinico
 
-- Membro dell’Equipe Clinica, composta da Psicologi, Medici (Psichiatri e altri), Infermieri.
+- Membro dell’Equipe Clinica, composta da Conduttori, Medici (Psichiatri e altri), Infermieri.
 - Accesso completo alle funzionalità di gestione cartelle cliniche e gruppi.
 - Può creare, modificare e visualizzare dati di pazienti e gruppi.
 
@@ -482,7 +482,7 @@ Visibile solo ai ruoli Clinici. Gestione dedicata delle attività di gruppo.
 ### Creazione Gruppo
 
 - Un clinico può creare un nuovo gruppo.
-- Attributi: Nome (es. "Gruppo Familiari"), Psicologi(uno o più utenti Clinici), Descrizione attività/obiettivi.
+- Attributi: Nome (es. "Gruppo Familiari"), Conduttori(uno o più utenti Clinici), Descrizione attività/obiettivi.
 
 ### Associazione Pazienti
 

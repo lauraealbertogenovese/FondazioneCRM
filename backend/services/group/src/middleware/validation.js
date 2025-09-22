@@ -47,6 +47,7 @@ const groupSchema = Joi.object({
     .iso()
     .optional()
     .allow(null)
+    .empty('')
     .messages({
       'date.base': 'La data di inizio deve essere una data valida',
       'date.format': 'La data di inizio deve essere in formato ISO (YYYY-MM-DD)'
@@ -56,6 +57,7 @@ const groupSchema = Joi.object({
     .iso()
     .optional()
     .allow(null)
+    .empty('')
     .min(Joi.ref('start_date'))
     .messages({
       'date.base': 'La data di fine deve essere una data valida',
@@ -89,14 +91,14 @@ const groupUpdateSchema = groupSchema.fork(
   ['name', 'group_type'],
   (schema) => schema.optional()
 ).keys({
-  psychologists: Joi.array()
+  conductors: Joi.array()
     .items(Joi.number().integer().positive())
     .optional()
     .messages({
-      'array.base': 'I psicologi devono essere un array',
-      'number.base': 'Gli ID dei psicologi devono essere numeri',
-      'number.integer': 'Gli ID dei psicologi devono essere numeri interi',
-      'number.positive': 'Gli ID dei psicologi devono essere positivi'
+      'array.base': 'I conduttori devono essere un array',
+      'number.base': 'Gli ID dei conduttori devono essere numeri',
+      'number.integer': 'Gli ID dei conduttori devono essere numeri interi',
+      'number.positive': 'Gli ID dei conduttori devono essere positivi'
     }),
 
   members: Joi.array()
@@ -110,7 +112,7 @@ const groupUpdateSchema = groupSchema.fork(
     })
 });
 
-// Schema per la creazione di gruppi con psicologi e membri
+// Schema per la creazione di gruppi con conduttori e membri
 const groupCreateSchema = Joi.object({
   name: Joi.string()
     .trim()
@@ -156,6 +158,7 @@ const groupCreateSchema = Joi.object({
     .iso()
     .optional()
     .allow(null)
+    .empty('')
     .messages({
       'date.base': 'La data di inizio deve essere una data valida',
       'date.format': 'La data di inizio deve essere in formato ISO (YYYY-MM-DD)'
@@ -165,6 +168,7 @@ const groupCreateSchema = Joi.object({
     .iso()
     .optional()
     .allow(null)
+    .empty('')
     .min(Joi.ref('start_date'))
     .messages({
       'date.base': 'La data di fine deve essere una data valida',
@@ -195,12 +199,12 @@ const groupCreateSchema = Joi.object({
       'string.max': 'Il luogo degli incontri non può superare 200 caratteri'
     }),
 
-  psychologists: Joi.array()
+  conductors: Joi.array()
     .items(Joi.number().integer().positive())
     .min(1)
     .required()
     .messages({
-      'array.base': 'I psicologi devono essere un array',
+      'array.base': 'I conduttori devono essere un array',
       'array.min': 'Almeno un conduttore è obbligatorio',
       'any.required': 'Almeno un conduttore è obbligatorio'
     }),
@@ -228,11 +232,11 @@ const memberSchema = Joi.object({
     }),
 
   member_type: Joi.string()
-    .valid('patient', 'psychologist')
+    .valid('patient', 'conductor')
     .default('patient')
     .messages({
       'string.base': 'Il tipo di membro deve essere una stringa',
-      'any.only': 'Il tipo di membro deve essere uno tra: patient, psychologist'
+      'any.only': 'Il tipo di membro deve essere uno tra: patient, conductor'
     }),
 
   role: Joi.string()
@@ -259,11 +263,11 @@ const memberSchema = Joi.object({
 // Schema per l'aggiornamento dei membri
 const memberUpdateSchema = Joi.object({
   member_type: Joi.string()
-    .valid('patient', 'psychologist')
+    .valid('patient', 'conductor')
     .optional()
     .messages({
       'string.base': 'Il tipo di membro deve essere una stringa',
-      'any.only': 'Il tipo di membro deve essere uno tra: patient, psychologist'
+      'any.only': 'Il tipo di membro deve essere uno tra: patient, conductor'
     }),
 
   role: Joi.string()

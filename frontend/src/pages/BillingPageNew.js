@@ -238,7 +238,6 @@ const BillingPageNew = () => {
                 <TableCell>Descrizione</TableCell>
                 <TableCell align="right">Importo</TableCell>
                 <TableCell>Data Emissione</TableCell>
-                <TableCell>Data Pagamento</TableCell>
                 <TableCell align="center">Azioni</TableCell>
               </TableRow>
             </TableHead>
@@ -307,11 +306,6 @@ const BillingPageNew = () => {
                     <TableCell>
                       <Typography variant="body2">
                         {formatDate(billing.issue_date)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {formatDate(billing.payment_date)}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">

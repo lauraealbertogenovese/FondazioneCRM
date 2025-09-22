@@ -140,8 +140,8 @@ const GroupDetailPage = () => {
     switch (type) {
       case "patient":
         return "Paziente";
-      case "psychologist":
-        return "Psicologo";
+      case "conductor":
+        return "Conduttore";
       default:
         return type;
     }
@@ -151,7 +151,7 @@ const GroupDetailPage = () => {
     switch (type) {
       case "patient":
         return "primary";
-      case "psychologist":
+      case "conductor":
         return "secondary";
       default:
         return "default";

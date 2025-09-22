@@ -42,7 +42,6 @@ const CreateInvoicePage = () => {
     description: '',
     amount: '',
     payment_method: 'contanti',
-    due_days: 30,
     issue_date: new Date().toISOString().split('T')[0] // Today's date
   });
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -124,7 +123,6 @@ const CreateInvoicePage = () => {
     const invoiceData = {
       ...formData,
       amount: parseFloat(formData.amount),
-      due_days: parseInt(formData.due_days),
       issue_date: formData.issue_date ? new Date(formData.issue_date) : undefined
     };
 
@@ -178,7 +176,6 @@ const CreateInvoicePage = () => {
       const invoiceData = {
         ...formData,
         amount: parseFloat(formData.amount),
-        due_days: parseInt(formData.due_days),
         issue_date: formData.issue_date ? new Date(formData.issue_date) : undefined
       };
 

@@ -97,7 +97,6 @@ const InvoiceDetailPage = () => {
         description: invoice.description,
         amount: invoice.amount,
         payment_method: invoice.payment_method,
-        due_days: 30, // Default or calculate from dates
         issue_date: invoice.issue_date
       };
 
@@ -254,15 +253,7 @@ const InvoiceDetailPage = () => {
                 <Typography variant="body1">{formatDate(invoice.issue_date)}</Typography>
               </Grid>
               
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary">Data Scadenza</Typography>
-                <Typography 
-                  variant="body1"
-                  color={invoice.status === 'overdue' ? 'error' : 'text.primary'}
-                >
-                  {formatDate(invoice.due_date)}
-                </Typography>
-              </Grid>
+             
               
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">Modalità di Pagamento</Typography>
@@ -270,14 +261,6 @@ const InvoiceDetailPage = () => {
                   {invoice.payment_method}
                 </Typography>
               </Grid>
-              
-              {invoice.payment_date && (
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" color="text.secondary">Data Pagamento</Typography>
-                  <Typography variant="body1">{formatDate(invoice.payment_date)}</Typography>
-                </Grid>
-              )}
-              
               <Grid item xs={12}>
                 <Typography variant="body2" color="text.secondary">Descrizione</Typography>
                 <Typography variant="body1" sx={{ mt: 1 }}>

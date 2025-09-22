@@ -27,7 +27,7 @@ export const GRANULAR_PERMISSION_TEMPLATE = {
       description: "Gestione gruppi terapeutici",
       access: false,
       create: false,
-      edit_own: false,     // Solo gruppi dove si è psicologi
+      edit_own: false,     // Solo gruppi dove si è conduttori
       edit_all: false,     // Tutti i gruppi
       manage_members: false,
       delete: false

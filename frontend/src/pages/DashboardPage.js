@@ -76,7 +76,7 @@ const DashboardPage = () => {
       description: "Organizzazione e gestione dei gruppi di supporto psicologico per il recupero.",
       features: [
         "Creazione gruppi tematici di supporto",
-        "Assegnazione psicologi e membri",
+        "Assegnazione conduttori e membri",
         "Gestione calendario attività di gruppo",
         "Monitoraggio partecipazione pazienti",
         "Documentazione sessioni di gruppo",
@@ -171,7 +171,7 @@ const DashboardPage = () => {
           Benvenuto nella Piattaforma CRM
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-          Sistema di gestione per fondazioni di assistenza psicologica e recupero dipendenze
+          Sistema di gestione per fondazioni di assistenza conduttorica e recupero dipendenze
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Ciao <strong>{user?.first_name} {user?.last_name}</strong>, 
@@ -308,7 +308,7 @@ const DashboardPage = () => {
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Questa piattaforma è stata progettata specificatamente per fondazioni e centri di assistenza 
-            psicologica che si occupano di recupero dalle dipendenze. Il sistema integra gestione pazienti, 
+            conduttorica che si occupano di recupero dalle dipendenze. Il sistema integra gestione pazienti, 
             documentazione clinica, supporto di gruppo e amministrazione in un'unica soluzione sicura e completa.
           </Typography>
         </CardContent>

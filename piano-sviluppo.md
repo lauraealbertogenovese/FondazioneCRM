@@ -24,7 +24,7 @@ Sviluppare un sistema gestionale completo per una fondazione specializzata nel r
 2. **Auth Service** - Gestione autenticazione e ruoli (Clinico, Amministrativo, Root)
 3. **Patient Service** - Gestione anagrafica pazienti con dati clinici sensibili
 4. **Clinical Service** - Gestione cartelle cliniche e diario cronologico
-5. **Group Service** - Gestione gruppi terapeutici e psicologi
+5. **Group Service** - Gestione gruppi terapeutici e conduttori
 6. **Billing Service** - Modulo fatturazione per ruolo amministrativo
 
 ### Comunicazione
@@ -35,7 +35,7 @@ Sviluppare un sistema gestionale completo per una fondazione specializzata nel r
 
 ## 3. Sistema di Ruoli e Permessi
 
-### Ruolo Clinico (Medico/Psicologo/Psichiatra)
+### Ruolo Clinico (Medico/Conduttore/Psichiatra)
 
 - **Accesso**: Completo alle funzionalità cliniche
 - **Può gestire**: Pazienti assegnati, cartelle cliniche, gruppi terapeutici
@@ -101,7 +101,7 @@ Sviluppare un sistema gestionale completo per una fondazione specializzata nel r
 ### Group Service
 
 - [x] Creazione e gestione gruppi terapeutici ✅
-- [x] Sistema psicologi (medici responsabili) ✅
+- [x] Sistema conduttori (medici responsabili) ✅
 - [x] Assegnazione pazienti ai gruppi ✅
 - [x] Diario di gruppo con note cronologiche ✅
 - [x] Gestione membri e statistiche ✅
@@ -151,7 +151,7 @@ Sviluppare un sistema gestionale completo per una fondazione specializzata nel r
 
 #### Schema: `group`
 
-- **groups** - Gruppi terapeutici con psicologi
+- **groups** - Gruppi terapeutici con conduttori
 - **group_members** - Iscrizioni pazienti con date ingresso/uscita
 - **group_notes** - Diario di gruppo cronologico
 - **group_documents** - Documenti condivisi gruppo

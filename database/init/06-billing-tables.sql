@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS billing.invoices (
   payment_method VARCHAR(20) DEFAULT 'contanti' CHECK (payment_method IN ('contanti', 'tracciabile')),
   status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'overdue', 'cancelled')),
   issue_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  due_date DATE NOT NULL,
   payment_date DATE,
   payment_notes TEXT,
   created_by INTEGER NOT NULL REFERENCES auth.users(id),
@@ -55,7 +54,6 @@ CREATE TABLE IF NOT EXISTS billing.billing_settings (
 CREATE INDEX IF NOT EXISTS idx_invoices_patient_id ON billing.invoices(patient_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status ON billing.invoices(status);
 CREATE INDEX IF NOT EXISTS idx_invoices_issue_date ON billing.invoices(issue_date);
-CREATE INDEX IF NOT EXISTS idx_invoices_due_date ON billing.invoices(due_date);
 CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice_id ON billing.invoice_items(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_invoice_id ON billing.payments(invoice_id);
 
@@ -78,7 +76,6 @@ CREATE TRIGGER update_invoices_updated_at
 INSERT INTO billing.billing_settings (setting_key, setting_value, description)
 VALUES 
   ('invoice_number_format', 'INV-{YYYY}-{###}', 'Format for auto-generated invoice numbers'),
-  ('default_due_days', '30', 'Default number of days for invoice due date'),
   ('company_name', 'Fondazione per il Recovery', 'Company name for invoices'),
   ('company_address', 'Via Roma 123, 00100 Roma', 'Company address for invoices'),
   ('company_vat', 'IT12345678901', 'Company VAT number'),

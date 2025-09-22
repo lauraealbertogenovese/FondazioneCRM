@@ -1,7 +1,7 @@
 -- Seed data per gruppi e membri
 -- Aggiunge membri ai gruppi esistenti per testing
 
--- Aggiungi membri al Gruppo Supporto Psicologico A (ID: 1)
+-- Aggiungi membri al Gruppo Supporto Conduttorico A (ID: 1)
 INSERT INTO "group".group_members (group_id, patient_id, user_id, member_type, role, joined_date, is_active, created_by) VALUES
 (1, 1, 1, 'patient', 'Membro attivo', '2025-09-01', true, 1),
 (1, 2, 1, 'patient', 'Membro attivo', '2025-09-02', true, 1),
@@ -12,11 +12,11 @@ INSERT INTO "group".group_members (group_id, patient_id, user_id, member_type, r
 (2, 4, 1, 'patient', 'Membro attivo', '2025-09-01', true, 1),
 (2, 5, 1, 'patient', 'Membro attivo', '2025-09-02', true, 1);
 
--- Aggiungi alcuni psicologi come membri dei gruppi (usando patient_id temporaneo)
--- Nota: In un sistema reale, questi dovrebbero essere utenti con ruolo psicologo
+-- Aggiungi alcuni conduttori come membri dei gruppi (usando patient_id temporaneo)
+-- Nota: In un sistema reale, questi dovrebbero essere utenti con ruolo conduttore
 INSERT INTO "group".group_members (group_id, patient_id, user_id, member_type, role, joined_date, is_active, notes, created_by) VALUES
-(1, 1, 1, 'psychologist', 'Coordinatore', '2025-08-30', true, 'Psicologo coordinatore del gruppo', 1),
-(2, 2, 1, 'psychologist', 'Terapeuta principale', '2025-08-30', true, 'Responsabile delle sessioni di riabilitazione', 1);
+(1, 1, 1, 'conductor', 'Coordinatore', '2025-08-30', true, 'Conduttore coordinatore del gruppo', 1),
+(2, 2, 1, 'conductor', 'Terapeuta principale', '2025-08-30', true, 'Responsabile delle sessioni di riabilitazione', 1);
 
 -- Aggiungi un gruppo aggiuntivo per test
 INSERT INTO "group".groups (name, description, group_type, max_members, status, start_date, meeting_frequency, meeting_location, created_by) VALUES

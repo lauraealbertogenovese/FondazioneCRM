@@ -101,7 +101,7 @@ router.post("/", authenticateToken, validateGroupCreate, async (req, res) => {
       name,
       description,
       meeting_frequency,
-      psychologists = [],
+      conductors = [],
       members = [],
       start_date,
       end_date,
@@ -116,7 +116,7 @@ router.post("/", authenticateToken, validateGroupCreate, async (req, res) => {
       start_date,
       end_date,
       meeting_location,
-      psychologists,
+      conductors,
       members,
       group_type,
       meeting_frequency,
@@ -142,18 +142,18 @@ router.post("/", authenticateToken, validateGroupCreate, async (req, res) => {
     const newGroup = await Group.create(groupData);
     console.log(`[POST /groups] Group created with ID:`, newGroup.id);
 
-    // Add psychologists if provided
-    if (psychologists.length > 0) {
-      for (const psychologistId of psychologists) {
-        const psychologistData = {
+    // Add conductors if provided
+    if (conductors.length > 0) {
+      for (const conductorId of conductors) {
+        const conductorData = {
           group_id: newGroup.id,
-          user_id: parseInt(psychologistId, 10),
+          user_id: parseInt(conductorId, 10),
           patient_id: null,
-          member_type: "psychologist",
+          member_type: "conductor",
           created_by,
         };
-        await GroupMember.addMember(psychologistData);
-        console.log(`[POST /groups] Added psychologist:`, psychologistId);
+        await GroupMember.addMember(conductorData);
+        console.log(`[POST /groups] Added conductor:`, conductorId);
       }
     }
 
@@ -198,11 +198,11 @@ router.put(
       console.log(`[PUT /groups/${req.params.id}] Request received:`, req.body);
       const { id } = req.params;
 
-      const { psychologists = [], members = [], ...updateData } = req.body;
+      const { conductors = [], members = [], ...updateData } = req.body;
       console.log(`[PUT /groups/${id}] About to update with data:`, updateData);
       console.log(
-        `[PUT /groups/${id}] Extracted psychologists:`,
-        psychologists
+        `[PUT /groups/${id}] Extracted conductors:`,
+        conductors
       );
       console.log(`[PUT /groups/${id}] Extracted members:`, members);
 
@@ -217,7 +217,7 @@ router.put(
       }
 
       console.log(`[PUT /groups/${id}] Starting member management...`);
-      console.log(`[PUT /groups/${id}] Psychologists array:`, psychologists);
+      console.log(`[PUT /groups/${id}] Conductors array:`, conductors);
       console.log(`[PUT /groups/${id}] Members array:`, members);
 
       // Update group members
@@ -227,38 +227,38 @@ router.put(
         `[PUT /groups/${id}] Deleted ${deletedCount} existing members`
       );
 
-      // Add psychologists (users)
-      if (psychologists && psychologists.length > 0) {
+      // Add conductors (users)
+      if (conductors && conductors.length > 0) {
         console.log(
-          `[PUT /groups/${id}] Adding ${psychologists.length} psychologists...`
+          `[PUT /groups/${id}] Adding ${conductors.length} conductors...`
         );
-        for (const psychologistId of psychologists) {
+        for (const conductorId of conductors) {
           try {
-            const psychologistData = {
+            const conductorData = {
               group_id: parseInt(id, 10),
-              user_id: parseInt(psychologistId, 10),
-              member_type: "psychologist",
+              user_id: parseInt(conductorId, 10),
+              member_type: "conductor",
               is_active: true,
               created_by: req.user.id,
             };
             console.log(
-              `[PUT /groups/${id}] Adding psychologist with data:`,
-              psychologistData
+              `[PUT /groups/${id}] Adding conductor with data:`,
+              conductorData
             );
-            const result = await GroupMember.addMember(psychologistData);
+            const result = await GroupMember.addMember(conductorData);
             console.log(
-              `[PUT /groups/${id}] Added psychologist ${psychologistId} successfully:`,
+              `[PUT /groups/${id}] Added conductor ${conductorId} successfully:`,
               result
             );
           } catch (error) {
             console.error(
-              `[PUT /groups/${id}] Error adding psychologist ${psychologistId}:`,
+              `[PUT /groups/${id}] Error adding conductor ${conductorId}:`,
               error
             );
           }
         }
       } else {
-        console.log(`[PUT /groups/${id}] No psychologists to add`);
+        console.log(`[PUT /groups/${id}] No conductors to add`);
       }
 
       // Add patient members
@@ -365,10 +365,10 @@ router.post("/:id/members", authenticateToken, validateId, async (req, res) => {
       });
     }
 
-    if (member_type === "psychologist" && !user_id) {
+    if (member_type === "conductor" && !user_id) {
       return res.status(400).json({
         success: false,
-        error: "user_id is required for psychologist members",
+        error: "user_id is required for conductor members",
       });
     }
 
@@ -397,13 +397,13 @@ router.post("/:id/members", authenticateToken, validateId, async (req, res) => {
 
     if (member_type === "patient") {
       newMember = await GroupMember.addMember(memberData);
-    } else if (member_type === "psychologist") {
-      // For psychologists, we need to modify the data structure
-      const psychologistData = {
+    } else if (member_type === "conductor") {
+      // For conductors, we need to modify the data structure
+      const conductorData = {
         ...memberData,
-        patient_id: null, // Psychologists don't have patient_id
+        patient_id: null, // Conductors don't have patient_id
       };
-      newMember = await GroupMember.addMember(psychologistData);
+      newMember = await GroupMember.addMember(conductorData);
     }
 
     console.log(

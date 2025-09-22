@@ -96,7 +96,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F10.11 - Disturbi correlati all\'alcol, uso moderato con episodi di binge drinking',
     treatment_plan: 'Terapia cognitivo-comportamentale, training autocontrollo, supporto psicologico intensivo, monitoraggio settimanale',
     notes: 'Paziente di 31 anni con pattern di binge drinking weekend. Episodi di blackout. Iniziata terapia CBT focalizzata su trigger identification e coping strategies. Buona insight e collaborazione.',
-    created_by: 3 // Psicologa Laura Ferrari
+    created_by: 3 // Conduttrice Laura Ferrari
   },
   
   {
@@ -117,7 +117,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F14.21 - Disturbi correlati alla cocaina, dipendenza, in remissione precoce',
     treatment_plan: 'Mantenimento astinenza, terapia individuale CBT, gestione craving, supporto psicosociale, prevenzione ricadute',
     notes: 'Ex dipendenza da cocaina. Astinenza mantenuta da 6 mesi. Paziente di 33 anni, buon livello socio-culturale. Lavora su prevenzione ricadute e gestione stress. Relazioni interpersonali migliorate. Progetto di reinserimento lavorativo.',
-    created_by: 4 // Psicologo Alessandro Conti
+    created_by: 4 // Conduttore Alessandro Conti
   },
   
   {
@@ -137,7 +137,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F15.20 + F12.10 - Dipendenza da stimolanti e uso problematico cannabis',
     treatment_plan: 'Approccio motivazionale, terapia di gruppo per giovani adulti, psicoeducazione, supporto familiare',
     notes: 'Paziente giovane (28 anni) prima esperienza trattamento. Uso MDMA e cannabis problematico. Buona motivazione iniziale. Famiglia collaborativa. Frequenta gruppo terapeutico specifico per giovani adulti. Migliorata consapevolezza problema.',
-    created_by: 5 // Psicologa Giulia Bianchi (gruppi)
+    created_by: 5 // Conduttrice Giulia Bianchi (gruppi)
   },
   
   // Records for gambling addiction
@@ -169,7 +169,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F10.20 + F14.20 + F63.0 - Politossiccodipendenza e gioco patologico',
     treatment_plan: 'Trattamento integrato multi-problematico, case management intensivo, terapia individuale e gruppo, supporto sociale',
     notes: 'Caso complesso. Paziente di 48 anni con multiple dipendenze. Storia di numerose ricadute. Situazione sociale compromessa. Avviato programma intensivo. Necessario approccio multidisciplinare. Lenti ma costanti miglioramenti.',
-    created_by: 3 // Psicologa Laura Ferrari
+    created_by: 3 // Conduttrice Laura Ferrari
   },
   
   {
@@ -179,7 +179,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F10.20 + F50.2 - Dipendenza da alcol e disturbi alimentari',
     treatment_plan: 'Approccio integrato dipendenze-DCA, terapia nutrizionale, supporto medico, psicoterapia individuale',
     notes: 'Comorbidità alcol-disturbi alimentari. Paziente di 32 anni. Alternanza binge-restrizione. BMI ai limiti inferiori. Coordinamento con nutrizionista. Migliorata relazione con cibo e alcol. Supporto medico continuativo.',
-    created_by: 4 // Psicologo Alessandro Conti
+    created_by: 4 // Conduttore Alessandro Conti
   },
   
   // Success stories - discharged patients
@@ -190,7 +190,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F10.21 - Disturbi correlati all\'alcol, dipendenza, in remissione sostenuta',
     treatment_plan: 'Mantenimento sobrietà, follow-up mensile, supporto gruppo AA, prevenzione ricadute',
     notes: 'Completato programma riabilitativo con successo. Astinenza mantenuta per 18 mesi. Paziente di 41 anni. Ricostruiti rapporti familiari e lavorativi. Continua follow-up mensile e partecipazione AA. Ottima prognosi.',
-    created_by: 3 // Psicologa Laura Ferrari
+    created_by: 3 // Conduttrice Laura Ferrari
   },
   
   {
@@ -200,7 +200,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F14.21 - Disturbi correlati alla cocaina, dipendenza, in remissione completa',
     treatment_plan: 'Recovery completato, ora peer counselor nel programma, supervisione mensile',
     notes: 'Eccellente outcome. Recupero completo da dipendenza cocaina dopo 2 anni programma. Ora peer counselor per nuovi pazienti. Esempio di recovery di successo. Continua supervisione come volontaria.',
-    created_by: 4 // Psicologo Alessandro Conti
+    created_by: 4 // Conduttore Alessandro Conti
   },
   
   // Suspended patients
@@ -211,7 +211,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F12.20 + F15.20 - Dipendenza multipla cannabis e stimolanti', 
     treatment_plan: 'Sospensione temporanea per violazione contratto terapeutico, rivalutazione motivazionale prevista',
     notes: 'Paziente di 30 anni. Sospeso per uso sostanze durante trattamento e comportamenti aggressivi. Violato contratto terapeutico. Rivalutazione motivazione in programma tra 3 mesi. Mantenuto supporto per emergenze.',
-    created_by: 5 // Psicologa Giulia Bianchi
+    created_by: 5 // Conduttrice Giulia Bianchi
   },
   
   // Current active treatments
@@ -233,7 +233,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F12.20 + F19.20 - Dipendenza cannabis e sostanze sintetiche',
     treatment_plan: 'Programma giovani adulti, terapia familiare, motivational interviewing, peer support',
     notes: 'Giovane di 25 anni. Prima esperienza trattamento. Uso cannabis quotidiano e sostanze sintetiche (2CB, ketamina) nei weekend. Famiglia supportiva. Frequenta gruppo giovani adulti. Migliorata motivazione al trattamento.',
-    created_by: 5 // Psicologa Giulia Bianchi
+    created_by: 5 // Conduttrice Giulia Bianchi
   },
   
   {
@@ -243,7 +243,7 @@ const realisticClinicalRecords = [
     diagnosis: 'F10.11 + F12.10 - Uso problematico alcol e cannabis',
     treatment_plan: 'Intervento precoce giovani, terapia breve orientata alla soluzione, supporto famiglia, psicoeducazione',
     notes: 'Prima volta in trattamento. Paziente di 24 anni. Uso alcol e cannabis problematico ma non ancora dipendenza severa. Ottima opportunità intervento precoce. Famiglia molto collaborativa. Buona prognosi.',
-    created_by: 4 // Psicologo Alessandro Conti
+    created_by: 4 // Conduttore Alessandro Conti
   }
 ];
 

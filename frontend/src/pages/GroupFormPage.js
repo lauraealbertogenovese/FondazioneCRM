@@ -55,11 +55,11 @@ const GroupFormPage = () => {
   const [formErrors, setFormErrors] = useState({});
 
   // Multi-select states
-  const [selectedPsychologists, setSelectedPsychologists] = useState([]);
+  const [selectedConductors, setSelectedConductors] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
 
   // Options
-  const [psychologists, setPsychologists] = useState([]);
+  const [conductors, setConductors] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
@@ -81,25 +81,25 @@ const GroupFormPage = () => {
 
   // Sync existing group members with loaded options
   useEffect(() => {
-    if (groupData && psychologists.length > 0 && patients.length > 0) {
+    if (groupData && conductors.length > 0 && patients.length > 0) {
       if (groupData.members) {
         console.log("Syncing members with options...");
         console.log("Group members:", groupData.members);
-        console.log("Available psychologists:", psychologists);
+        console.log("Available conductors:", conductors);
         console.log("Available patients:", patients);
 
-        // Match existing psychologists with loaded psychologist options
-        const existingPsychologistIds = groupData.members
-          .filter((member) => member.member_type === "psychologist")
+        // Match existing conductors with loaded conductor options
+        const existingConductorIds = groupData.members
+          .filter((member) => member.member_type === "conductor")
           .map((member) => member.user_id);
 
-        console.log("Existing psychologist IDs:", existingPsychologistIds);
+        console.log("Existing conductor IDs:", existingConductorIds);
 
-        const matchedPsychologists = psychologists.filter((psychologist) =>
-          existingPsychologistIds.includes(psychologist.id)
+        const matchedConductors = conductors.filter((conductor) =>
+          existingConductorIds.includes(conductor.id)
         );
 
-        console.log("Matched psychologists:", matchedPsychologists);
+        console.log("Matched conductors:", matchedConductors);
 
         // Match existing members with loaded patient options
         const existingMemberIds = groupData.members
@@ -110,19 +110,19 @@ const GroupFormPage = () => {
           existingMemberIds.includes(patient.id)
         );
 
-        setSelectedPsychologists(matchedPsychologists);
+        setSelectedConductors(matchedConductors);
         setSelectedMembers(matchedMembers);
       }
     }
-  }, [groupData, psychologists, patients]);
+  }, [groupData, conductors, patients]);
 
   const fetchOptions = async () => {
     try {
       setLoadingOptions(true);
 
-      // Fetch psychologists (users)
+      // Fetch conductors (users)
       const usersResponse = await userService.getUsers();
-      setPsychologists(usersResponse.users || []);
+      setConductors(usersResponse.users || []);
 
       // Fetch patients
       const patientsResponse = await patientService.getPatients();
@@ -164,10 +164,10 @@ const GroupFormPage = () => {
 
         setGroupData(group);
 
-        // Load existing members and psychologists
+        // Load existing members and conductors
         if (group.members) {
-          const existingPsychologists = group.members
-            .filter((member) => member.member_type === "psychologist")
+          const existingConductors = group.members
+            .filter((member) => member.member_type === "conductor")
             .map((member) => ({
               id: member.user_id,
               first_name: member.nome,
@@ -183,7 +183,7 @@ const GroupFormPage = () => {
               cognome: member.cognome,
             }));
 
-          setSelectedPsychologists(existingPsychologists);
+          setSelectedConductors(existingConductors);
           setSelectedMembers(existingMembers);
         }
       } else {
@@ -225,9 +225,9 @@ const GroupFormPage = () => {
       errors.meeting_frequency = "La frequenza degli incontri è obbligatoria";
     }
 
-    // At least one psychologist required
-    if (selectedPsychologists.length === 0) {
-      errors.psychologists = "Almeno un psicologo è obbligatorio";
+    // At least one conductor required
+    if (selectedConductors.length === 0) {
+      errors.conductors = "Almeno un conduttore è obbligatorio";
     }
 
     // Group type required
@@ -280,39 +280,39 @@ const GroupFormPage = () => {
 
       const submitData = {
         ...formData,
-        psychologists: selectedPsychologists.map((c) => c.id),
+        conductors: selectedConductors.map((c) => c.id),
         members: selectedMembers.map((m) => m.id),
       };
 
       console.log("=== FORM SUBMISSION DEBUG ===");
-      console.log("selectedPsychologists:", selectedPsychologists);
+      console.log("selectedConductors:", selectedConductors);
       console.log(
-        "selectedPsychologists.length:",
-        selectedPsychologists.length
+        "selectedConductors.length:",
+        selectedConductors.length
       );
       console.log("selectedMembers:", selectedMembers);
       console.log("selectedMembers.length:", selectedMembers.length);
       console.log("submitData before API call:", submitData);
-      console.log("psychologists array:", submitData.psychologists);
+      console.log("conductors array:", submitData.conductors);
       console.log(
-        "psychologists array length:",
-        submitData.psychologists.length
+        "conductors array length:",
+        submitData.conductors.length
       );
       console.log("members array:", submitData.members);
       console.log("members array length:", submitData.members.length);
       console.log(
-        "Array.isArray(submitData.psychologists):",
-        Array.isArray(submitData.psychologists)
+        "Array.isArray(submitData.conductors):",
+        Array.isArray(submitData.conductors)
       );
       console.log(
         "Array.isArray(submitData.members):",
         Array.isArray(submitData.members)
       );
 
-      // Test each psychologist mapping
-      selectedPsychologists.forEach((psychologist, index) => {
-        console.log(`psychologist[${index}]:`, psychologist);
-        console.log(`psychologist[${index}].id:`, psychologist.id);
+      // Test each conductor mapping
+      selectedConductors.forEach((conductor, index) => {
+        console.log(`conductor[${index}]:`, conductor);
+        console.log(`conductor[${index}].id:`, conductor.id);
       });
 
       // Test each member mapping
@@ -619,7 +619,7 @@ const GroupFormPage = () => {
                               date ? date.toISOString().slice(0, 10) : ""
                             )
                           }
-                          format="yyyy-MM-dd"
+                          format="dd/MM/yyyy"
                           slotProps={{
                             textField: {
                               fullWidth: true,
@@ -661,7 +661,7 @@ const GroupFormPage = () => {
                               date ? date.toISOString().slice(0, 10) : ""
                             )
                           }
-                          format="yyyy-MM-dd"
+                          format="dd/MM/yyyy"
                           slotProps={{
                             textField: {
                               fullWidth: true,
@@ -689,28 +689,28 @@ const GroupFormPage = () => {
 
             <Divider />
 
-            {/* Psychologists and Members */}
+            {/* Conductors and Members */}
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                Psicologi e Membri
+                Conduttori e Membri
               </Typography>
 
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                    Psicologi *
+                    Conduttori *
                   </Typography>
                   <Autocomplete
                     multiple
-                    options={psychologists}
-                    value={selectedPsychologists}
+                    options={conductors}
+                    value={selectedConductors}
                     onChange={(event, newValue) => {
-                      setSelectedPsychologists(newValue);
-                      // Clear error when user selects psychologists
-                      if (formErrors.psychologists && newValue.length > 0) {
+                      setSelectedConductors(newValue);
+                      // Clear error when user selects conductors
+                      if (formErrors.conductors && newValue.length > 0) {
                         setFormErrors((prev) => ({
                           ...prev,
-                          psychologists: null,
+                          conductors: null,
                         }));
                       }
                     }}
@@ -730,10 +730,10 @@ const GroupFormPage = () => {
                     renderInput={(params) => (
                       <TextField
                         {...params}
-                        placeholder="Seleziona uno o più psicologi..."
+                        placeholder="Seleziona uno o più conduttori..."
                         size="small"
-                        error={Boolean(formErrors.psychologists)}
-                        helperText={formErrors.psychologists}
+                        error={Boolean(formErrors.conductors)}
+                        helperText={formErrors.conductors}
                       />
                     )}
                     renderTags={(tagValue, getTagProps) =>

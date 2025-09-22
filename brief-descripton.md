@@ -13,7 +13,7 @@ Il sistema implementa un **modello di ruoli granulare e flessibile** dove solo l
 - **Admin**: Accesso completo a tutte le funzionalità del sistema
 - **Operator**: Accesso base a pazienti, gruppi e cartelle cliniche
 
-_Nota: Tutti gli altri ruoli (Psicologo, Medico, etc.) vengono creati dinamicamente dall'admin tramite il sistema di gestione ruoli con permessi personalizzabili._
+_Nota: Tutti gli altri ruoli (Conduttore, Medico, etc.) vengono creati dinamicamente dall'admin tramite il sistema di gestione ruoli con permessi personalizzabili._
 
 ### Sistema Permessi Granulare:
 
@@ -109,7 +109,7 @@ _Nota: Calendario e Visite sono state temporaneamente nascoste e verranno implem
 
 **Vista Lista Semplificata:**
 
-- Nome gruppo, Psicologi , Numero di partecipanti (intero), Frequenza
+- Nome gruppo, Conduttori , Numero di partecipanti (intero), Frequenza
 - Rimossa la visualizzazione "frazione" per i partecipanti
 
 ### Creazione Gruppo Avanzata ✅:
@@ -117,14 +117,14 @@ _Nota: Calendario e Visite sono state temporaneamente nascoste e verranno implem
 **Campi Semplificati:**
 
 - Nome gruppo, Descrizione, Frequenza
-- **Psicologi **: Multi-selezione di operatori (non solo psicologi)
+- **Conduttori **: Multi-selezione di operatori (non solo conduttori)
 - **Membri**: Aggiunta diretta di pazienti durante la creazione
 
-### Sistema Psicologi Flessibile ✅:
+### Sistema Conduttori Flessibile ✅:
 
-- **Tutti gli Operatori**: Qualsiasi operatore può essere conduttore (non solo psicologi)
-- **Visualizzazione Nomi**: I psicologi vengono mostrati con i loro nomi reali
-- **Etichetta Corretta**: "Conduttore" invece di "Psicologo"
+- **Tutti gli Operatori**: Qualsiasi operatore può essere conduttore (non solo conduttori)
+- **Visualizzazione Nomi**: I conduttori vengono mostrati con i loro nomi reali
+- **Etichetta Corretta**: "Conduttore" invece di "Conduttore"
 
 ### Gestione Membri Migliorata ✅:
 
@@ -133,7 +133,7 @@ _Nota: Calendario e Visite sono state temporaneamente nascoste e verranno implem
 - **Visualizzazione Esistenti**: Mostra membri attuali del gruppo
 - **Ricerca Pazienti**: Funzionalità di ricerca per nome/cognome
 - **Aggiunta Multipla**: Possibilità di aggiungere più pazienti simultaneamente
-- **Solo Tipologie Necessarie**: Solo "Pazienti" e "Psicologi " (rimossi Referente/Osservatore)
+- **Solo Tipologie Necessarie**: Solo "Pazienti" e "Conduttori " (rimossi Referente/Osservatore)
 
 ### Funzionalità Gruppo:
 
@@ -165,7 +165,7 @@ _Nota: Calendario e Visite sono state temporaneamente nascoste e verranno implem
 
 - **Rimozione Seed Data**: Eliminati 16 utenti seed/test non legittimi dal database
 - **Integrità Referenziale**: Riassegnazione sicura di cartelle cliniche e gruppi prima eliminazione
-- **Consistenza Ruoli**: Role doctor e psychologist ora mostrano 0 utenti (come dovuto)
+- **Consistenza Ruoli**: Role doctor e conductor ora mostrano 0 utenti (come dovuto)
 
 ### Protezioni di Sicurezza:
 

@@ -41,7 +41,7 @@ describe('GroupMember Model', () => {
           id: 2,
           group_id: 1,
           patient_id: 2,
-          member_type: 'psychologist',
+          member_type: 'conductor',
           is_active: true,
           nome: 'Anna',
           cognome: 'Bianchi',
@@ -231,7 +231,7 @@ describe('GroupMember Model', () => {
   describe('updateMember', () => {
     it('should update member with valid fields', async () => {
       const updateData = {
-        member_type: 'psychologist',
+        member_type: 'conductor',
         role: 'facilitator',
         notes: 'Updated notes'
       };
@@ -249,7 +249,7 @@ describe('GroupMember Model', () => {
       expect(result).toEqual(mockUpdatedMember);
       expect(mockQuery).toHaveBeenCalledWith(
         expect.stringContaining('UPDATE "group".group_members'),
-        ['psychologist', 'facilitator', 'Updated notes', 1]
+        ['conductor', 'facilitator', 'Updated notes', 1]
       );
     });
 
@@ -334,7 +334,7 @@ describe('GroupMember Model', () => {
         total_members: '10',
         active_members: '8',
         active_patients: '6',
-        active_psychologists: '1',
+        active_conductors: '1',
         active_referenti: '1'
       };
 
@@ -354,7 +354,7 @@ describe('GroupMember Model', () => {
         total_members: '0',
         active_members: '0',
         active_patients: '0',
-        active_psychologists: '0',
+        active_conductors: '0',
         active_referenti: '0'
       };
 

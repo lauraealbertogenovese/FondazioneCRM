@@ -29,7 +29,7 @@ try {
 Write-Host "`n2. Test login utenti..." -ForegroundColor Yellow
 $users = @(
     @{username="admin2"; role="admin"},
-    @{username="psicologo"; role="psychologist"},
+    @{username="conduttore"; role="conductor"},
     @{username="dottore"; role="doctor"},
     @{username="testuser2"; role="operator"}
 )

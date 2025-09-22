@@ -196,7 +196,7 @@ class AuthMiddleware {
     const rolePermissions = {
       'admin': ['*'], // Admin has all permissions
       'doctor': ['patients.read', 'patients.write', 'patients.delete'],
-      'psychologist': ['patients.read', 'patients.write'],
+      'conductor': ['patients.read', 'patients.write'],
       'operator': ['patients.read', 'patients.write'],
       'viewer': ['patients.read']
     };

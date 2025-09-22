@@ -5,7 +5,6 @@ import {
   Button,
   TextField,
   MenuItem,
-  Card,
   CardContent,
   Grid,
   Alert,
@@ -42,7 +41,6 @@ const InvoiceEditPage = () => {
     description: '',
     amount: '',
     payment_method: 'contanti',
-    due_days: 30,
     issue_date: ''
   });
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -65,18 +63,12 @@ const InvoiceEditPage = () => {
       setPageLoading(true);
       const response = await billingService.getInvoice(id);
       const invoice = response.data;
-      
-      // Calculate due_days from issue_date and due_date
-      const issueDate = new Date(invoice.issue_date);
-      const dueDate = new Date(invoice.due_date);
-      const dueDays = Math.ceil((dueDate - issueDate) / (1000 * 60 * 60 * 24));
-      
+          
       setFormData({
         patient_id: invoice.patient_id,
         description: invoice.description,
         amount: invoice.amount.toString(),
         payment_method: invoice.payment_method,
-        due_days: dueDays,
         issue_date: invoice.issue_date ? invoice.issue_date.split('T')[0] : ''
       });
       
@@ -163,7 +155,6 @@ const InvoiceEditPage = () => {
       const invoiceData = {
         ...formData,
         amount: parseFloat(formData.amount),
-        due_days: parseInt(formData.due_days),
         issue_date: formData.issue_date ? new Date(formData.issue_date).toISOString() : undefined
       };
 

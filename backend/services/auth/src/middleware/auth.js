@@ -126,9 +126,9 @@ class AuthMiddleware {
     return AuthMiddleware.requireRole('doctor')(req, res, next);
   }
 
-  // Middleware to check if user is psychologist
-  static requirePsychologist(req, res, next) {
-    return AuthMiddleware.requireRole('psychologist')(req, res, next);
+  // Middleware to check if user is conductor
+  static requireConductor(req, res, next) {
+    return AuthMiddleware.requireRole('conductor')(req, res, next);
   }
 
   // Optional authentication middleware (doesn't fail if no token)

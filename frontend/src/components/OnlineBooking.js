@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -20,23 +20,12 @@ import {
   Stack,
   Alert,
   CircularProgress,
-  Divider,
   useTheme,
   alpha,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
 import {
-  Person as PersonIcon,
-  Schedule as ScheduleIcon,
   CheckCircle as CheckIcon,
-  CalendarToday as CalendarIcon,
   AccessTime as TimeIcon,
-  LocationOn as LocationIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
   LocalHospital as HospitalIcon,
 } from '@mui/icons-material';
 // import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
