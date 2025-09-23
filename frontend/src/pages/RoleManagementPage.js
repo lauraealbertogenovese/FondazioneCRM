@@ -189,6 +189,7 @@ const RoleManagementPage = ({ embedded = false }) => {
       const moduleLabels = {
         patients: 'Pazienti',
         clinical: 'Cartelle',
+        clinical_notes: 'Note Cliniche',
         groups: 'Gruppi',
         billing: 'Fatturazione',
         visits: 'Visite',
@@ -222,6 +223,7 @@ const RoleManagementPage = ({ embedded = false }) => {
             const pageLabels = {
               patients: 'Pazienti',
               clinical: 'Cartelle',
+              clinical_notes: 'Note Cliniche',
               groups: 'Gruppi',
               billing: 'Fatturazione'
             };

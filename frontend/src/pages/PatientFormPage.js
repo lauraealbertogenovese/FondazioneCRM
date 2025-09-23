@@ -67,7 +67,7 @@ const PatientFormPage = () => {
     provincia: "",
     consenso_trattamento_dati: false,
     note: "",
-    medico_curante: "", // Clinician assignment
+    medico_curante: null, // Clinician assignment
     // New fields as per TODO requirements
     sostanza_abuso: "", // Substance of abuse
     abusi_secondari: [], // Secondary substance abuse (multi-select)
@@ -668,6 +668,7 @@ useEffect(() => {
                   label="Provincia"
                   fullWidth
                   value={formData.provincia}
+                  inputProps={{ style: { textTransform: "uppercase" }, maxLength: 2 }}  
                   onChange={handleChange}
                   variant="outlined"
                 />
