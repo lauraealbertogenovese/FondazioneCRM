@@ -48,10 +48,16 @@ const createInvoiceSchema = Joi.object({
   payment_method: Joi.string().valid('contanti', 'tracciabile').default('contanti')
     .messages({
       'any.only': 'Modalità di pagamento deve essere "contanti" o "tracciabile"'
-    }), 
+    }),
   issue_date: Joi.date().max('now').optional()
     .messages({
       'date.max': 'Data emissione non può essere futura'
+    }),
+
+  // Stamp duty fields
+  stamp_duty_exempt: Joi.boolean().default(false).optional()
+    .messages({
+      'boolean.base': 'Esenzione imposta di bollo deve essere true/false'
     })
 });
 

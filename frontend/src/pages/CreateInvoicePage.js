@@ -5,7 +5,6 @@ import {
   Button,
   TextField,
   MenuItem,
-  Card,
   CardContent,
   Grid,
   Alert,
@@ -14,7 +13,9 @@ import {
   Paper,
   Divider,
   InputAdornment,
-  Autocomplete
+  Autocomplete,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -42,9 +43,18 @@ const CreateInvoicePage = () => {
     description: '',
     amount: '',
     payment_method: 'contanti',
-    issue_date: new Date().toISOString().split('T')[0] // Today's date
+    issue_date: new Date().toISOString().split('T')[0], // Today's date
+    stamp_duty_exempt: false
   });
   const [selectedPatient, setSelectedPatient] = useState(null);
+
+  // Stamp duty constants and calculations
+  const STAMP_DUTY_THRESHOLD = 77.46;
+  const STAMP_DUTY_AMOUNT = 2.00;
+  const baseAmount = parseFloat(formData.amount) || 0;
+  const shouldShowStampDuty = baseAmount > STAMP_DUTY_THRESHOLD;
+  const stampDutyApplied = shouldShowStampDuty && !formData.stamp_duty_exempt;
+  const totalAmount = baseAmount + (stampDutyApplied ? STAMP_DUTY_AMOUNT : 0);
 
   // Check permissions
   useEffect(() => {
@@ -328,6 +338,82 @@ const CreateInvoicePage = () => {
                   </TextField>
                 </Grid>
 
+                {/* Stamp Duty Section */}
+                {shouldShowStampDuty && (
+                  <>
+                    <Grid item xs={12}>
+                      <Divider sx={{ my: 2 }} />
+                      <Typography variant="h6" component="h3" sx={{ mb: 2, color: 'primary.main' }}>
+                        Imposte
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Alert severity="info" sx={{ mb: 2 }}>
+                        L'imposta di bollo è dovuta nella misura di €2,00 qualora il compenso oggetto della fattura supera €77,46.
+                      </Alert>
+
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={!formData.stamp_duty_exempt}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              stamp_duty_exempt: !e.target.checked
+                            }))}
+                            color="primary"
+                          />
+                        }
+                        label="Applica imposta di bollo (€2,00)"
+                        sx={{ mb: 2 }}
+                      />
+
+                      {stampDutyApplied && (
+                        <TextField
+                          fullWidth
+                          label="Imposta di Bollo"
+                          value="€2,00"
+                          disabled
+                          variant="filled"
+                          sx={{
+                            backgroundColor: 'grey.100',
+                            '& .MuiFilledInput-root': {
+                              backgroundColor: 'grey.50'
+                            }
+                          }}
+                        />
+                      )}
+                    </Grid>
+                  </>
+                )}
+
+                {/* Summary Section */}
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    p: 2,
+                    backgroundColor: 'grey.50',
+                    borderRadius: 1
+                  }}>
+                    <Typography variant="h6">Riepilogo</Typography>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Importo base: €{baseAmount.toFixed(2)}
+                      </Typography>
+                      {stampDutyApplied && (
+                        <Typography variant="body2" color="text.secondary">
+                          Imposta bollo: €{STAMP_DUTY_AMOUNT.toFixed(2)}
+                        </Typography>
+                      )}
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 1 }}>
+                        TOTALE: €{totalAmount.toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
                 <Grid item xs={12}>
                   <Divider sx={{ my: 2 }} />

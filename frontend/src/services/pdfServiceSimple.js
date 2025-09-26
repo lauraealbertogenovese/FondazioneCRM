@@ -2,12 +2,12 @@ import jsPDF from 'jspdf';
 
 // Configurazione aziendale
 const COMPANY_INFO = {
-  name: 'Fondazione Laura e Alberto Genovese',
-  piva: '07663520567',
-  cf: 'RSSMRA70003 Milano MI',
+  name: 'Fondazione Laura e Alberto Genovese ETS – RUNTS 58162',
+  piva: '97932880152',
+  cf: '97932880152',
   address: {
-    street: 'Via della Fondazione, 123',
-    city: '20100 Milano MI',
+    street: 'via Santo Stefano 16',
+    city: 'Napoli',
     country: 'Italia'
   }
 };
@@ -38,13 +38,9 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   yPosition += 8;
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
-  doc.text(`P.IVA: ${COMPANY_INFO.piva}`, 20, yPosition);
+  doc.text(`P.IVA e CF: ${COMPANY_INFO.piva}`, 20, yPosition);
   yPosition += 5;
-  doc.text(`CF: ${COMPANY_INFO.cf}`, 20, yPosition);
-  yPosition += 5;
-  doc.text(COMPANY_INFO.address.street, 20, yPosition);
-  yPosition += 5;
-  doc.text(COMPANY_INFO.address.city, 20, yPosition);
+  doc.text(`Sede legale e Direzione: ${COMPANY_INFO.address.street}, ${COMPANY_INFO.address.city}`, 20, yPosition);
   
   yPosition += 20;
   
@@ -75,32 +71,52 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   doc.setFont(undefined, 'bold');
   doc.text('Prestazioni', 20, yPosition);
   yPosition += 10;
-  
-  // Header tabella manuale
+
+  // Header tabella manuale (senza colonna IVA)
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
   doc.text('Descrizione', 20, yPosition);
-  doc.text('Quantità', 90, yPosition);
-  doc.text('Importo', 120, yPosition);
-  doc.text('IVA', 150, yPosition);
-  
+  doc.text('Quantità', 110, yPosition);
+  doc.text('Importo', 150, yPosition);
+
   yPosition += 7;
-  
+
   // Linea separatrice
   doc.line(20, yPosition, 180, yPosition);
   yPosition += 5;
-  
-  // Dati tabella
+
+  // Riga principale - Servizio/Trattamento
   doc.setFont(undefined, 'normal');
   doc.text(invoiceData.description, 20, yPosition);
-  doc.text('1', 90, yPosition);
-  doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 120, yPosition);
-  doc.text('0%', 150, yPosition);
-  
-  yPosition += 10;
-  
+  doc.text('1', 110, yPosition);
+  doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 150, yPosition);
+
+  yPosition += 7;
+
+  // Riga imposta di bollo (se applicata)
+  if (invoiceData.stamp_duty_applied && parseFloat(invoiceData.stamp_duty_amount) > 0) {
+    doc.setFont(undefined, 'italic');
+    doc.setFontSize(9);
+    doc.text('Imposta di bollo', 20, yPosition);
+    doc.text('1', 110, yPosition);
+    doc.text(`${parseFloat(invoiceData.stamp_duty_amount).toFixed(2)} €`, 150, yPosition);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(10);
+    yPosition += 7;
+  }
+
+  yPosition += 3;
+
   // Linea separatrice
   doc.line(20, yPosition, 180, yPosition);
+  yPosition += 10;
+
+  // Frase esenzione IVA
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'italic');
+  doc.text('Prestazione esente iva ex art. 10, comma 1, n. 18 D.P.R. 633/72', 20, yPosition);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(10);
   yPosition += 15;
   
   // === RIEPILOGO TOTALI ===
@@ -108,16 +124,24 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   doc.setFont(undefined, 'bold');
   doc.text('Riepilogo e totali', 20, yPosition);
   yPosition += 10;
-  
+
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
   doc.text('Totale imponibile', 20, yPosition);
   doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 120, yPosition);
   yPosition += 7;
-  
+
+  // Riga imposta di bollo nel riepilogo (se applicata)
+  if (invoiceData.stamp_duty_applied && parseFloat(invoiceData.stamp_duty_amount) > 0) {
+    doc.text('Imposta di bollo', 20, yPosition);
+    doc.text(`${parseFloat(invoiceData.stamp_duty_amount).toFixed(2)} €`, 120, yPosition);
+    yPosition += 7;
+  }
+
   doc.setFont(undefined, 'bold');
-  doc.text('Totale Prestazioni', 20, yPosition);
-  doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 120, yPosition);
+  const totalAmount = parseFloat(invoiceData.total_amount) || parseFloat(invoiceData.amount);
+  doc.text('TOTALE FATTURA', 20, yPosition);
+  doc.text(`${totalAmount.toFixed(2)} €`, 120, yPosition);
   
   yPosition += 30;
   

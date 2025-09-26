@@ -10,9 +10,13 @@ class Invoice {
     this.patient_cf = data.patient_cf;
     this.description = data.description;
     this.amount = data.amount;
+    this.stamp_duty_amount = data.stamp_duty_amount;
+    this.stamp_duty_applied = data.stamp_duty_applied;
+    this.total_amount = data.total_amount;
     this.payment_method = data.payment_method;
     this.status = data.status;
     this.issue_date = data.issue_date;
+    this.due_date = data.due_date;
     this.payment_date = data.payment_date;
     this.payment_notes = data.payment_notes;
     this.created_by = data.created_by;
@@ -50,39 +54,59 @@ class Invoice {
         'SELECT nome, cognome, codice_fiscale FROM patient.patients WHERE id = $1',
         [invoiceData.patient_id]
       );
-      
+
       if (patientResult.rows.length === 0) {
         throw new Error('Paziente non trovato');
       }
-      
+
       const patient = patientResult.rows[0];
       const patientName = `${patient.nome} ${patient.cognome}`;
-      
+
       // Generate invoice number
       const invoiceNumber = await this.generateInvoiceNumber();
-   
+
       const issueDate = invoiceData.issue_date || new Date();
-      
+
+      // Calculate stamp duty
+      const baseAmount = parseFloat(invoiceData.amount);
+      const STAMP_DUTY_THRESHOLD = 77.46;
+      const STAMP_DUTY_AMOUNT = 2.00;
+
+      let stampDutyAmount = 0;
+      let stampDutyApplied = false;
+
+      // Apply stamp duty if amount > threshold and not explicitly exempted
+      if (baseAmount > STAMP_DUTY_THRESHOLD && invoiceData.stamp_duty_exempt !== true) {
+        stampDutyAmount = STAMP_DUTY_AMOUNT;
+        stampDutyApplied = true;
+      }
+
+      const totalAmount = baseAmount + stampDutyAmount;
+
       const queryText = `
         INSERT INTO billing.invoices (
           invoice_number, patient_id, patient_name, patient_cf,
-          description, amount, payment_method, issue_date, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          description, amount, stamp_duty_amount, stamp_duty_applied,
+          total_amount, payment_method, issue_date, created_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING *
       `;
-      
+
       const values = [
         invoiceNumber,
         invoiceData.patient_id,
         patientName,
         patient.codice_fiscale,
         invoiceData.description,
-        invoiceData.amount,
+        baseAmount,
+        stampDutyAmount,
+        stampDutyApplied,
+        totalAmount,
         invoiceData.payment_method || 'contanti',
         issueDate,
         createdBy
       ];
-      
+
       const result = await query(queryText, values);
       return new Invoice(result.rows[0]);
     } catch (error) {
@@ -235,26 +259,48 @@ class Invoice {
 
       const issueDate = invoiceData.issue_date || existingInvoice.issue_date;
 
+      // Calculate stamp duty for updated invoice
+      const baseAmount = parseFloat(invoiceData.amount);
+      const STAMP_DUTY_THRESHOLD = 77.46;
+      const STAMP_DUTY_AMOUNT = 2.00;
+
+      let stampDutyAmount = 0;
+      let stampDutyApplied = false;
+
+      // Apply stamp duty if amount > threshold and not explicitly exempted
+      if (baseAmount > STAMP_DUTY_THRESHOLD && invoiceData.stamp_duty_exempt !== true) {
+        stampDutyAmount = STAMP_DUTY_AMOUNT;
+        stampDutyApplied = true;
+      }
+
+      const totalAmount = baseAmount + stampDutyAmount;
+
       const queryText = `
-        UPDATE billing.invoices 
+        UPDATE billing.invoices
         SET patient_id = $1,
             patient_name = $2,
             patient_cf = $3,
             description = $4,
             amount = $5,
-            payment_method = $6,
-            issue_date = $7,
+            stamp_duty_amount = $6,
+            stamp_duty_applied = $7,
+            total_amount = $8,
+            payment_method = $9,
+            issue_date = $10,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $8
+        WHERE id = $11
         RETURNING *
       `;
-      
+
       const values = [
         invoiceData.patient_id,
         patientName,
         patientCF,
         invoiceData.description,
-        invoiceData.amount,
+        baseAmount,
+        stampDutyAmount,
+        stampDutyApplied,
+        totalAmount,
         invoiceData.payment_method || 'contanti',
         issueDate,
         id
