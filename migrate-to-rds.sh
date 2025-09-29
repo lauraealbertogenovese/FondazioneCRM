@@ -28,16 +28,31 @@ export PGPASSWORD="$PASS"
 echo "Connecting to $DB_NAME on $HOST:$PORT as $USER"
 
 # Drop schemas (and all tables in them)
-echo "Dropping schemas auth, patient, clinical, \"group\", billing (CASCADE)..."
-psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB_NAME" <<EOF
-DROP SCHEMA IF EXISTS auth CASCADE;
-DROP SCHEMA IF EXISTS patient CASCADE;
-DROP SCHEMA IF EXISTS clinical CASCADE;
-DROP SCHEMA IF EXISTS "group" CASCADE;
-DROP SCHEMA IF EXISTS billing CASCADE;
-EOF
+# echo "Dropping schemas auth, patient, clinical, \"group\", billing (CASCADE)..."
+# psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB_NAME" <<EOF
+# DROP SCHEMA IF EXISTS auth CASCADE;
+# DROP SCHEMA IF EXISTS patient CASCADE;
+# DROP SCHEMA IF EXISTS clinical CASCADE;
+# DROP SCHEMA IF EXISTS "group" CASCADE;
+# DROP SCHEMA IF EXISTS billing CASCADE;
+# EOF
 
-for f in database/init/*.sql; do
+# Apply init scripts
+# echo "Applying init scripts..."
+# for f in database/init/*.sql; do
+#   echo "Applying $f ..."
+#   psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB_NAME" -f "$f"
+#   if [ $? -ne 0 ]; then
+#     echo "❌ Error applying $f"
+#     exit 1
+#   fi
+# done
+# echo "✅ All init scripts applied successfully!"
+
+
+# Apply migration scripts
+echo "Applying migration scripts..."
+for f in database/migrations/*.sql; do
   echo "Applying $f ..."
   psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB_NAME" -f "$f"
   if [ $? -ne 0 ]; then
@@ -45,5 +60,5 @@ for f in database/init/*.sql; do
     exit 1
   fi
 done
+echo "✅ All migration scripts applied successfully!"
 
-echo "✅ All init scripts applied successfully!"

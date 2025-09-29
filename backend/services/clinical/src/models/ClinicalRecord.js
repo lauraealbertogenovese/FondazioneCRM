@@ -157,8 +157,6 @@ class ClinicalRecord {
   // Aggiorna cartella clinica
   static async update(id, updateData) {
     const {
-      title,
-      description,
       notes,
       record_type,
       record_number,
@@ -172,17 +170,6 @@ class ClinicalRecord {
     const values = [];
     let paramIndex = 1;
 
-    if (title !== undefined) {
-      updateFields.push(`title = $${paramIndex}`);
-      values.push(title);
-      paramIndex++;
-    }
-
-    if (description !== undefined) {
-      updateFields.push(`description = $${paramIndex}`);
-      values.push(description);
-      paramIndex++;
-    }
 
     if (notes !== undefined) {
       updateFields.push(`notes = $${paramIndex}`);
