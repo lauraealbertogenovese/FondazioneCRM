@@ -95,36 +95,36 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   }
   doc.text(`CF: ${patientData.codice_fiscale}`, 20, yPosition);
 
-  yPosition += 20;
+  yPosition += 20; // === PRESTAZIONI (SEMPLICE) ===
 
-  // === PRESTAZIONI (SEMPLICE) ===
   doc.setFontSize(11);
   doc.setFont(undefined, "bold");
   doc.text("Prestazioni", 20, yPosition);
-  yPosition += 10;
+  yPosition += 10; // Header tabella manuale (senza colonna IVA)
 
-  // Header tabella manuale (senza colonna IVA)
   doc.setFontSize(10);
   doc.setFont(undefined, "bold");
   doc.text("Descrizione", 20, yPosition);
   doc.text("Quantità", 110, yPosition);
   doc.text("Importo", 150, yPosition);
 
-  yPosition += 7;
+  yPosition += 7; // Linea separatrice
 
-  // Linea separatrice
   doc.line(20, yPosition, 180, yPosition);
-  yPosition += 5;
+  yPosition += 5; // Riga principale - Servizio/Trattamento
 
-  // Riga principale - Servizio/Trattamento
-  doc.setFont(undefined, "normal");
-  doc.text(invoiceData.description, 20, yPosition);
+  doc.setFont(undefined, "normal"); // --- START MODIFICATION FOR TEXT WRAP ---
+  const descriptionMaxWidth = 85; // Max width for the description column (20 to 105)
+  const lineHeight = 3; // Approx line height for font size 10
+  const descriptionLines = doc.splitTextToSize(
+    invoiceData.description,
+    descriptionMaxWidth
+  ); // Print the first line of the description
+  doc.text(descriptionLines, 20, yPosition); // doc.text accepts an array for multi-line text // Print Quantity and Amount on the first line
   doc.text("1", 110, yPosition);
-  doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 150, yPosition);
+  doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 150, yPosition); // Update yPosition to account for all lines of the description
+  yPosition += descriptionLines.length * lineHeight; // --- END MODIFICATION FOR TEXT WRAP ---
 
-  yPosition += 7;
-
-  yPosition += 3;
 
   // Linea separatrice
   doc.line(20, yPosition, 180, yPosition);
