@@ -125,6 +125,7 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   doc.text(`${parseFloat(invoiceData.amount).toFixed(2)} €`, 150, yPosition); // Update yPosition to account for all lines of the description
   yPosition += descriptionLines.length * lineHeight; // --- END MODIFICATION FOR TEXT WRAP ---
 
+  yPosition += 3; // Add small buffer after the lines
 
   // Linea separatrice
   doc.line(20, yPosition, 180, yPosition);
