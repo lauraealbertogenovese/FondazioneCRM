@@ -94,10 +94,12 @@ const InvoiceDetailPage = () => {
 
       // Convert invoice data to the format expected by generateInvoicePDF
       const invoiceData = {
+        ...invoice,
         description: invoice.description,
         amount: invoice.amount,
         payment_method: invoice.payment_method,
-        issue_date: invoice.issue_date
+        issue_date: invoice.issue_date,
+        invoice_number:invoice.invoice_number,
       };
 
       const result = generateInvoicePDF(invoiceData, patient);
