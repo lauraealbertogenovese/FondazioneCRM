@@ -77,18 +77,28 @@ const hasPermission = (userPermissions, permission) => {
   return false;
 };
 
-// Middleware per verificare i permessi
+// Middleware per verificare i permessi (accepts string or array)
 const requirePermission = (permission) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Verifica se l'utente ha il permesso richiesto
-    if (req.user.permissions && hasPermission(req.user.permissions, permission)) {
+    // Convert to array if single permission
+    const permissions = Array.isArray(permission) ? permission : [permission];
+
+    // Check if user has at least one of the required permissions
+    const hasRequiredPermission = permissions.some(perm => 
+      req.user.permissions && hasPermission(req.user.permissions, perm)
+    );
+
+    if (hasRequiredPermission) {
       next();
     } else {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ 
+        error: 'Insufficient permissions',
+        required: permissions 
+      });
     }
   };
 };
