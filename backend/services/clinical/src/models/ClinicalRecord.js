@@ -11,7 +11,8 @@ class ClinicalRecord {
       treatment_plan,
       notes,
       created_by,
-      record_type
+      record_type,
+      session_date
     } = recordData;
 
     // Genera record_number se non fornito
@@ -19,14 +20,14 @@ class ClinicalRecord {
 
     const query = `
       INSERT INTO clinical.clinical_records 
-      (patient_id, record_number, status, diagnosis, treatment_plan, notes, created_by, record_type)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      (patient_id, record_number, status, diagnosis, treatment_plan, notes, created_by, record_type, session_date)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
 
     const values = [
       patient_id, finalRecordNumber, status, diagnosis, 
-      treatment_plan, notes, created_by, record_type
+      treatment_plan, notes, created_by, record_type, session_date
     ];
 
     try {
@@ -65,7 +66,7 @@ class ClinicalRecord {
       FROM clinical.clinical_records cr
       LEFT JOIN auth.users u ON cr.created_by = u.id
       WHERE cr.patient_id = $1
-      ORDER BY cr.created_at DESC
+      ORDER BY cr.session_date DESC
       LIMIT $2 OFFSET $3
     `;
 
@@ -143,7 +144,7 @@ class ClinicalRecord {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
-    query += ` ORDER BY cr.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    query += ` ORDER BY cr.session_date DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     values.push(limit, offset);
 
     try {
@@ -162,7 +163,8 @@ class ClinicalRecord {
       record_number,
       status,
       diagnosis,
-      treatment_plan
+      treatment_plan,
+      session_date
     } = updateData;
 
     // Build dynamic query based on provided fields
@@ -204,6 +206,11 @@ class ClinicalRecord {
     if (treatment_plan !== undefined) {
       updateFields.push(`treatment_plan = $${paramIndex}`);
       values.push(treatment_plan);
+      paramIndex++;
+    }
+    if (session_date !== undefined) {
+      updateFields.push(`session_date = $${paramIndex}`);
+      values.push(session_date);
       paramIndex++;
     }
 

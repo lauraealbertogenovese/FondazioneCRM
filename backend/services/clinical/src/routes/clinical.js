@@ -119,13 +119,14 @@ router.post('/records', requirePermission('clinical_notes.create'), async (req, 
       diagnosis,
       treatment,
       medications,
-      notes
+      notes,
+      session_date
     } = req.body;
 
     // Validazione input
-    if (!patient_id || !record_type || !title) {
+    if (!patient_id || !record_type || !title || !session_date) {
       return res.status(400).json({ 
-        error: 'Missing required fields: patient_id, record_type, title' 
+        error: 'Missing required fields: patient_id, record_type, title, session_date' 
       });
     }
 
@@ -138,7 +139,8 @@ router.post('/records', requirePermission('clinical_notes.create'), async (req, 
       treatment,
       medications,
       notes,
-      created_by: req.user.id
+      created_by: req.user.id,
+      session_date
     };
 
     const newRecord = await ClinicalRecord.create(recordData);
