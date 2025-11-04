@@ -22,7 +22,8 @@ class Patient {
     this.abusi_secondari = data.abusi_secondari;
     this.professione = data.professione;
     this.stato_civile = data.stato_civile;
-    this.diagnosi_psichiatrica = data.diagnosi_psichiatrica; // New field
+    this.diagnosi_psichiatrica = data.diagnosi_psichiatrica; 
+    this.consenso_invio_sts = data.consenso_invio_sts;
     this.is_active = data.is_active;
     this.created_by = data.created_by;
     this.created_by_username = data.created_by_username;
@@ -56,7 +57,8 @@ class Patient {
       abusi_secondari,
       professione,
       stato_civile,
-      diagnosi_psichiatrica, // New field
+      diagnosi_psichiatrica, 
+      consenso_invio_sts, 
       created_by,
     } = patientData;
 
@@ -66,11 +68,11 @@ class Patient {
         sesso, indirizzo, citta, cap, provincia, telefono, email,
         consenso_trattamento_dati, note, medico_curante, 
         sostanza_abuso, abusi_secondari, professione, stato_civile, 
-        diagnosi_psichiatrica, created_by
+        diagnosi_psichiatrica, consenso_invio_sts, created_by
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-        $16, $17, $18, $19, $20, $21
+        $16, $17, $18, $19, $20, $21, $22
       )
       RETURNING *
     `;
@@ -95,7 +97,8 @@ class Patient {
       abusi_secondari,
       professione,
       stato_civile,
-      diagnosi_psichiatrica, // New field
+      diagnosi_psichiatrica,
+      consenso_invio_sts, 
       created_by,
     ];
     const result = await query(queryText, values);
@@ -425,7 +428,8 @@ class Patient {
       "abusi_secondari",
       "professione",
       "stato_civile",
-      "diagnosi_psichiatrica", // New field
+      "diagnosi_psichiatrica", 
+      "consenso_invio_sts", 
       "is_active",
     ];
 
@@ -499,7 +503,8 @@ class Patient {
       anamnesi_medica: this.anamnesi_medica,
       consenso_trattamento_dati: this.consenso_trattamento_dati,
       note: this.note,
-      diagnosi_psichiatrica: this.diagnosi_psichiatrica, // New field
+      diagnosi_psichiatrica: this.diagnosi_psichiatrica, 
+      consenso_invio_sts: this.consenso_invio_sts, 
       is_active: this.is_active,
       created_by: this.created_by,
       created_by_username: this.created_by_username,
@@ -537,7 +542,8 @@ class Patient {
       abusi_secondari: this.abusi_secondari,
       professione: this.professione,
       stato_civile: this.stato_civile,
-      diagnosi_psichiatrica: this.diagnosi_psichiatrica, // New field
+      diagnosi_psichiatrica: this.diagnosi_psichiatrica, 
+      consenso_invio_sts: this.consenso_invio_sts, 
       is_active: this.is_active,
       created_by_username: this.created_by_username,
       created_at: this.created_at,

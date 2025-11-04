@@ -151,8 +151,18 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
     doc.text("Bollo assolto in maniera virtuale", 20, yPosition);
     doc.setFont(undefined, "normal");
     doc.setFontSize(10);
-    yPosition += 15;
+    yPosition += 7;
   }
+  // STS Consent Notice
+  if (patientData.consenso_invio_sts === false) {
+    doc.setFont(undefined, "italic");
+    doc.setFontSize(10);
+    doc.text("Consenso Invio STS: NON ACCONSENTO", 20, yPosition);
+    doc.setFont(undefined, "normal");
+    yPosition += 7;
+  }
+
+  yPosition += 5;
 
   // === RIEPILOGO TOTALI ===
   doc.setFontSize(11);

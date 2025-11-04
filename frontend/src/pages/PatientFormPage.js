@@ -8,7 +8,6 @@ import {
   Grid,
   TextField,
   FormControlLabel,
-  Checkbox,
   Alert,
   CircularProgress,
   Container,
@@ -38,27 +37,27 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { patientService, userService } from "../services/api";
 import { maritalStatusOptions } from "../utils/maritalStatusUtils";
 import { useAuth } from "../contexts/AuthContext";
-  // Opzioni per i selettori
-  const sostanzaAbusoOptions = [
-    { value: "", label: "Nessuna" },
-    { value: "alcol", label: "Alcol" },
-    { value: "caffeina", label: "Caffeina" },
-    { value: "cannabis", label: "Cannabis" },
-    { value: "allucinogeni", label: "Allucinogeni" },
-    { value: "inalanti", label: "Inalanti" },
-    { value: "oppiacei", label: "Oppiacei" },
-    { value: "sedativi", label: "Sedativi, ipnotici o ansiolitici" },
-    {
-      value: "stimolanti",
-      label: "Stimolanti (cocaina, anfetamine, metanfetamina)",
-    },
-    { value: "tabacco", label: "Tabacco" },
-    { value: "altro", label: "Altre sostanze o non specificate" },
-    {
-      value: "disturbo_gioco_azzardo",
-      label: "Disturbo da gioco d’azzardo (Gambling Disorder)",
-    },
-  ];
+// Opzioni per i selettori
+const sostanzaAbusoOptions = [
+  { value: "", label: "Nessuna" },
+  { value: "alcol", label: "Alcol" },
+  { value: "caffeina", label: "Caffeina" },
+  { value: "cannabis", label: "Cannabis" },
+  { value: "allucinogeni", label: "Allucinogeni" },
+  { value: "inalanti", label: "Inalanti" },
+  { value: "oppiacei", label: "Oppiacei" },
+  { value: "sedativi", label: "Sedativi, ipnotici o ansiolitici" },
+  {
+    value: "stimolanti",
+    label: "Stimolanti (cocaina, anfetamine, metanfetamina)",
+  },
+  { value: "tabacco", label: "Tabacco" },
+  { value: "altro", label: "Altre sostanze o non specificate" },
+  {
+    value: "disturbo_gioco_azzardo",
+    label: "Disturbo da gioco d’azzardo (Gambling Disorder)",
+  },
+];
 const PatientFormPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -91,12 +90,11 @@ const PatientFormPage = () => {
     abusi_secondari: [], // Secondary substance abuse (multi-select)
     stato_civile: "", // Civil status
     professione: "", // Profession information
+    consenso_invio_sts: null, // Consent for sending data to STS
   });
 
   const [errors, setErrors] = useState({});
   const [clinicians, setClinicians] = useState([]);
-
-
 
   const { hasPermission, user } = useAuth();
   const fetchPatient = useCallback(async () => {
@@ -704,33 +702,119 @@ const PatientFormPage = () => {
                 </Typography>
               </Grid>
 
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      name="consenso_trattamento_dati"
-                      checked={formData.consenso_trattamento_dati}
-                      onChange={handleChange}
-                      color="primary"
-                    />
-                  }
-                  label={
-                    <Box>
-                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        Consenso al trattamento dei dati personali
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Il paziente ha autorizzato al trattamento dei rispettivi
-                        dati personali
-                      </Typography>
-                    </Box>
-                  }
-                />
-                {errors.consenso_trattamento_dati && (
-                  <FormHelperText error sx={{ mt: 1 }}>
-                    {errors.consenso_trattamento_dati}
-                  </FormHelperText>
-                )}
+              <Grid item xs={12} container spacing={2}>
+                <Grid item xs={12}>
+                  {/* Consenso Trattamento Dati - Changed to Radio Group */}
+                  <FormControl
+                    component="fieldset"
+                    error={!!errors.consenso_trattamento_dati}
+                    required
+                  >
+                    <FormLabel
+                      component="legend"
+                      sx={{ fontWeight: 600, mb: 1 }}
+                    >
+                      Consenso al trattamento dei dati personali
+                    </FormLabel>
+
+                    <RadioGroup
+                      value={
+                        formData.consenso_trattamento_dati?.toString() ||
+                        "false"
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value === "true";
+                        setFormData((prev) => ({
+                          ...prev,
+                          consenso_trattamento_dati: value,
+                        }));
+                        // Clear error when user makes selection
+                        if (errors.consenso_trattamento_dati) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            consenso_trattamento_dati: null,
+                          }));
+                        }
+                      }}
+                      row
+                    >
+                      <FormControlLabel
+                        value="true"
+                        control={<Radio />}
+                        label="Sì"
+                      />
+                      <FormControlLabel
+                        value="false"
+                        control={<Radio />}
+                        label="No"
+                      />
+                    </RadioGroup>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
+                      Il paziente ha autorizzato al trattamento dei rispettivi
+                      dati personali
+                    </Typography>
+                    {errors.consenso_trattamento_dati && (
+                      <FormHelperText error sx={{ mt: 1 }}>
+                        {errors.consenso_trattamento_dati}
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  {/* Consenso Invio Dati STS */}
+                  <FormControl
+                    component="fieldset"
+                    error={!!errors.consenso_invio_sts}
+                    required
+                    sx={{ mb: 2 }}
+                  >
+                    <FormLabel
+                      component="legend"
+                      sx={{ fontWeight: 600, mb: 1 }}
+                    >
+                      Consenso Invio Dati STS
+                    </FormLabel>
+                    <RadioGroup
+                      value={
+                        formData.consenso_invio_sts === null
+                          ? "null"
+                          : formData.consenso_invio_sts?.toString()
+                      }
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === "null"
+                            ? null
+                            : e.target.value === "true";
+                        setFormData((prev) => ({
+                          ...prev,
+                          consenso_invio_sts: value,
+                        }));
+                      }}
+                      row
+                    >
+                      <FormControlLabel
+                        value="true"
+                        control={<Radio />}
+                        label="Acconsento"
+                      />
+                      <FormControlLabel
+                        value="false"
+                        control={<Radio />}
+                        label="Non acconsento"
+                      />
+                      <FormControlLabel
+                        value="null"
+                        control={<Radio />}
+                        label="Non specificato"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                </Grid>
               </Grid>
 
               {/* New clinical information fields */}
