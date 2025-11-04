@@ -69,6 +69,17 @@ const formatDate = (dateString) => {
   if (!dateString) return "";
   return new Date(dateString).toLocaleDateString("it-IT");
 };
+const calculateAge = (birthDate) => {
+  if (!birthDate) return "";
+  const today = new Date();
+  const birth = new Date(birthDate);
+  const age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    return age - 1;
+  }
+  return age;
+};
 const PatientsPageNew = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -212,7 +223,7 @@ const PatientsPageNew = () => {
       console.error("Error deleting patient:", error);
       setError("Errore nella cancellazione del paziente");
     }
-  }, [fetchPatients, selectedPatient.id]);
+  }, [fetchPatients, selectedPatient?.id]);
 
   const handleStatusToggle = useCallback(async (patient, newStatus) => {
     try {
@@ -236,60 +247,48 @@ const PatientsPageNew = () => {
     }
   }, []);
 
-  const calculateAge = (birthDate) => {
-    if (!birthDate) return "";
-    const today = new Date();
-    const birth = new Date(birthDate);
-    const age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
-      return age - 1;
-    }
-    return age;
-  };
+  const getStatusSwitch = useCallback(
+    (patient) => {
+      const isActive = Boolean(patient.is_active);
 
-  const getStatusSwitch = (patient) => {
-    const isActive = Boolean(patient.is_active);
-
-    return (
-      <Box
-        data-testid="switch-container"
-        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-      >
-        <Switch
-          checked={isActive}
-          onChange={(e) => handleStatusToggle(patient, e.target.checked)}
-          size="small"
-          sx={{
-            "& .MuiSwitch-switchBase.Mui-checked": {
-              color: "#2e7d32",
-              "&:hover": {
-                backgroundColor: alpha("#2e7d32", 0.08),
-              },
-            },
-            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-              backgroundColor: "#2e7d32",
-            },
-          }}
-        />
-        <Typography
-          variant="body2"
-          sx={{
-            fontSize: "0.8rem",
-            fontWeight: 500,
-            color: isActive ? "#2e7d32" : "#666666",
-            cursor: "default",
-            userSelect: "none",
-          }}
+      return (
+        <Box
+          data-testid="switch-container"
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
         >
-          {isActive ? "In Cura" : "Non in cura"}
-        </Typography>
-      </Box>
-    );
-  };
+          <Switch
+            checked={isActive}
+            onChange={(e) => handleStatusToggle(patient, e.target.checked)}
+            size="small"
+            sx={{
+              "& .MuiSwitch-switchBase.Mui-checked": {
+                color: "#2e7d32",
+                "&:hover": {
+                  backgroundColor: alpha("#2e7d32", 0.08),
+                },
+              },
+              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                backgroundColor: "#2e7d32",
+              },
+            }}
+          />
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: "0.8rem",
+              fontWeight: 500,
+              color: isActive ? "#2e7d32" : "#666666",
+              cursor: "default",
+              userSelect: "none",
+            }}
+          >
+            {isActive ? "In Cura" : "Non in cura"}
+          </Typography>
+        </Box>
+      );
+    },
+    [handleStatusToggle]
+  );
 
   const getConsentChip = useCallback(
     (patient) => {
@@ -583,6 +582,7 @@ const PatientsPageNew = () => {
                         color: "text.primary",
                         letterSpacing: "0.5px",
                         py: 2,
+                        minWidth: column.key === "actions" ? 60 : 160,
                         cursor: column.sortable ? "pointer" : "default",
                         width: column.key === "actions" ? 60 : "auto",
                         textAlign: column.key === "actions" ? "center" : "left",
