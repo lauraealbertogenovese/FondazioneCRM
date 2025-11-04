@@ -61,7 +61,7 @@ const HEADER_ARRAY = [
     key: "data_nascita",
     label: "Età",
     sortable: true,
-    width: 180,
+    width: 150,
   },
   {
     key: "telefono",
@@ -85,13 +85,13 @@ const HEADER_ARRAY = [
     key: "consenso",
     label: "Consenso",
     sortable: false,
-    width: 160,
+    width: 150,
   },
   {
     key: "created_at",
     label: "Data Inizio",
     sortable: true,
-    width: 160,
+    width: 150,
   },
   {
     key: "actions",
