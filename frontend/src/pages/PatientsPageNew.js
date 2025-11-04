@@ -55,14 +55,50 @@ const HEADER_ARRAY = [
     key: "nome",
     label: "Paziente",
     sortable: true,
+    width: 250,
   },
-  { key: "data_nascita", label: "Età", sortable: true },
-  { key: "telefono", label: "Contatti", sortable: true },
-  { key: "codice_fiscale", label: "Codice Fiscale", sortable: true },
-  { key: "stato", label: "Stato", sortable: false },
-  { key: "consenso", label: "Consenso", sortable: false },
-  { key: "created_at", label: "Data Inizio", sortable: true },
-  { key: "actions", label: "", sortable: false },
+  {
+    key: "data_nascita",
+    label: "Età",
+    sortable: true,
+    width: 180,
+  },
+  {
+    key: "telefono",
+    label: "Contatti",
+    sortable: true,
+    width: 200,
+  },
+  {
+    key: "codice_fiscale",
+    label: "Codice Fiscale",
+    sortable: true,
+    width: 200,
+  },
+  {
+    key: "stato",
+    label: "Stato",
+    sortable: false,
+    width: 180,
+  },
+  {
+    key: "consenso",
+    label: "Consenso",
+    sortable: false,
+    width: 160,
+  },
+  {
+    key: "created_at",
+    label: "Data Inizio",
+    sortable: true,
+    width: 160,
+  },
+  {
+    key: "actions",
+    label: "",
+    sortable: false,
+    minWidth: 60,
+  },
 ];
 // Utility functions
 const formatDate = (dateString) => {
@@ -181,8 +217,8 @@ const PatientsPageNew = () => {
         if (sortOrder === "ASC") {
           setSortOrder("DESC");
         } else if (sortOrder === "DESC") {
-          setSortBy("created_at");
-          setSortOrder("DESC");
+          setSortBy("");
+          setSortOrder("");
         }
       } else {
         setSortBy(column);
@@ -582,7 +618,7 @@ const PatientsPageNew = () => {
                         color: "text.primary",
                         letterSpacing: "0.5px",
                         py: 2,
-                        minWidth: column.key === "actions" ? 60 : 160,
+                        minWidth: column.key === "actions" ? 60 : column.width || 160,
                         cursor: column.sortable ? "pointer" : "default",
                         width: column.key === "actions" ? 60 : "auto",
                         textAlign: column.key === "actions" ? "center" : "left",
