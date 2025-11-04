@@ -4,6 +4,7 @@ import jsPDF from "jspdf";
 const COMPANY_INFO = {
   name: "Fondazione Laura e Alberto Genovese ETS – RUNTS 58162",
   piva: "10878511210",
+  tax_code: "97932880152",
   address: {
     street: "via Santo Stefano 16",
     city: "Napoli",
@@ -20,7 +21,9 @@ const COMPANY_INFO = {
 export const generateInvoicePDF = (invoiceData, patientData) => {
   // Crea nuovo documento PDF
   const doc = new jsPDF();
-
+  const isStampDutyApplied =
+    invoiceData.stamp_duty_applied &&
+    parseFloat(invoiceData.stamp_duty_amount) > 0;
   let yPosition = 20;
 
   // === HEADER ===
@@ -55,6 +58,8 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   doc.setFontSize(10);
   doc.setFont(undefined, "normal");
   doc.text(`P.IVA: ${COMPANY_INFO.piva}`, 20, yPosition);
+  yPosition += 5;
+  doc.text(`CF: ${COMPANY_INFO.tax_code}`, 20, yPosition);
   yPosition += 5;
   doc.text(
     `Sede legale e Direzione: ${COMPANY_INFO.address.street}, ${COMPANY_INFO.address.city}`,
@@ -142,10 +147,12 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   yPosition += 7;
 
   // Frase bollo virtuale
-  doc.text("Bollo assolto in maniera virtuale", 20, yPosition);
-  doc.setFont(undefined, "normal");
-  doc.setFontSize(10);
-  yPosition += 15;
+  if (isStampDutyApplied) {
+    doc.text("Bollo assolto in maniera virtuale", 20, yPosition);
+    doc.setFont(undefined, "normal");
+    doc.setFontSize(10);
+    yPosition += 15;
+  }
 
   // === RIEPILOGO TOTALI ===
   doc.setFontSize(11);
@@ -160,10 +167,7 @@ export const generateInvoicePDF = (invoiceData, patientData) => {
   yPosition += 7;
 
   // Riga imposta di bollo nel riepilogo (se applicata)
-  if (
-    invoiceData.stamp_duty_applied &&
-    parseFloat(invoiceData.stamp_duty_amount) > 0
-  ) {
+  if (isStampDutyApplied) {
     doc.text("Imposta di bollo", 20, yPosition);
     doc.text(
       `${parseFloat(invoiceData.stamp_duty_amount).toFixed(2)} €`,

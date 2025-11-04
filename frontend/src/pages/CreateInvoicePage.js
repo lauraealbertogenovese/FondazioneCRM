@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -15,19 +15,19 @@ import {
   InputAdornment,
   Autocomplete,
   FormControlLabel,
-  Checkbox
-} from '@mui/material';
+  Checkbox,
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
   Euro as EuroIcon,
   Receipt as ReceiptIcon,
-  PictureAsPdf as PdfIcon
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { billingService, patientService } from '../services/api';
-import { generateInvoicePDF } from '../services/pdfServiceSimple';
+  PictureAsPdf as PdfIcon,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { billingService, patientService } from "../services/api";
+import { generateInvoicePDF } from "../services/pdfServiceSimple";
 
 const CreateInvoicePage = () => {
   const navigate = useNavigate();
@@ -39,18 +39,18 @@ const CreateInvoicePage = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    patient_id: '',
-    description: '',
-    amount: '',
-    payment_method: 'contanti',
-    issue_date: new Date().toISOString().split('T')[0], // Today's date
-    stamp_duty_exempt: false
+    patient_id: "",
+    description: "",
+    amount: "",
+    payment_method: "contanti",
+    issue_date: new Date().toISOString().split("T")[0], // Today's date
+    stamp_duty_exempt: false,
   });
   const [selectedPatient, setSelectedPatient] = useState(null);
 
   // Stamp duty constants and calculations
   const STAMP_DUTY_THRESHOLD = 77.46;
-  const STAMP_DUTY_AMOUNT = 2.00;
+  const STAMP_DUTY_AMOUNT = 2.0;
   const baseAmount = parseFloat(formData.amount) || 0;
   const shouldShowStampDuty = baseAmount > STAMP_DUTY_THRESHOLD;
   const stampDutyApplied = shouldShowStampDuty && !formData.stamp_duty_exempt;
@@ -58,8 +58,8 @@ const CreateInvoicePage = () => {
 
   // Check permissions
   useEffect(() => {
-    if (!hasPermission('billing.create')) {
-      navigate('/billing');
+    if (!hasPermission("billing.create")) {
+      navigate("/billing");
     }
   }, [hasPermission, navigate]);
 
@@ -70,25 +70,28 @@ const CreateInvoicePage = () => {
 
   const loadPatients = async () => {
     try {
-      console.log('Loading patients...');
+      console.log("Loading patients...");
       const response = await patientService.getPatients({ limit: 1000 });
-      console.log('Full response:', response);
-      
+      console.log("Full response:", response);
+
       // Correct structure: response.patients
       const patients = response.patients || [];
       setPatients(patients);
-      console.log('Patients loaded:', patients.length);
-      console.log('First patient:', patients[0]);
+      console.log("Patients loaded:", patients.length);
+      console.log("First patient:", patients[0]);
     } catch (error) {
-      console.error('Error loading patients:', error);
-      setError('Errore nel caricamento dei pazienti: ' + (error.response?.data?.error || error.message));
+      console.error("Error loading patients:", error);
+      setError(
+        "Errore nel caricamento dei pazienti: " +
+          (error.response?.data?.error || error.message)
+      );
     }
   };
 
   const handleInputChange = (field) => (event) => {
     setFormData({
       ...formData,
-      [field]: event.target.value
+      [field]: event.target.value,
     });
     // Clear errors when user starts typing
     if (error) setError(null);
@@ -98,7 +101,7 @@ const CreateInvoicePage = () => {
     setSelectedPatient(newValue);
     setFormData({
       ...formData,
-      patient_id: newValue ? newValue.id : ''
+      patient_id: newValue ? newValue.id : "",
     });
     // Clear errors when user selects
     if (error) setError(null);
@@ -106,15 +109,15 @@ const CreateInvoicePage = () => {
 
   const validateForm = () => {
     if (!formData.patient_id) {
-      setError('Selezionare un paziente');
+      setError("Selezionare un paziente");
       return false;
     }
     if (!formData.description || formData.description.length < 5) {
-      setError('La descrizione deve essere di almeno 5 caratteri');
+      setError("La descrizione deve essere di almeno 5 caratteri");
       return false;
     }
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      setError('Inserire un importo valido');
+      setError("Inserire un importo valido");
       return false;
     }
     return true;
@@ -122,7 +125,7 @@ const CreateInvoicePage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -133,40 +136,46 @@ const CreateInvoicePage = () => {
     const invoiceData = {
       ...formData,
       amount: parseFloat(formData.amount),
-      issue_date: formData.issue_date ? new Date(formData.issue_date) : undefined
+      issue_date: formData.issue_date
+        ? new Date(formData.issue_date)
+        : undefined,
     };
 
     try {
       const response = await billingService.createInvoice(invoiceData);
-      
+
       // Genera PDF della fattura usando i dati restituiti dal backend
       try {
         const createdInvoice = response.data;
         const pdfResult = generateInvoicePDF(createdInvoice, selectedPatient);
-        console.log('PDF generato:', pdfResult.fileName);
+        console.log("PDF generato:", pdfResult.fileName);
       } catch (pdfError) {
-        console.error('Errore nella generazione PDF:', pdfError);
+        console.error("Errore nella generazione PDF:", pdfError);
         // Non bloccare il flusso se il PDF fallisce
       }
-      
+
       setSuccess(true);
-      
+
       // Redirect after 3 seconds (più tempo per vedere il messaggio)
       setTimeout(() => {
-        navigate('/billing');
+        navigate("/billing");
       }, 3000);
     } catch (error) {
-      console.error('Error creating invoice:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Request data:', invoiceData);
-      
+      console.error("Error creating invoice:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Request data:", invoiceData);
+
       // Mostra dettagli dell'errore di validazione
       if (error.response?.data?.errors) {
-        console.error('Validation errors:', error.response.data.errors);
-        const errorMessages = error.response.data.errors.map(err => `${err.field}: ${err.message}`).join(', ');
+        console.error("Validation errors:", error.response.data.errors);
+        const errorMessages = error.response.data.errors
+          .map((err) => `${err.field}: ${err.message}`)
+          .join(", ");
         setError(`Errore di validazione: ${errorMessages}`);
       } else {
-        setError(error.response?.data?.error || 'Errore nella creazione della fattura');
+        setError(
+          error.response?.data?.error || "Errore nella creazione della fattura"
+        );
       }
     } finally {
       setLoading(false);
@@ -174,7 +183,7 @@ const CreateInvoicePage = () => {
   };
 
   const handleCancel = () => {
-    navigate('/billing');
+    navigate("/billing");
   };
 
   const handlePreviewPDF = () => {
@@ -183,29 +192,49 @@ const CreateInvoicePage = () => {
     }
 
     try {
-      const invoiceData = {
+      const data = {
         ...formData,
         amount: parseFloat(formData.amount),
-        issue_date: formData.issue_date ? new Date(formData.issue_date) : undefined
+        issue_date: formData.issue_date
+          ? new Date(formData.issue_date)
+          : undefined,
       };
-
-      generateInvoicePDF(invoiceData, selectedPatient);
+      if (stampDutyApplied) {
+        const invoiceData = {
+          ...data,
+          stamp_duty_amount: STAMP_DUTY_AMOUNT,
+          stamp_duty_applied: true,
+        };
+        generateInvoicePDF(invoiceData, selectedPatient);
+      } else {
+        generateInvoicePDF(data, selectedPatient);
+      }
     } catch (error) {
-      console.error('Errore nella generazione anteprima PDF:', error);
-      setError('Errore nella generazione dell\'anteprima PDF');
+      console.error("Errore nella generazione anteprima PDF:", error);
+      setError("Errore nella generazione dell'anteprima PDF");
     }
   };
 
   if (success) {
     return (
       <Container maxWidth="md">
-        <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <Box sx={{ mt: 4, textAlign: "center" }}>
           <Alert severity="success" sx={{ mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                mb: 1,
+              }}
+            >
               <PdfIcon />
               <Typography variant="h6">Fattura creata con successo!</Typography>
             </Box>
-            <Typography>Il PDF della fattura è stato generato e scaricato automaticamente.</Typography>
+            <Typography>
+              Il PDF della fattura è stato generato e scaricato automaticamente.
+            </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Verrai reindirizzato alla lista fatture...
             </Typography>
@@ -219,24 +248,28 @@ const CreateInvoicePage = () => {
     <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
         {/* Header */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleCancel}
             variant="outlined"
             color="inherit"
             sx={{
-              borderColor: '#e2e8f0',
-              color: '#64748b',
-              '&:hover': {
-                borderColor: '#cbd5e1',
-                backgroundColor: 'rgba(248, 250, 252, 0.8)',
-              }
+              borderColor: "#e2e8f0",
+              color: "#64748b",
+              "&:hover": {
+                borderColor: "#cbd5e1",
+                backgroundColor: "rgba(248, 250, 252, 0.8)",
+              },
             }}
           >
             Indietro
           </Button>
-          <Typography variant="h4" component="h1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
             <ReceiptIcon />
             Nuova Fattura
           </Typography>
@@ -257,7 +290,9 @@ const CreateInvoicePage = () => {
                 <Grid item xs={12} md={6}>
                   <Autocomplete
                     options={patients}
-                    getOptionLabel={(option) => `${option.nome} ${option.cognome} - ${option.codice_fiscale}`}
+                    getOptionLabel={(option) =>
+                      `${option.nome} ${option.cognome} - ${option.codice_fiscale}`
+                    }
                     value={selectedPatient}
                     onChange={handlePatientChange}
                     renderInput={(params) => (
@@ -269,10 +304,14 @@ const CreateInvoicePage = () => {
                         helperText={`${patients.length} pazienti disponibili`}
                       />
                     )}
-                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id === value.id
+                    }
                     filterOptions={(options, { inputValue }) => {
                       return options.filter((option) =>
-                        `${option.nome} ${option.cognome} ${option.codice_fiscale}`.toLowerCase().includes(inputValue.toLowerCase())
+                        `${option.nome} ${option.cognome} ${option.codice_fiscale}`
+                          .toLowerCase()
+                          .includes(inputValue.toLowerCase())
                       );
                     }}
                     noOptionsText="Nessun paziente trovato"
@@ -286,7 +325,7 @@ const CreateInvoicePage = () => {
                     label="Data Emissione"
                     type="date"
                     value={formData.issue_date}
-                    onChange={handleInputChange('issue_date')}
+                    onChange={handleInputChange("issue_date")}
                     InputLabelProps={{
                       shrink: true,
                     }}
@@ -301,7 +340,7 @@ const CreateInvoicePage = () => {
                     multiline
                     rows={3}
                     value={formData.description}
-                    onChange={handleInputChange('description')}
+                    onChange={handleInputChange("description")}
                     placeholder="Descrivi il servizio o trattamento fornito..."
                     required
                     helperText="Minimo 5 caratteri"
@@ -315,10 +354,14 @@ const CreateInvoicePage = () => {
                     label="Importo *"
                     type="number"
                     value={formData.amount}
-                    onChange={handleInputChange('amount')}
+                    onChange={handleInputChange("amount")}
                     InputProps={{
-                      startAdornment: <InputAdornment position="start"><EuroIcon /></InputAdornment>,
-                      inputProps: { min: 0, step: 0.01 }
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EuroIcon />
+                        </InputAdornment>
+                      ),
+                      inputProps: { min: 0, step: 0.01 },
                     }}
                     required
                   />
@@ -331,10 +374,12 @@ const CreateInvoicePage = () => {
                     select
                     label="Modalità di Pagamento"
                     value={formData.payment_method}
-                    onChange={handleInputChange('payment_method')}
+                    onChange={handleInputChange("payment_method")}
                   >
                     <MenuItem value="contanti">Contanti</MenuItem>
-                    <MenuItem value="tracciabile">Modalità Tracciabile</MenuItem>
+                    <MenuItem value="tracciabile">
+                      Modalità Tracciabile
+                    </MenuItem>
                   </TextField>
                 </Grid>
 
@@ -343,24 +388,31 @@ const CreateInvoicePage = () => {
                   <>
                     <Grid item xs={12}>
                       <Divider sx={{ my: 2 }} />
-                      <Typography variant="h6" component="h3" sx={{ mb: 2, color: 'primary.main' }}>
+                      <Typography
+                        variant="h6"
+                        component="h3"
+                        sx={{ mb: 2, color: "primary.main" }}
+                      >
                         Imposte
                       </Typography>
                     </Grid>
 
                     <Grid item xs={12}>
                       <Alert severity="info" sx={{ mb: 2 }}>
-                        L'imposta di bollo è dovuta nella misura di €2,00 qualora il compenso oggetto della fattura supera €77,46.
+                        L'imposta di bollo è dovuta nella misura di €2,00
+                        qualora il compenso oggetto della fattura supera €77,46.
                       </Alert>
 
                       <FormControlLabel
                         control={
                           <Checkbox
                             checked={!formData.stamp_duty_exempt}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              stamp_duty_exempt: !e.target.checked
-                            }))}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                stamp_duty_exempt: !e.target.checked,
+                              }))
+                            }
                             color="primary"
                           />
                         }
@@ -376,10 +428,10 @@ const CreateInvoicePage = () => {
                           disabled
                           variant="filled"
                           sx={{
-                            backgroundColor: 'grey.100',
-                            '& .MuiFilledInput-root': {
-                              backgroundColor: 'grey.50'
-                            }
+                            backgroundColor: "grey.100",
+                            "& .MuiFilledInput-root": {
+                              backgroundColor: "grey.50",
+                            },
                           }}
                         />
                       )}
@@ -390,16 +442,18 @@ const CreateInvoicePage = () => {
                 {/* Summary Section */}
                 <Grid item xs={12}>
                   <Divider sx={{ my: 2 }} />
-                  <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    p: 2,
-                    backgroundColor: 'grey.50',
-                    borderRadius: 1
-                  }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 2,
+                      backgroundColor: "grey.50",
+                      borderRadius: 1,
+                    }}
+                  >
                     <Typography variant="h6">Riepilogo</Typography>
-                    <Box sx={{ textAlign: 'right' }}>
+                    <Box sx={{ textAlign: "right" }}>
                       <Typography variant="body2" color="text.secondary">
                         Importo base: €{baseAmount.toFixed(2)}
                       </Typography>
@@ -408,7 +462,10 @@ const CreateInvoicePage = () => {
                           Imposta bollo: €{STAMP_DUTY_AMOUNT.toFixed(2)}
                         </Typography>
                       )}
-                      <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 1 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: "bold", mt: 1 }}
+                      >
                         TOTALE: €{totalAmount.toFixed(2)}
                       </Typography>
                     </Box>
@@ -421,19 +478,21 @@ const CreateInvoicePage = () => {
 
                 {/* Action Buttons */}
                 <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  <Box
+                    sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}
+                  >
                     <Button
                       variant="outlined"
                       onClick={handleCancel}
                       disabled={loading}
                       color="inherit"
                       sx={{
-                        borderColor: '#e2e8f0',
-                        color: '#64748b',
-                        '&:hover': {
-                          borderColor: '#cbd5e1',
-                          backgroundColor: 'rgba(248, 250, 252, 0.8)',
-                        }
+                        borderColor: "#e2e8f0",
+                        color: "#64748b",
+                        "&:hover": {
+                          borderColor: "#cbd5e1",
+                          backgroundColor: "rgba(248, 250, 252, 0.8)",
+                        },
                       }}
                     >
                       Annulla
@@ -445,12 +504,12 @@ const CreateInvoicePage = () => {
                       disabled={loading || !selectedPatient}
                       color="primary"
                       sx={{
-                        borderColor: '#3b82f6',
-                        color: '#3b82f6',
-                        '&:hover': {
-                          borderColor: '#2563eb',
-                          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        }
+                        borderColor: "#3b82f6",
+                        color: "#3b82f6",
+                        "&:hover": {
+                          borderColor: "#2563eb",
+                          backgroundColor: "rgba(59, 130, 246, 0.1)",
+                        },
                       }}
                     >
                       Anteprima PDF
@@ -458,21 +517,23 @@ const CreateInvoicePage = () => {
                     <Button
                       type="submit"
                       variant="contained"
-                      startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
+                      startIcon={
+                        loading ? <CircularProgress size={20} /> : <SaveIcon />
+                      }
                       disabled={loading}
                       color="primary"
                       sx={{
-                        backgroundColor: '#3b82f6',
-                        '&:hover': {
-                          backgroundColor: '#2563eb',
+                        backgroundColor: "#3b82f6",
+                        "&:hover": {
+                          backgroundColor: "#2563eb",
                         },
-                        '&:disabled': {
-                          backgroundColor: '#f3f4f6',
-                          color: '#9ca3af',
-                        }
+                        "&:disabled": {
+                          backgroundColor: "#f3f4f6",
+                          color: "#9ca3af",
+                        },
                       }}
                     >
-                      {loading ? 'Creazione...' : 'Crea Fattura'}
+                      {loading ? "Creazione..." : "Crea Fattura"}
                     </Button>
                   </Box>
                 </Grid>
