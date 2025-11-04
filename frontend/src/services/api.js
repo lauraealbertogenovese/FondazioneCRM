@@ -119,8 +119,16 @@ export const authService = {
 
 // Servizi per i pazienti
 export const patientService = {
-  getPatients: async (params = {}) => {
-    const response = await patientApi.get("/patients", { params });
+  async getPatients(params = {}) {
+    const queryParams = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        queryParams.append(key, value);
+      }
+    });
+
+    const response = await api.get(`/patients?${queryParams}`);
     return response.data;
   },
 

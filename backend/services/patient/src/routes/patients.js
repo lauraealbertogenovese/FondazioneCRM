@@ -1,10 +1,12 @@
 const express = require("express");
+const router = express.Router();
 const Patient = require("../models/Patient");
 const PatientDocument = require("../models/PatientDocument");
-const PatientValidationUtils = require("../utils/validation");
 const AuthMiddleware = require("../middleware/auth");
+const PatientValidationUtils = require("../utils/validation");
 
-const router = express.Router();
+// Define permissions
+
 const readOnlyPermissions = ["patients.read", "billing.read"];
 // GET /patients/statistics - Get patient statistics
 router.get(
@@ -42,29 +44,36 @@ router.get(
         citta,
         data_nascita_da,
         data_nascita_a,
+        sortBy = 'created_at',
+        sortOrder = 'DESC'
       } = req.query;
 
+      console.log('Received sort params:', { sortBy, sortOrder }); // Debug log
+
       const offset = (page - 1) * limit;
-      const filters = { sesso, citta, data_nascita_da, data_nascita_a };
+      const filters = { 
+        sesso, 
+        citta, 
+        data_nascita_da, 
+        data_nascita_a,
+        search 
+      };
+
+      // Remove undefined values
+      Object.keys(filters).forEach(key => 
+        (filters[key] === undefined || filters[key] === '') && delete filters[key]
+      );
 
       let patients;
       let total;
 
       if (search) {
-        // Search by name
-        patients = await Patient.searchByName(
-          search,
-          parseInt(limit),
-          parseInt(offset)
-        );
-        total = patients.length; // This is a simplified count for search
+        // Passing sorting parameters to search method
+        patients = await Patient.search(search, parseInt(limit), parseInt(offset), sortBy, sortOrder);
+        total = await Patient.searchCount(search);
       } else {
-        // Get all patients with filters
-        patients = await Patient.findAll(
-          parseInt(limit),
-          parseInt(offset),
-          filters
-        );
+        // Passing sorting parameters to findAll method
+        patients = await Patient.findAll(filters, parseInt(limit), parseInt(offset), sortBy, sortOrder);
         total = await Patient.count(filters);
       }
 
@@ -82,6 +91,7 @@ router.get(
       console.error("Get patients error:", error);
       res.status(500).json({
         error: "Internal server error",
+        details: error.message
       });
     }
   }
@@ -125,7 +135,7 @@ router.get(
 router.get(
   "/patients/cf/:codice_fiscale",
   AuthMiddleware.verifyToken,
-  AuthMiddleware.requirePermission( readOnlyPermissions),
+  AuthMiddleware.requirePermission(readOnlyPermissions),
   async (req, res) => {
     try {
       const { codice_fiscale } = req.params;

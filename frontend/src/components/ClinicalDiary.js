@@ -41,6 +41,7 @@ import {
   renderTimeViewClock,
 } from "@mui/x-date-pickers";
 import { useSnackbar } from "notistack";
+import { isValid } from "date-fns";
 const entryTypes = {
   consultation: {
     label: "Consultazione",
@@ -597,10 +598,14 @@ function ClinicalDiaryForm({
             <DateTimePicker
               value={session_date ? new Date(session_date) : null}
               onChange={(date) => {
-                handleInputChange(
-                  "session_date",
-                  date ? date.toISOString() : null
-                );
+                if (isValid(date)) {
+                  handleInputChange(
+                    "session_date",
+                    date ? date.toISOString() : null
+                  );
+                } else {
+                  handleInputChange("session_date", null);
+                }
               }}
               format="Pp"
               viewRenderers={{

@@ -22,6 +22,7 @@ class Patient {
     this.abusi_secondari = data.abusi_secondari;
     this.professione = data.professione;
     this.stato_civile = data.stato_civile;
+    this.diagnosi_psichiatrica = data.diagnosi_psichiatrica; // New field
     this.is_active = data.is_active;
     this.created_by = data.created_by;
     this.created_by_username = data.created_by_username;
@@ -55,6 +56,7 @@ class Patient {
       abusi_secondari,
       professione,
       stato_civile,
+      diagnosi_psichiatrica, // New field
       created_by,
     } = patientData;
 
@@ -63,11 +65,12 @@ class Patient {
         codice_fiscale, numero_tessera_sanitaria, nome, cognome, data_nascita,
         sesso, indirizzo, citta, cap, provincia, telefono, email,
         consenso_trattamento_dati, note, medico_curante, 
-        sostanza_abuso, abusi_secondari, professione, stato_civile, created_by
+        sostanza_abuso, abusi_secondari, professione, stato_civile, 
+        diagnosi_psichiatrica, created_by
       )
       VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-        $16, $17, $18, $19, $20
+        $16, $17, $18, $19, $20, $21
       )
       RETURNING *
     `;
@@ -92,6 +95,7 @@ class Patient {
       abusi_secondari,
       professione,
       stato_civile,
+      diagnosi_psichiatrica, // New field
       created_by,
     ];
     const result = await query(queryText, values);
@@ -159,96 +163,211 @@ class Patient {
     return result.rows.map((row) => new Patient(row));
   }
 
-  // Get all patients with pagination
-  static async findAll(limit = 10, offset = 0, filters = {}) {
-    let queryText = `
-      SELECT p.*, u.username as created_by_username, 
-             mc.username as medico_curante_username,
-             mc.first_name as medico_curante_first_name,
-             mc.last_name as medico_curante_last_name,
-             mr.name as medico_curante_role
+  // Add the missing search method with sorting support
+  static async search(searchTerm, limit = 50, offset = 0, sortBy = 'created_at', sortOrder = 'DESC') {
+    // Validate sortBy column to prevent SQL injection
+    const validSortColumns = [
+      'nome', 'cognome', 'data_nascita', 'created_at', 'updated_at', 
+      'sesso', 'citta', 'telefono', 'email', 'codice_fiscale'
+    ];
+    
+    const validSortBy = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    const queryText = `
+      SELECT p.*, u.username as created_by_username
       FROM patient.patients p
       LEFT JOIN auth.users u ON p.created_by = u.id
-      LEFT JOIN auth.users mc ON p.medico_curante = mc.id
-      LEFT JOIN auth.roles mr ON mc.role_id = mr.id
-      WHERE 1=1
+      WHERE (p.nome ILIKE $1 OR p.cognome ILIKE $1 OR p.codice_fiscale ILIKE $1 OR p.email ILIKE $1 OR p.telefono ILIKE $1)
+      ORDER BY ${validSortBy} ${validSortOrder}
+      LIMIT $2 OFFSET $3
     `;
 
-    const values = [];
-    let paramCount = 1;
+    const searchPattern = `%${searchTerm}%`;
+    const result = await query(queryText, [searchPattern, limit, offset]);
+    return result.rows.map((row) => new Patient(row));
+  }
 
-    // Add filters
-    if (filters.sesso) {
-      queryText += ` AND p.sesso = $${paramCount}`;
-      values.push(filters.sesso);
+  // Add the missing searchCount method
+  static async searchCount(searchTerm) {
+    const queryText = `
+      SELECT COUNT(*) FROM patient.patients
+      WHERE (nome ILIKE $1 OR cognome ILIKE $1 OR codice_fiscale ILIKE $1 OR email ILIKE $1 OR telefono ILIKE $1)
+    `;
+
+    const searchPattern = `%${searchTerm}%`;
+    const result = await query(queryText, [searchPattern]);
+    return parseInt(result.rows[0].count);
+  }
+
+  // Get all patients with pagination
+  static async findAll(filters = {}, limit = 50, offset = 0, sortBy = 'created_at', sortOrder = 'DESC') {
+    let queryText = `
+      SELECT * FROM patient.patients
+    `;
+
+    const conditions = [];
+    const values = [];
+    let paramCount = 0;
+
+    // Apply existing filters
+    if (filters.search) {
       paramCount++;
+      conditions.push(`(nome ILIKE $${paramCount} OR cognome ILIKE $${paramCount} OR codice_fiscale ILIKE $${paramCount} OR email ILIKE $${paramCount})`);
+      values.push(`%${filters.search}%`);
+    }
+
+    if (filters.sesso) {
+      paramCount++;
+      conditions.push(`sesso = $${paramCount}`);
+      values.push(filters.sesso);
+    }
+
+    if (filters.stato_civile) {
+      paramCount++;
+      conditions.push(`stato_civile = $${paramCount}`);
+      values.push(filters.stato_civile);
     }
 
     if (filters.citta) {
-      queryText += ` AND p.citta ILIKE $${paramCount}`;
+      paramCount++;
+      conditions.push(`citta ILIKE $${paramCount}`);
       values.push(`%${filters.citta}%`);
-      paramCount++;
     }
 
-    if (filters.data_nascita_da) {
-      queryText += ` AND p.data_nascita >= $${paramCount}`;
-      values.push(filters.data_nascita_da);
+    if (filters.consenso_trattamento_dati) {
       paramCount++;
+      conditions.push(`consenso_trattamento_dati = $${paramCount}`);
+      values.push(filters.consenso_trattamento_dati);
     }
 
-    if (filters.data_nascita_a) {
-      queryText += ` AND p.data_nascita <= $${paramCount}`;
-      values.push(filters.data_nascita_a);
-      paramCount++;
+    // Add age range filter if provided
+    if (filters.ageMin !== undefined || filters.ageMax !== undefined) {
+      if (filters.ageMin !== undefined) {
+        paramCount++;
+        conditions.push(`DATE_PART('year', AGE(data_nascita)) >= $${paramCount}`);
+        values.push(filters.ageMin);
+      }
+      if (filters.ageMax !== undefined) {
+        paramCount++;
+        conditions.push(`DATE_PART('year', AGE(data_nascita)) <= $${paramCount}`);
+        values.push(filters.ageMax);
+      }
     }
 
-    queryText += ` ORDER BY p.cognome, p.nome LIMIT $${paramCount} OFFSET $${
-      paramCount + 1
-    }`;
+    // Add date range filter if provided
+    if (filters.createdDateFrom) {
+      paramCount++;
+      conditions.push(`created_at >= $${paramCount}`);
+      values.push(filters.createdDateFrom);
+    }
+
+    if (filters.createdDateTo) {
+      paramCount++;
+      conditions.push(`created_at <= $${paramCount}`);
+      values.push(filters.createdDateTo);
+    }
+
+    if (conditions.length > 0) {
+      queryText += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    // Validate sortBy column to prevent SQL injection
+    const validSortColumns = [
+      'nome', 'cognome', 'data_nascita', 'created_at', 'updated_at', 
+      'sesso', 'citta', 'telefono', 'email', 'codice_fiscale'
+    ];
+    
+    const validSortBy = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    queryText += ` ORDER BY ${validSortBy} ${validSortOrder}`;
+    queryText += ` LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     values.push(limit, offset);
 
-    const result = await query(queryText, values);
-    return result.rows.map((row) => new Patient(row));
+    try {
+      const result = await query(queryText, values);
+      return result.rows.map(row => new Patient(row));
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Count total patients
   static async count(filters = {}) {
-    let queryText = `
-      SELECT COUNT(*) as total
-      FROM patient.patients p
-      WHERE 1=1
-    `;
-
+    let queryText = `SELECT COUNT(*) FROM patient.patients`;
+    
+    const conditions = [];
     const values = [];
-    let paramCount = 1;
+    let paramCount = 0;
 
-    // Add filters
-    if (filters.sesso) {
-      queryText += ` AND p.sesso = $${paramCount}`;
-      values.push(filters.sesso);
+    if (filters.search) {
       paramCount++;
+      conditions.push(`(nome ILIKE $${paramCount} OR cognome ILIKE $${paramCount} OR codice_fiscale ILIKE $${paramCount} OR email ILIKE $${paramCount})`);
+      values.push(`%${filters.search}%`);
+    }
+
+    if (filters.sesso) {
+      paramCount++;
+      conditions.push(`sesso = $${paramCount}`);
+      values.push(filters.sesso);
+    }
+
+    if (filters.stato_civile) {
+      paramCount++;
+      conditions.push(`stato_civile = $${paramCount}`);
+      values.push(filters.stato_civile);
     }
 
     if (filters.citta) {
-      queryText += ` AND p.citta ILIKE $${paramCount}`;
+      paramCount++;
+      conditions.push(`citta ILIKE $${paramCount}`);
       values.push(`%${filters.citta}%`);
-      paramCount++;
     }
 
-    if (filters.data_nascita_da) {
-      queryText += ` AND p.data_nascita >= $${paramCount}`;
-      values.push(filters.data_nascita_da);
+    if (filters.consenso_trattamento_dati) {
       paramCount++;
+      conditions.push(`consenso_trattamento_dati = $${paramCount}`);
+      values.push(filters.consenso_trattamento_dati);
     }
 
-    if (filters.data_nascita_a) {
-      queryText += ` AND p.data_nascita <= $${paramCount}`;
-      values.push(filters.data_nascita_a);
-      paramCount++;
+    // Add age range filter if provided
+    if (filters.ageMin !== undefined || filters.ageMax !== undefined) {
+      if (filters.ageMin !== undefined) {
+        paramCount++;
+        conditions.push(`DATE_PART('year', AGE(data_nascita)) >= $${paramCount}`);
+        values.push(filters.ageMin);
+      }
+      if (filters.ageMax !== undefined) {
+        paramCount++;
+        conditions.push(`DATE_PART('year', AGE(data_nascita)) <= $${paramCount}`);
+        values.push(filters.ageMax);
+      }
     }
 
-    const result = await query(queryText, values);
-    return parseInt(result.rows[0].total);
+    // Add date range filter if provided
+    if (filters.createdDateFrom) {
+      paramCount++;
+      conditions.push(`created_at >= $${paramCount}`);
+      values.push(filters.createdDateFrom);
+    }
+
+    if (filters.createdDateTo) {
+      paramCount++;
+      conditions.push(`created_at <= $${paramCount}`);
+      values.push(filters.createdDateTo);
+    }
+
+    if (conditions.length > 0) {
+      queryText += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    try {
+      const result = await query(queryText, values);
+      return parseInt(result.rows[0].count);
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Get patient statistics
@@ -306,6 +425,7 @@ class Patient {
       "abusi_secondari",
       "professione",
       "stato_civile",
+      "diagnosi_psichiatrica", // New field
       "is_active",
     ];
 
@@ -379,34 +499,12 @@ class Patient {
       anamnesi_medica: this.anamnesi_medica,
       consenso_trattamento_dati: this.consenso_trattamento_dati,
       note: this.note,
+      diagnosi_psichiatrica: this.diagnosi_psichiatrica, // New field
       is_active: this.is_active,
       created_by: this.created_by,
       created_by_username: this.created_by_username,
       created_at: this.created_at,
       updated_at: this.updated_at,
-    };
-  }
-
-  // Get statistics
-  static async getStatistics() {
-    const queryText = `
-      SELECT 
-        COUNT(*) as total_patients,
-        COUNT(CASE WHEN is_active = true THEN 1 END) as active_patients,
-        COUNT(CASE WHEN sesso = 'M' THEN 1 END) as male_patients,
-        COUNT(CASE WHEN sesso = 'F' THEN 1 END) as female_patients
-      FROM patient.patients
-      WHERE is_active = true
-    `;
-
-    const result = await query(queryText);
-    const stats = result.rows[0];
-
-    return {
-      total_patients: parseInt(stats.total_patients) || 0,
-      active_patients: parseInt(stats.active_patients) || 0,
-      male_patients: parseInt(stats.male_patients) || 0,
-      female_patients: parseInt(stats.female_patients) || 0,
     };
   }
 
@@ -439,6 +537,7 @@ class Patient {
       abusi_secondari: this.abusi_secondari,
       professione: this.professione,
       stato_civile: this.stato_civile,
+      diagnosi_psichiatrica: this.diagnosi_psichiatrica, // New field
       is_active: this.is_active,
       created_by_username: this.created_by_username,
       created_at: this.created_at,

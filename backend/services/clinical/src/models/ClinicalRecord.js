@@ -1,4 +1,4 @@
-const pool = require('../database/connection');
+const pool = require("../database/connection");
 
 class ClinicalRecord {
   // Crea una nuova cartella clinica
@@ -6,13 +6,13 @@ class ClinicalRecord {
     const {
       patient_id,
       record_number,
-      status = 'active',
+      status = "active",
       diagnosis,
       treatment_plan,
       notes,
       created_by,
       record_type,
-      session_date
+      session_date,
     } = recordData;
 
     // Genera record_number se non fornito
@@ -26,8 +26,15 @@ class ClinicalRecord {
     `;
 
     const values = [
-      patient_id, finalRecordNumber, status, diagnosis, 
-      treatment_plan, notes, created_by, record_type, session_date
+      patient_id,
+      finalRecordNumber,
+      status,
+      diagnosis,
+      treatment_plan,
+      notes,
+      created_by,
+      record_type,
+      session_date,
     ];
 
     try {
@@ -66,7 +73,7 @@ class ClinicalRecord {
       FROM clinical.clinical_records cr
       LEFT JOIN auth.users u ON cr.created_by = u.id
       WHERE cr.patient_id = $1
-      ORDER BY cr.session_date DESC
+      ORDER BY cr.session_date DESC, cr.created_at DESC
       LIMIT $2 OFFSET $3
     `;
 
@@ -141,10 +148,12 @@ class ClinicalRecord {
     }
 
     if (conditions.length > 0) {
-      query += ` WHERE ${conditions.join(' AND ')}`;
+      query += ` WHERE ${conditions.join(" AND ")}`;
     }
 
-    query += ` ORDER BY cr.session_date DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    query += ` ORDER BY cr.session_date DESC LIMIT $${paramCount + 1} OFFSET $${
+      paramCount + 2
+    }`;
     values.push(limit, offset);
 
     try {
@@ -164,14 +173,16 @@ class ClinicalRecord {
       status,
       diagnosis,
       treatment_plan,
-      session_date
+      session_date,
     } = updateData;
+    // Add debugging to see what's being updated
+    console.log("Update data received:", updateData);
+    console.log("Session date in update:", session_date);
 
     // Build dynamic query based on provided fields
     const updateFields = [];
     const values = [];
     let paramIndex = 1;
-
 
     if (notes !== undefined) {
       updateFields.push(`notes = $${paramIndex}`);
@@ -222,7 +233,7 @@ class ClinicalRecord {
 
     const query = `
       UPDATE clinical.clinical_records 
-      SET ${updateFields.join(', ')}
+      SET ${updateFields.join(", ")}
       WHERE id = $${paramIndex}
       RETURNING *
     `;
@@ -237,7 +248,8 @@ class ClinicalRecord {
 
   // Elimina cartella clinica
   static async delete(id) {
-    const query = 'DELETE FROM clinical.clinical_records WHERE id = $1 RETURNING *';
+    const query =
+      "DELETE FROM clinical.clinical_records WHERE id = $1 RETURNING *";
 
     try {
       const result = await pool.query(query, [id]);
@@ -249,7 +261,8 @@ class ClinicalRecord {
 
   // Conta cartelle cliniche per paziente
   static async countByPatientId(patientId) {
-    const query = 'SELECT COUNT(*) as count FROM clinical.clinical_records WHERE patient_id = $1';
+    const query =
+      "SELECT COUNT(*) as count FROM clinical.clinical_records WHERE patient_id = $1";
 
     try {
       const result = await pool.query(query, [patientId]);
@@ -272,13 +285,14 @@ class ClinicalRecord {
     try {
       const result = await pool.query(query);
       const stats = result.rows[0];
-      
+
       // Convert string numbers to integers
       return {
         total_clinical_records: parseInt(stats.total_clinical_records) || 0,
         today_records: parseInt(stats.today_records) || 0,
         recent_records: parseInt(stats.recent_records) || 0,
-        total_patients_with_records: parseInt(stats.total_patients_with_records) || 0
+        total_patients_with_records:
+          parseInt(stats.total_patients_with_records) || 0,
       };
     } catch (error) {
       throw error;

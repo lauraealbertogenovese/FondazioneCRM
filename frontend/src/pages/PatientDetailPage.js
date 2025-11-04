@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
   Button,
   Grid,
   Chip,
-  Divider,
   Alert,
   IconButton,
   Container,
@@ -17,28 +16,15 @@ import {
   Tabs,
   Tab,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  Avatar,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Person as PersonIcon,
   Phone as PhoneIcon,
-  Email as EmailIcon,
-  LocationOn as LocationIcon,
   MedicalServices as MedicalIcon,
-  LocalHospital as EmergencyIcon,
   ArrowBack as ArrowBackIcon,
   Assignment as AssignmentIcon,
   Description as DocumentIcon,
-  Security as SecurityIcon,
-  History as HistoryIcon,
-  CalendarToday as CalendarIcon,
-  Work as WorkIcon,
-  Home as HomeIcon,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import { patientService } from "../services/api";
@@ -46,37 +32,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { getMaritalStatusLabel } from "../utils/maritalStatusUtils";
 import ClinicalDiary from "../components/ClinicalDiary";
 import DocumentManager from "../components/DocumentManager";
-import GDPRCompliance from "../components/GDPRCompliance";
-import AuditLog from "../components/AuditLog";
-
-const PatientDetailPage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const theme = useTheme();
-  const { hasPermission } = useAuth();
-  const [patient, setPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
-
-  useEffect(() => {
-    fetchPatient();
-  }, [id]);
-
-  const fetchPatient = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await patientService.getPatient(id);
-      setPatient(response.patient);
-    } catch (error) {
-      console.error("Errore nel caricamento del paziente:", error);
-      setError("Errore nel caricamento del paziente");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getSessoColor = (sesso) => {
     switch (sesso) {
       case "M":
@@ -100,52 +55,7 @@ const PatientDetailPage = () => {
         return sesso;
     }
   };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "success";
-      case "inactive":
-        return "warning";
-      case "discharged":
-        return "info";
-      case "archived":
-        return "default";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case "active":
-        return "In Cura";
-      case "inactive":
-        return "Sospeso";
-      case "discharged":
-        return "Dimesso";
-      case "archived":
-        return "Archiviato";
-      default:
-        return status;
-    }
-  };
-
-  const calculateAge = (birthDate) => {
-    if (!birthDate) return "";
-    const today = new Date();
-    const birth = new Date(birthDate);
-    const age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
-      return age - 1;
-    }
-    return age;
-  };
-
+  
   const LoadingSkeleton = () => (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
@@ -161,51 +71,58 @@ const PatientDetailPage = () => {
       <Skeleton variant="rectangular" height={500} sx={{ borderRadius: 2 }} />
     </Container>
   );
-
-  if (loading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Alert
-          severity="error"
-          sx={{
-            borderRadius: 2,
-            boxShadow: theme.shadows[1],
-          }}
-        >
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
-  if (!patient) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 3 }}>
-        <Alert
-          severity="warning"
-          sx={{
-            borderRadius: 2,
-            boxShadow: theme.shadows[1],
-          }}
-        >
-          Paziente non trovato
-        </Alert>
-      </Container>
-    );
-  }
-
-  const tabSections = [
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return "";
+    const today = new Date();
+    const birth = new Date(birthDate);
+    const age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+      return age - 1;
+    }
+    return age;
+  };
+   const tabSections = [
     { label: "Informazioni", icon: <PersonIcon />, content: "info" },
     { label: "Contatti", icon: <PhoneIcon />, content: "contacts" },
     { label: "Clinico", icon: <MedicalIcon />, content: "medical" },
     { label: "Documenti", icon: <DocumentIcon />, content: "documents" },
     { label: "Note Cliniche", icon: <AssignmentIcon />, content: "notes" },
   ];
-  const renderTabContent = () => {
+const PatientDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const { hasPermission } = useAuth();
+  const [patient, setPatient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const fetchPatient = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await patientService.getPatient(id);
+      setPatient(response.patient);
+    } catch (error) {
+      console.error("Errore nel caricamento del paziente:", error);
+      setError("Errore nel caricamento del paziente");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+  useEffect(() => {
+    fetchPatient();
+  }, [fetchPatient]);
+
+
+
+  
+ const renderTabContent = useCallback(() => {
+  if(!patient) return null;
     switch (activeTab) {
       case 0: // Informazioni
         return (
@@ -228,7 +145,7 @@ const PatientDetailPage = () => {
                     Nome Completo
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 400 }}>
-                    {patient.nome} {patient.cognome}
+                    {patient?.nome} {patient?.cognome}
                   </Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
@@ -501,6 +418,20 @@ const PatientDetailPage = () => {
                     {patient.professione || "Non specificata"}
                   </Typography>
                 </Box>
+                {patient.note && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", mb: 0.5, fontWeight: 600 }}
+                    >
+                      Note aggiuntive
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 400 }}>
+                      {patient.note}
+                    </Typography>
+                  </Box>
+                )}
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ mb: 2 }}>
@@ -509,7 +440,7 @@ const PatientDetailPage = () => {
                     color="text.secondary"
                     sx={{ display: "block", mb: 0.5, fontWeight: 600 }}
                   >
-                    Sostanza di Abuso
+                    D.U.S
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 400 }}>
                     {patient.sostanza_abuso || "Non specificata"}
@@ -530,6 +461,21 @@ const PatientDetailPage = () => {
                       : "Nessuno"}
                   </Typography>
                 </Box>
+
+                {patient.diagnosi_psichiatrica && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", mb: 0.5, fontWeight: 600 }}
+                    >
+                      Diagnosi Psichiatrica
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 400 }}>
+                      {patient.diagnosi_psichiatrica}
+                    </Typography>
+                  </Box>
+                )}
               </Grid>
             </Grid>
           </Box>
@@ -572,7 +518,46 @@ const PatientDetailPage = () => {
       default:
         return null;
     }
-  };
+  }, [activeTab, patient, hasPermission]);
+
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Alert
+          severity="error"
+          sx={{
+            borderRadius: 2,
+            boxShadow: theme.shadows[1],
+          }}
+        >
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Alert
+          severity="warning"
+          sx={{
+            borderRadius: 2,
+            boxShadow: theme.shadows[1],
+          }}
+        >
+          Paziente non trovato
+        </Alert>
+      </Container>
+    );
+  }
+
+ 
+ 
 
   return (
     <Fade in timeout={500}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Card,
@@ -28,20 +28,37 @@ import {
   Chip,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { parse, isValid } from "date-fns";
 import {
-  Person as PersonIcon,
   Save as SaveIcon,
   ArrowBack as ArrowBackIcon,
   Check as CheckIcon,
-  Edit as EditIcon,
   Cancel as CancelIcon,
 } from "@mui/icons-material";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { patientService, userService } from "../services/api";
 import { maritalStatusOptions } from "../utils/maritalStatusUtils";
 import { useAuth } from "../contexts/AuthContext";
-
+  // Opzioni per i selettori
+  const sostanzaAbusoOptions = [
+    { value: "", label: "Nessuna" },
+    { value: "alcol", label: "Alcol" },
+    { value: "caffeina", label: "Caffeina" },
+    { value: "cannabis", label: "Cannabis" },
+    { value: "allucinogeni", label: "Allucinogeni" },
+    { value: "inalanti", label: "Inalanti" },
+    { value: "oppiacei", label: "Oppiacei" },
+    { value: "sedativi", label: "Sedativi, ipnotici o ansiolitici" },
+    {
+      value: "stimolanti",
+      label: "Stimolanti (cocaina, anfetamine, metanfetamina)",
+    },
+    { value: "tabacco", label: "Tabacco" },
+    { value: "altro", label: "Altre sostanze o non specificate" },
+    {
+      value: "disturbo_gioco_azzardo",
+      label: "Disturbo da gioco d’azzardo (Gambling Disorder)",
+    },
+  ];
 const PatientFormPage = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -68,6 +85,7 @@ const PatientFormPage = () => {
     consenso_trattamento_dati: false,
     note: "",
     medico_curante: null, // Clinician assignment
+    diagnosi_psichiatrica: "",
     // New fields as per TODO requirements
     sostanza_abuso: "", // Substance of abuse
     abusi_secondari: [], // Secondary substance abuse (multi-select)
@@ -78,31 +96,10 @@ const PatientFormPage = () => {
   const [errors, setErrors] = useState({});
   const [clinicians, setClinicians] = useState([]);
 
-  // Opzioni per i selettori
-  const sostanzaAbusoOptions = [
-    { value: "", label: "Nessuna" },
-    { value: "alcol", label: "Alcol" },
-    { value: "cannabis", label: "Cannabis" },
-    { value: "cocaina", label: "Cocaina" },
-    { value: "eroina", label: "Eroina" },
-    { value: "anfetamine", label: "Anfetamine" },
-    { value: "ecstasy", label: "Ecstasy/MDMA" },
-    { value: "benzodiazepine", label: "Benzodiazepine" },
-    { value: "oppiacei", label: "Oppiacei" },
-    { value: "altro", label: "Altro" },
-    { value: "policonsumo", label: "Policonsumo" },
-  ];
+
 
   const { hasPermission, user } = useAuth();
-
-  useEffect(() => {
-    if (isEdit) {
-      fetchPatient();
-    }
-    fetchClinicians();
-  }, [id, isEdit]);
-
-  const fetchPatient = async () => {
+  const fetchPatient = useCallback(async () => {
     try {
       setLoading(true);
       const response = await patientService.getPatient(id);
@@ -128,6 +125,7 @@ const PatientFormPage = () => {
         professione: patientData.professione || "",
         stato_civile: patientData.stato_civile || "",
         note: patientData.note || "",
+        diagnosi_psichiatrica: patientData.diagnosi_psichiatrica || "",
         medico_curante: patientData.medico_curante || "",
         data_nascita: patientData.data_nascita
           ? new Date(patientData.data_nascita)
@@ -140,9 +138,8 @@ const PatientFormPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchClinicians = async () => {
+  }, [id]);
+  const fetchClinicians = useCallback(async () => {
     try {
       const response = await userService.getClinicians();
       // Filter and deduplicate users
@@ -165,34 +162,46 @@ const PatientFormPage = () => {
     } catch (error) {
       console.error("Errore nel caricamento dei clinici:", error);
     }
-  };
-
-  const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: null }));
+  }, []);
+  useEffect(() => {
+    if (isEdit) {
+      fetchPatient();
     }
-  };
+    fetchClinicians();
+  }, [fetchClinicians, fetchPatient, isEdit]);
 
-  const handleClinicianChange = (event, newValue) => {
-    setFormData((prev) => ({
-      ...prev,
-      medico_curante: newValue ? newValue.id : "",
-    }));
+  const handleChange = useCallback(
+    (event) => {
+      const { name, value, type, checked } = event.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
 
-    // Clear error when user makes selection
-    if (errors.medico_curante) {
-      setErrors((prev) => ({ ...prev, medico_curante: null }));
-    }
-  };
+      // Clear error when user starts typing
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: null }));
+      }
+    },
+    [errors]
+  );
 
-  const validateForm = () => {
+  const handleClinicianChange = useCallback(
+    (_, newValue) => {
+      setFormData((prev) => ({
+        ...prev,
+        medico_curante: newValue ? newValue.id : "",
+      }));
+
+      // Clear error when user makes selection
+      if (errors.medico_curante) {
+        setErrors((prev) => ({ ...prev, medico_curante: null }));
+      }
+    },
+    [errors]
+  );
+
+  const validateForm = useCallback(() => {
     const newErrors = {};
 
     if (!formData.nome?.trim()) newErrors.nome = "Nome è obbligatorio";
@@ -223,145 +232,148 @@ const PatientFormPage = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Prepare form data with Date object converted to string for API
-      const submissionData = {
-        ...formData,
-        // Convert Date object to YYYY-MM-DD format for API
-        data_nascita: formData.data_nascita
-          ? formData.data_nascita.toISOString().split("T")[0]
-          : null,
-      };
-
-      // Debug: check formData content
-      console.log("📋 FormData being sent:", {
-        ...submissionData,
-        medico_curante: submissionData.medico_curante,
-        medico_curante_type: typeof submissionData.medico_curante,
-      });
-
-      if (isEdit) {
-        await patientService.updatePatient(id, submissionData);
-      } else {
-        await patientService.createPatient(submissionData);
+      if (!validateForm()) {
+        return;
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        if (isEdit) {
-          // For edits, redirect to patient detail page
-          navigate(`/patients/${id}`);
-        } else {
-          // For new patients, redirect to patients list
-          navigate("/patients");
-        }
-      }, 1500);
-    } catch (error) {
-      console.error("Errore nel salvataggio del paziente:", error);
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Handle detailed validation errors from backend
-      if (error.response?.data?.details) {
-        const validationErrors = {};
-        error.response.data.details.forEach((errorMsg) => {
-          // Map backend error messages to form fields
-          if (errorMsg.includes("Nome")) {
-            validationErrors.nome = errorMsg;
-          } else if (errorMsg.includes("Cognome")) {
-            validationErrors.cognome = errorMsg;
-          } else if (errorMsg.includes("Codice Fiscale")) {
-            validationErrors.codice_fiscale = errorMsg;
-          } else if (errorMsg.includes("Numero Tessera Sanitaria")) {
-            validationErrors.numero_tessera_sanitaria = errorMsg;
-          } else if (
-            errorMsg.includes("Data di nascita") ||
-            errorMsg.includes("date")
-          ) {
-            validationErrors.data_nascita = errorMsg;
-          } else if (errorMsg.includes("Sesso")) {
-            validationErrors.sesso = errorMsg;
-          } else if (errorMsg.includes("email")) {
-            validationErrors.email = errorMsg;
-          } else if (
-            errorMsg.includes("phone") ||
-            errorMsg.includes("telefono")
-          ) {
-            validationErrors.telefono = errorMsg;
-          } else if (errorMsg.includes("CAP")) {
-            validationErrors.cap = errorMsg;
-          } else if (
-            errorMsg.includes("clinician") ||
-            errorMsg.includes("medico")
-          ) {
-            validationErrors.medico_curante = errorMsg;
-          } else if (errorMsg.includes("Consenso")) {
-            validationErrors.consenso_trattamento_dati = errorMsg;
-          }
+        // Prepare form data with Date object converted to string for API
+        const submissionData = {
+          ...formData,
+          // Convert Date object to YYYY-MM-DD format for API
+          data_nascita: formData.data_nascita
+            ? formData.data_nascita.toISOString().split("T")[0]
+            : null,
+        };
+
+        // Debug: check formData content
+        console.log("📋 FormData being sent:", {
+          ...submissionData,
+          medico_curante: submissionData.medico_curante,
+          medico_curante_type: typeof submissionData.medico_curante,
         });
 
-        // If we mapped any errors to specific fields, show them on the form
-        if (Object.keys(validationErrors).length > 0) {
-          setErrors(validationErrors);
-          setError(
-            `Errori di validazione: ${error.response.data.details.join(", ")}`
-          );
+        if (isEdit) {
+          await patientService.updatePatient(id, submissionData);
         } else {
-          // Show all validation errors as general error if we couldn't map them
+          await patientService.createPatient(submissionData);
+        }
+
+        setSuccess(true);
+        setTimeout(() => {
+          if (isEdit) {
+            // For edits, redirect to patient detail page
+            navigate(`/patients/${id}`);
+          } else {
+            // For new patients, redirect to patients list
+            navigate("/patients");
+          }
+        }, 1500);
+      } catch (error) {
+        console.error("Errore nel salvataggio del paziente:", error);
+
+        // Handle detailed validation errors from backend
+        if (error.response?.data?.details) {
+          const validationErrors = {};
+          error.response.data.details.forEach((errorMsg) => {
+            // Map backend error messages to form fields
+            if (errorMsg.includes("Nome")) {
+              validationErrors.nome = errorMsg;
+            } else if (errorMsg.includes("Cognome")) {
+              validationErrors.cognome = errorMsg;
+            } else if (errorMsg.includes("Codice Fiscale")) {
+              validationErrors.codice_fiscale = errorMsg;
+            } else if (errorMsg.includes("Numero Tessera Sanitaria")) {
+              validationErrors.numero_tessera_sanitaria = errorMsg;
+            } else if (
+              errorMsg.includes("Data di nascita") ||
+              errorMsg.includes("date")
+            ) {
+              validationErrors.data_nascita = errorMsg;
+            } else if (errorMsg.includes("Sesso")) {
+              validationErrors.sesso = errorMsg;
+            } else if (errorMsg.includes("email")) {
+              validationErrors.email = errorMsg;
+            } else if (
+              errorMsg.includes("phone") ||
+              errorMsg.includes("telefono")
+            ) {
+              validationErrors.telefono = errorMsg;
+            } else if (errorMsg.includes("CAP")) {
+              validationErrors.cap = errorMsg;
+            } else if (
+              errorMsg.includes("clinician") ||
+              errorMsg.includes("medico")
+            ) {
+              validationErrors.medico_curante = errorMsg;
+            } else if (errorMsg.includes("Consenso")) {
+              validationErrors.consenso_trattamento_dati = errorMsg;
+            }
+          });
+
+          // If we mapped any errors to specific fields, show them on the form
+          if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            setError(
+              `Errori di validazione: ${error.response.data.details.join(", ")}`
+            );
+          } else {
+            // Show all validation errors as general error if we couldn't map them
+            setError(
+              `Errori di validazione: ${error.response.data.details.join(", ")}`
+            );
+          }
+        } else {
+          // Standard error handling
           setError(
-            `Errori di validazione: ${error.response.data.details.join(", ")}`
+            error.response?.data?.error || "Errore nel salvataggio del paziente"
           );
         }
-      } else {
-        // Standard error handling
-        setError(
-          error.response?.data?.error || "Errore nel salvataggio del paziente"
-        );
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [formData, id, isEdit, navigate, validateForm]
+  );
   const [notAllowed, setNotAllowed] = useState(false);
   const [checkingPermission, setCheckingPermission] = useState(isEdit);
 
-useEffect(() => {
-  if (!isEdit || !patient) return;
+  useEffect(() => {
+    if (!isEdit || !patient) return;
 
-  // If user has full update permission, allow
-  if (hasPermission("patients.update")) {
-    setNotAllowed(false);
+    // If user has full update permission, allow
+    if (hasPermission("patients.update")) {
+      setNotAllowed(false);
+      setCheckingPermission(false);
+      return;
+    }
+
+    // If user has update_own and is the owner, allow
+    if (
+      hasPermission("patients.update_own") &&
+      patient.created_by_username === user.username
+    ) {
+      setNotAllowed(false);
+      setCheckingPermission(false);
+      return;
+    }
+
+    // Otherwise, not allowed
+    setNotAllowed(true);
     setCheckingPermission(false);
-    return;
-  }
-
-  // If user has update_own and is the owner, allow
-  if (
-    hasPermission("patients.update_own") &&
-    patient.created_by_username === user.username
-  ) {
-    setNotAllowed(false);
-    setCheckingPermission(false);
-    return;
-  }
-
-  // Otherwise, not allowed
-  setNotAllowed(true);
-  setCheckingPermission(false);
-}, [isEdit, patient, hasPermission, user]);
+  }, [hasPermission, isEdit, patient, user.username]);
 
   if (notAllowed) {
-    return <Navigate to={'/patients'} replace />;
+    return <Navigate to={"/patients"} replace />;
   }
 
   if ((loading && isEdit) || checkingPermission) {
@@ -668,7 +680,10 @@ useEffect(() => {
                   label="Provincia"
                   fullWidth
                   value={formData.provincia}
-                  inputProps={{ style: { textTransform: "uppercase" }, maxLength: 2 }}  
+                  inputProps={{
+                    style: { textTransform: "uppercase" },
+                    maxLength: 2,
+                  }}
                   onChange={handleChange}
                   variant="outlined"
                 />
@@ -749,9 +764,8 @@ useEffect(() => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Sostanza di Abuso"
+                      label="D.U.S"
                       placeholder="Seleziona o cerca sostanza..."
-                      size="small"
                       error={!!errors.sostanza_abuso}
                       helperText={errors.sostanza_abuso}
                     />
@@ -824,7 +838,6 @@ useEffect(() => {
                       {...params}
                       label="Abusi Secondari"
                       placeholder="Seleziona sostanze secondarie..."
-                      size="small"
                       error={!!errors.abusi_secondari}
                       helperText={
                         errors.abusi_secondari ||
@@ -844,6 +857,19 @@ useEffect(() => {
                   isOptionEqualToValue={(option, value) =>
                     option?.value === value?.value
                   }
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  name="diagnosi_psichiatrica"
+                  label="Diagnosi Psichiatrica"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={formData.diagnosi_psichiatrica}
+                  onChange={handleChange}
+                  variant="outlined"
+                  placeholder="Eventuali diagnosi psichiatriche rilevanti..."
                 />
               </Grid>
 
