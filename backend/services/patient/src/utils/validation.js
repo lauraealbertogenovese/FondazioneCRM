@@ -2,28 +2,34 @@ class PatientValidationUtils {
   // Validate Codice Fiscale (Italian tax code)
   static validateCodiceFiscale(cf) {
     const errors = [];
+
+    // Codice Fiscale optional - only validate if provided
+    if (!cf || cf.trim() === '') {
+      // No longer required - just return cleaned null
+      return {
+        isValid: true,
+        errors: [],
+        cleaned: null
+      };
+    }
     
-    if (!cf) {
-      errors.push('Codice Fiscale is required');
-    } else {
-      // Remove spaces and convert to uppercase
-      const cleanCf = cf.replace(/\s/g, '').toUpperCase();
-      
-      if (cleanCf.length !== 16) {
-        errors.push('Codice Fiscale must be exactly 16 characters');
-      }
-      
-      // Check format: 6 letters, 2 numbers, 1 letter, 2 numbers, 1 letter, 3 numbers, 1 letter
-      const cfRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
-      if (!cfRegex.test(cleanCf)) {
-        errors.push('Invalid Codice Fiscale format');
-      }
+    // Remove spaces and convert to uppercase
+    const cleanCf = cf.replace(/\s/g, '').toUpperCase();
+    
+    if (cleanCf.length !== 16) {
+      errors.push('Il Codice Fiscale deve essere di esattamente 16 caratteri');
+    }
+    
+    // Check format: 6 letters, 2 numbers, 1 letter, 2 numbers, 1 letter, 3 numbers, 1 letter
+    const cfRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
+    if (!cfRegex.test(cleanCf)) {
+      errors.push('Formato del Codice Fiscale non valido');
     }
     
     return {
       isValid: errors.length === 0,
       errors,
-      cleaned: cf ? cf.replace(/\s/g, '').toUpperCase() : null
+      cleaned: cleanCf
     };
   }
 
@@ -33,20 +39,20 @@ class PatientValidationUtils {
     
     if (!ts || ts.trim() === '') {
       if (isRequired) {
-        errors.push('Numero Tessera Sanitaria is required');
+        errors.push('Il Numero Tessera Sanitaria è obbligatorio');
       }
     } else {
       // Remove spaces and convert to uppercase
       const cleanTs = ts.replace(/\s/g, '').toUpperCase();
       
       if (cleanTs.length !== 20) {
-        errors.push('Numero Tessera Sanitaria must be exactly 20 characters');
+        errors.push('Il Numero Tessera Sanitaria deve essere di esattamente 20 caratteri');
       }
       
       // Check format: 20 alphanumeric characters
       const tsRegex = /^[A-Z0-9]{20}$/;
       if (!tsRegex.test(cleanTs)) {
-        errors.push('Invalid Numero Tessera Sanitaria format');
+        errors.push('Formato del Numero Tessera Sanitaria non valido');
       }
     }
     
@@ -58,23 +64,23 @@ class PatientValidationUtils {
   }
 
   // Validate name fields
-  static validateName(name, fieldName = 'Name') {
+  static validateName(name, fieldName = 'Nome') {
     const errors = [];
     
     if (!name || name.trim() === '') {
-      errors.push(`${fieldName} is required`);
+      errors.push(`${fieldName} è obbligatorio`);
     } else {
       const trimmedName = name.trim();
       if (trimmedName.length < 2) {
-        errors.push(`${fieldName} must be at least 2 characters long`);
+        errors.push(`${fieldName} deve essere di almeno 2 caratteri`);
       }
       
       if (trimmedName.length > 50) {
-        errors.push(`${fieldName} must be less than 50 characters`);
+        errors.push(`${fieldName} deve essere di massimo 50 caratteri`);
       }
       
       if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(trimmedName)) {
-        errors.push(`${fieldName} can only contain letters, spaces, hyphens, and apostrophes`);
+        errors.push(`${fieldName} può contenere solo lettere, spazi, trattini e apostrofi`);
       }
     }
     
@@ -89,17 +95,17 @@ class PatientValidationUtils {
     const errors = [];
     
     if (!dataNascita || dataNascita.trim() === '') {
-      errors.push('Data di nascita is required');
+      errors.push('La data di nascita è obbligatoria');
     } else {
       const birthDate = new Date(dataNascita);
       const today = new Date();
       
       if (isNaN(birthDate.getTime())) {
-        errors.push('Invalid date format');
+        errors.push('Formato data non valido');
       } else if (birthDate > today) {
-        errors.push('Data di nascita cannot be in the future');
+        errors.push('La data di nascita non può essere nel futuro');
       } else if (birthDate < new Date('1900-01-01')) {
-        errors.push('Data di nascita cannot be before 1900');
+        errors.push('La data di nascita non può essere precedente al 1900');
       }
     }
     
@@ -114,9 +120,9 @@ class PatientValidationUtils {
     const errors = [];
     
     if (!sesso || sesso.trim() === '') {
-      errors.push('Sesso is required');
+      errors.push('Il sesso è obbligatorio');
     } else if (!['M', 'F', 'A'].includes(sesso)) {
-      errors.push('Sesso must be M, F, or A');
+      errors.push('Il sesso deve essere M, F o A');
     }
     
     return {
@@ -132,7 +138,7 @@ class PatientValidationUtils {
     if (email && email.trim() !== '') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        errors.push('Invalid email format');
+        errors.push('Formato email non valido');
       }
     }
     
@@ -150,7 +156,7 @@ class PatientValidationUtils {
       // Italian phone number validation
       const phoneRegex = /^(\+39|0039|39)?[\s]?[0-9]{2,3}[\s]?[0-9]{6,7}$/;
       if (!phoneRegex.test(telefono.replace(/\s/g, ''))) {
-        errors.push('Invalid phone number format');
+        errors.push('Formato numero di telefono non valido');
       }
     }
     
@@ -167,7 +173,7 @@ class PatientValidationUtils {
     if (cap && cap.trim() !== '') {
       const capRegex = /^[0-9]{5}$/;
       if (!capRegex.test(cap)) {
-        errors.push('CAP must be 5 digits');
+        errors.push('Il CAP deve essere di 5 cifre');
       }
     }
     
@@ -186,7 +192,7 @@ class PatientValidationUtils {
       const numericId = typeof medicoId === 'string' ? parseInt(medicoId, 10) : medicoId;
       
       if (isNaN(numericId) || numericId <= 0) {
-        errors.push('Invalid clinician ID');
+        errors.push('ID del clinico non valido');
       }
     }
     
@@ -200,7 +206,7 @@ class PatientValidationUtils {
   static validatePatientCreation(data) {
     const errors = [];
     
-    // Validate required fields
+    // Validate codice_fiscale only if provided (now optional)
     const cfValidation = this.validateCodiceFiscale(data.codice_fiscale);
     if (!cfValidation.isValid) {
       errors.push(...cfValidation.errors);
@@ -252,9 +258,7 @@ class PatientValidationUtils {
     if (!medicoCuranteValidation.isValid) {
       errors.push(...medicoCuranteValidation.errors);
     }
-    
-    // Consenso trattamento dati is optional - can be true, false, or null
-    // No validation required, just track the patient's choice
+    //consenso_trattamento_dati && consenso_invio_sts can be null, true, or false - no validation needed
     
     return {
       isValid: errors.length === 0,
@@ -270,11 +274,16 @@ class PatientValidationUtils {
   static validatePatientUpdate(data) {
     const errors = [];
     
-    // Validate fields if provided and not empty
-    if (data.codice_fiscale !== undefined && data.codice_fiscale !== null && data.codice_fiscale.trim() !== '') {
-      const cfValidation = this.validateCodiceFiscale(data.codice_fiscale);
-      if (!cfValidation.isValid) {
-        errors.push(...cfValidation.errors);
+    // Validate codice_fiscale only if provided and not empty
+    if (data.codice_fiscale !== undefined) {
+      if (data.codice_fiscale === null || data.codice_fiscale === '' || data.codice_fiscale.trim() === '') {
+        // Allow empty/null values - convert to null
+        data.codice_fiscale = null;
+      } else {
+        const cfValidation = this.validateCodiceFiscale(data.codice_fiscale);
+        if (!cfValidation.isValid) {
+          errors.push(...cfValidation.errors);
+        }
       }
     }
     

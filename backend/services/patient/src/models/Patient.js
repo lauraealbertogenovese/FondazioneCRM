@@ -62,6 +62,14 @@ class Patient {
       created_by,
     } = patientData;
 
+    // Check codice_fiscale uniqueness only if provided
+    if (codice_fiscale && codice_fiscale.trim()) {
+      const existingPatient = await Patient.findByCodiceFiscale(codice_fiscale.trim());
+      if (existingPatient) {
+        throw new Error('Un paziente con questo codice fiscale esiste già');
+      }
+    }
+
     const queryText = `
       INSERT INTO patient.patients (
         codice_fiscale, numero_tessera_sanitaria, nome, cognome, data_nascita,
@@ -78,7 +86,7 @@ class Patient {
     `;
 
     const values = [
-      codice_fiscale,
+      codice_fiscale?.trim() || null, // Convert empty string to null
       numero_tessera_sanitaria,
       nome,
       cognome,
@@ -181,7 +189,13 @@ class Patient {
       SELECT p.*, u.username as created_by_username
       FROM patient.patients p
       LEFT JOIN auth.users u ON p.created_by = u.id
-      WHERE (p.nome ILIKE $1 OR p.cognome ILIKE $1 OR p.codice_fiscale ILIKE $1 OR p.email ILIKE $1 OR p.telefono ILIKE $1)
+      WHERE (
+        p.nome ILIKE $1 OR 
+        p.cognome ILIKE $1 OR 
+        (p.codice_fiscale IS NOT NULL AND p.codice_fiscale ILIKE $1) OR 
+        p.email ILIKE $1 OR 
+        p.telefono ILIKE $1
+      )
       ORDER BY ${validSortBy} ${validSortOrder}
       LIMIT $2 OFFSET $3
     `;
@@ -195,7 +209,13 @@ class Patient {
   static async searchCount(searchTerm) {
     const queryText = `
       SELECT COUNT(*) FROM patient.patients
-      WHERE (nome ILIKE $1 OR cognome ILIKE $1 OR codice_fiscale ILIKE $1 OR email ILIKE $1 OR telefono ILIKE $1)
+      WHERE (
+        nome ILIKE $1 OR 
+        cognome ILIKE $1 OR 
+        (codice_fiscale IS NOT NULL AND codice_fiscale ILIKE $1) OR 
+        email ILIKE $1 OR 
+        telefono ILIKE $1
+      )
     `;
 
     const searchPattern = `%${searchTerm}%`;

@@ -6,8 +6,8 @@ const AuthMiddleware = require("../middleware/auth");
 const PatientValidationUtils = require("../utils/validation");
 
 // Define permissions
-
 const readOnlyPermissions = ["patients.read", "billing.read"];
+
 // GET /patients/statistics - Get patient statistics
 router.get(
   "/patients/statistics",
@@ -23,7 +23,7 @@ router.get(
     } catch (error) {
       console.error("Get patient statistics error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -90,7 +90,7 @@ router.get(
     } catch (error) {
       console.error("Get patients error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
         details: error.message
       });
     }
@@ -108,14 +108,14 @@ router.get(
 
       if (!Number.isInteger(Number(id)) || Number(id) < 1) {
         return res.status(400).json({
-          error: "Invalid patient ID",
+          error: "ID paziente non valido",
         });
       }
 
       const patient = await Patient.findById(id);
       if (!patient) {
         return res.status(404).json({
-          error: "Patient not found",
+          error: "Paziente non trovato",
         });
       }
 
@@ -125,7 +125,7 @@ router.get(
     } catch (error) {
       console.error("Get patient error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -140,10 +140,17 @@ router.get(
     try {
       const { codice_fiscale } = req.params;
 
+      // Check if codice_fiscale is provided and not empty
+      if (!codice_fiscale || codice_fiscale.trim() === '') {
+        return res.status(400).json({
+          error: "Il Codice Fiscale è richiesto per questa ricerca",
+        });
+      }
+
       const patient = await Patient.findByCodiceFiscale(codice_fiscale);
       if (!patient) {
         return res.status(404).json({
-          error: "Patient not found",
+          error: "Paziente non trovato",
         });
       }
 
@@ -153,7 +160,7 @@ router.get(
     } catch (error) {
       console.error("Get patient by CF error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -173,7 +180,7 @@ router.get(
       );
       if (!patient) {
         return res.status(404).json({
-          error: "Patient not found",
+          error: "Paziente non trovato",
         });
       }
 
@@ -183,7 +190,7 @@ router.get(
     } catch (error) {
       console.error("Get patient by TS error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -203,19 +210,21 @@ router.post(
         PatientValidationUtils.validatePatientCreation(patientData);
       if (!validation.isValid) {
         return res.status(400).json({
-          error: "Validation failed",
+          error: "Errori di validazione",
           details: validation.errors,
         });
       }
 
-      // Check if patient with same Codice Fiscale already exists
-      const existingPatientByCF = await Patient.findByCodiceFiscale(
-        validation.cleaned.codice_fiscale
-      );
-      if (existingPatientByCF) {
-        return res.status(409).json({
-          error: "Patient with this Codice Fiscale already exists",
-        });
+      // Check if patient with same Codice Fiscale already exists (only if provided)
+      if (validation.cleaned.codice_fiscale) {
+        const existingPatientByCF = await Patient.findByCodiceFiscale(
+          validation.cleaned.codice_fiscale
+        );
+        if (existingPatientByCF) {
+          return res.status(409).json({
+            error: "Esiste già un paziente con questo Codice Fiscale",
+          });
+        }
       }
 
       // Check if patient with same Numero Tessera Sanitaria already exists (only if not null/empty)
@@ -225,7 +234,7 @@ router.post(
         );
         if (existingPatientByTS) {
           return res.status(409).json({
-            error: "Patient with this Numero Tessera Sanitaria already exists",
+            error: "Esiste già un paziente con questo Numero Tessera Sanitaria",
           });
         }
       }
@@ -242,13 +251,13 @@ router.post(
       const patient = await Patient.create(patientData);
 
       res.status(201).json({
-        message: "Patient created successfully",
+        message: "Paziente creato con successo",
         patient: patient.getPublicData(),
       });
     } catch (error) {
       console.error("Create patient error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -274,7 +283,7 @@ router.put(
 
       if (!Number.isInteger(Number(id)) || Number(id) < 1) {
         return res.status(400).json({
-          error: "Invalid patient ID",
+          error: "ID paziente non valido",
         });
       }
 
@@ -285,7 +294,7 @@ router.put(
         console.error("Patient update validation failed:", validation.errors);
         console.error("Update data:", updateData);
         return res.status(400).json({
-          error: "Validation failed",
+          error: "Errori di validazione",
           details: validation.errors,
         });
       }
@@ -294,21 +303,22 @@ router.put(
       const patient = await Patient.findById(id);
       if (!patient) {
         return res.status(404).json({
-          error: "Patient not found",
+          error: "Paziente non trovato",
         });
       }
 
-      // Check if Codice Fiscale is being changed and already exists
+      // Check if Codice Fiscale is being changed and already exists (only if provided)
       if (
         updateData.codice_fiscale &&
-        updateData.codice_fiscale !== patient.codice_fiscale
+        updateData.codice_fiscale !== patient.codice_fiscale &&
+        validation.cleaned.codice_fiscale
       ) {
         const existingPatient = await Patient.findByCodiceFiscale(
           validation.cleaned.codice_fiscale
         );
         if (existingPatient) {
           return res.status(409).json({
-            error: "Patient with this Codice Fiscale already exists",
+            error: "Esiste già un paziente con questo Codice Fiscale",
           });
         }
       }
@@ -325,13 +335,13 @@ router.put(
         );
         if (existingPatient) {
           return res.status(409).json({
-            error: "Patient with this Numero Tessera Sanitaria already exists",
+            error: "Esiste già un paziente con questo Numero Tessera Sanitaria",
           });
         }
       }
 
       // Use cleaned data
-      if (updateData.codice_fiscale) {
+      if (updateData.codice_fiscale !== undefined) {
         updateData.codice_fiscale = validation.cleaned.codice_fiscale;
       }
       if (updateData.numero_tessera_sanitaria !== undefined) {
@@ -343,13 +353,13 @@ router.put(
       await patient.update(updateData);
 
       res.json({
-        message: "Patient updated successfully",
+        message: "Paziente aggiornato con successo",
         patient: patient.getPublicData(),
       });
     } catch (error) {
       console.error("Update patient error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -366,7 +376,7 @@ router.delete(
 
       if (!Number.isInteger(Number(id)) || Number(id) < 1) {
         return res.status(400).json({
-          error: "Invalid patient ID",
+          error: "ID paziente non valido",
         });
       }
 
@@ -374,7 +384,7 @@ router.delete(
       const patient = await Patient.findById(id);
       if (!patient) {
         return res.status(404).json({
-          error: "Patient not found",
+          error: "Paziente non trovato",
         });
       }
 
@@ -382,12 +392,12 @@ router.delete(
       await patient.delete();
 
       res.json({
-        message: "Patient deleted successfully",
+        message: "Paziente eliminato con successo",
       });
     } catch (error) {
       console.error("Delete patient error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }
@@ -404,7 +414,7 @@ router.get(
 
       if (!Number.isInteger(Number(id)) || Number(id) < 1) {
         return res.status(400).json({
-          error: "Invalid patient ID",
+          error: "ID paziente non valido",
         });
       }
 
@@ -412,7 +422,7 @@ router.get(
       const patient = await Patient.findById(id);
       if (!patient) {
         return res.status(404).json({
-          error: "Patient not found",
+          error: "Paziente non trovato",
         });
       }
 
@@ -424,7 +434,7 @@ router.get(
     } catch (error) {
       console.error("Get patient documents error:", error);
       res.status(500).json({
-        error: "Internal server error",
+        error: "Errore interno del server",
       });
     }
   }

@@ -204,9 +204,14 @@ const PatientFormPage = () => {
 
     if (!formData.nome?.trim()) newErrors.nome = "Nome è obbligatorio";
     if (!formData.cognome?.trim()) newErrors.cognome = "Cognome è obbligatorio";
-    if (!formData.codice_fiscale?.trim())
-      newErrors.codice_fiscale = "Codice Fiscale è obbligatorio";
 
+    // Make codice_fiscale optional but validate format if provided
+    if (formData.codice_fiscale?.trim()) {
+      if (formData.codice_fiscale.trim().length !== 16) {
+        newErrors.codice_fiscale = "Il codice fiscale deve essere di 16 caratteri";
+      }
+    }
+ 
     // Validazione data di nascita
     if (!formData.data_nascita) {
       newErrors.data_nascita = "Data di nascita è obbligatoria";
@@ -247,6 +252,8 @@ const PatientFormPage = () => {
         // Prepare form data with Date object converted to string for API
         const submissionData = {
           ...formData,
+          // Convert empty codice_fiscale to null
+          codice_fiscale: formData.codice_fiscale?.trim() || null,
           // Convert Date object to YYYY-MM-DD format for API
           data_nascita: formData.data_nascita
             ? formData.data_nascita.toISOString().split("T")[0]
@@ -505,8 +512,10 @@ const PatientFormPage = () => {
                   error={!!errors.codice_fiscale}
                   helperText={errors.codice_fiscale}
                   variant="outlined"
-                  required
-                  inputProps={{ style: { textTransform: "uppercase" } }}
+                  inputProps={{ 
+                    style: { textTransform: "uppercase" },
+                    maxLength: 16 
+                  }}
                 />
               </Grid>
 
