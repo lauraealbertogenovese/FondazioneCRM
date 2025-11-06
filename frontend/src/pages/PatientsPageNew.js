@@ -380,7 +380,11 @@ const PatientsPageNew = () => {
         <Box sx={{ mb: 4 }}>
           <Stack
             direction="row"
-            spacing={3}
+            gap={3}
+            useFlexGap
+            sx={{
+              flexWrap: { xs: "wrap", sm: "nowrap" },
+            }}
             alignItems="center"
             justifyContent="space-between"
           >
@@ -389,6 +393,7 @@ const PatientsPageNew = () => {
               value={searchTerm}
               onChange={handleSearchChange}
               size="medium"
+              fullWidth
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -435,7 +440,8 @@ const PatientsPageNew = () => {
                 ),
               }}
               sx={{
-                minWidth: 500,
+                maxWidth: { lg: "500px" },
+                minWidth: 220,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: 2,
                   backgroundColor: alpha(theme.palette.grey[50], 0.8),
@@ -468,6 +474,8 @@ const PatientsPageNew = () => {
                   borderRadius: 2,
                   px: 3,
                   py: 1,
+                  whiteSpace: "nowrap",
+                  minWidth: 172,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                   boxShadow: `0 2px 8px ${alpha(
                     theme.palette.primary.main,
