@@ -49,55 +49,66 @@ import { useAuth } from "../contexts/AuthContext";
 import { patientService } from "../services/api";
 import LoadingSkeleton from "../components/LoadingSkeleton";
 import useDebounce from "../hooks/useDebounce";
+import { TypographyWithTooltip } from "../components/TypographyWithTooltip";
 
 const HEADER_ARRAY = [
   {
     key: "nome",
     label: "Paziente",
     sortable: true,
-    width: 250,
+    minWidth: 200,
+    width: 200,
   },
   {
     key: "data_nascita",
     label: "Età",
     sortable: true,
-    width: 150,
+    minWidth: 50,
+    width: 120,
   },
   {
     key: "telefono",
     label: "Contatti",
     sortable: true,
+    minWidth: 50,
+
     width: 200,
   },
   {
     key: "codice_fiscale",
     label: "Codice Fiscale",
     sortable: true,
-    width: 200,
+    minWidth: 50,
+
+    width: 100,
   },
   {
     key: "stato",
     label: "Stato",
     sortable: false,
-    width: 180,
+    minWidth: 140,
+    width: 160,
   },
   {
     key: "consenso",
     label: "Consenso",
     sortable: false,
+    minWidth: 50,
     width: 150,
   },
   {
     key: "created_at",
     label: "Data Inizio",
     sortable: true,
-    width: 150,
+    minWidth: 50,
+    width: 140,
   },
   {
     key: "actions",
     label: "",
     sortable: false,
     minWidth: 60,
+    width: 60,
   },
 ];
 // Utility functions
@@ -618,10 +629,16 @@ const PatientsPageNew = () => {
                         color: "text.primary",
                         letterSpacing: "0.5px",
                         py: 2,
-                        minWidth: column.key === "actions" ? 60 : column.width || 160,
+                        minWidth: column.minWidth || 160,
                         cursor: column.sortable ? "pointer" : "default",
-                        width: column.key === "actions" ? 60 : "auto",
-                        textAlign: column.key === "actions" ? "center" : "left",
+                        width: column.width || 160,
+                        ...(column.key === "actions" && {
+                          position: "sticky",
+                          right: 0,
+                          backgroundColor: "background.paper",
+                          zIndex: 2,
+                          textAlign: "center",
+                        }),
                         "&:hover": column.sortable
                           ? {
                               backgroundColor: alpha(
@@ -770,12 +787,12 @@ const PatientsPageNew = () => {
                     </TableCell>
 
                     <TableCell sx={{ verticalAlign: "top" }}>
-                      <Typography
+                      <TypographyWithTooltip
                         variant="body2"
                         sx={{ fontFamily: "monospace", fontSize: "0.875rem" }}
                       >
                         {patient.codice_fiscale}
-                      </Typography>
+                      </TypographyWithTooltip>
                     </TableCell>
 
                     <TableCell sx={{ verticalAlign: "top" }}>
@@ -798,7 +815,26 @@ const PatientsPageNew = () => {
                       </Typography>
                     </TableCell>
 
-                    <TableCell align="center" sx={{ verticalAlign: "top" }}>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        verticalAlign: "top",
+                        position: "sticky",
+                        right: 0,
+                        backgroundColor: "background.paper",
+                        boxShadow: 2,
+                        zIndex: 1,
+                        "&:before": {
+                          content: '""',
+                          position: "absolute",
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          borderLeft: 1,
+                          borderColor: "rgba(203, 213, 225, 0.3)",
+                        },
+                      }}
+                    >
                       <Stack
                         direction="row"
                         spacing={0.5}
